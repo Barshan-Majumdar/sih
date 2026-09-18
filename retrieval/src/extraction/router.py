@@ -34,6 +34,7 @@ def build_extraction_router(
             return {"status": "unconfigured", "model": None, "error": str(err)}
         return {"status": "online", "model": service.client.model_name}
 
+    @router.post("/extract", response_model=ExtractResponse)
     @router.post("/analyze", response_model=ExtractResponse)
     def analyze(req: ExtractRequest):
         try:

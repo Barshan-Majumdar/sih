@@ -19,6 +19,7 @@ from .models import (
 from .retrieval_service import HybridRetrievalService
 from .terminology_normalizer import TerminologyNormalizer
 from .extraction import build_extraction_router
+from .ocr_router import router as ocr_router
 
 
 # ──────────────────────────────────────────────────────────────
@@ -98,6 +99,7 @@ app = FastAPI(
 
 service = HybridRetrievalService(use_normalization=True)
 app.include_router(build_extraction_router())
+app.include_router(ocr_router)
 
 
 @app.get("/health")
@@ -106,7 +108,8 @@ def health_check():
     Returns server status and total indexed schedule activities.
     """
     return {
-        "status": "online",
+        "status": "ok",
+        "engine": "hybrid-retrieval-and-ocr",
         "indexed_activities_count": len(service.activities),
         "normalization_enabled": service.use_normalization,
     }

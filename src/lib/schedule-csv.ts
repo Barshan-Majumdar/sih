@@ -28,11 +28,11 @@ export const PREDECESSOR_SEPARATOR = ";";
  * and the format documentation in the import panel both read from here.
  */
 export const SCHEDULE_CSV_TEMPLATE = `Task Name,Assignee Email,Start Date,End Date,Status,Progress %,Predecessors
-Site Mobilization,super@example.com,2026-10-01,2026-10-05,DONE,100,
-Excavation,grading@example.com,2026-10-06,2026-10-17,IN_PROGRESS,40,Site Mobilization
-Footing Formwork,concrete@example.com,2026-10-20,2026-10-28,NOT_STARTED,0,Excavation
-Footing Pour,concrete@example.com,2026-10-29,2026-10-31,NOT_STARTED,0,Footing Formwork
-Backfill & Compaction,grading@example.com,2026-11-02,2026-11-06,NOT_STARTED,0,Footing Pour;Excavation
+Site Mobilization,super@example.com,01-10-2026,05-10-2026,DONE,100,
+Excavation,grading@example.com,06-10-2026,17-10-2026,IN_PROGRESS,40,Site Mobilization
+Footing Formwork,concrete@example.com,20-10-2026,28-10-2026,NOT_STARTED,0,Excavation
+Footing Pour,concrete@example.com,29-10-2026,31-10-2026,NOT_STARTED,0,Footing Formwork
+Backfill & Compaction,grading@example.com,02-11-2026,06-11-2026,NOT_STARTED,0,Footing Pour;Excavation
 `;
 
 export const SCHEDULE_CSV_TEMPLATE_FILENAME = "schedule-template.csv";
@@ -179,26 +179,49 @@ function cellAt(record: CsvRecord, index: number): string {
   return record.cells[index] ?? "";
 }
 
-/** Accepts ISO `YYYY-MM-DD` and US `M/D/YYYY`, returning ISO. Null if impossible. */
+/** Accepts DD-MM-YYYY, DD/MM/YYYY, and ISO YYYY-MM-DD, returning ISO YYYY-MM-DD. Null if invalid. */
 function parseDate(raw: string): string | null {
   const value = raw.trim();
-  const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(value);
-  const us = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(value);
+  if (!value) return null;
 
   let year: number;
   let month: number;
   let day: number;
-  if (iso) {
-    [year, month, day] = [Number(iso[1]), Number(iso[2]), Number(iso[3])];
-  } else if (us) {
-    [year, month, day] = [Number(us[3]), Number(us[1]), Number(us[2])];
+
+  // 1. Day-Month-Year: DD-MM-YYYY or DD/MM/YYYY (primary user & template format)
+  const dmy = /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/.exec(value);
+  if (dmy) {
+    day = Number(dmy[1]);
+    month = Number(dmy[2]);
+    year = Number(dmy[3]);
+
+    // Fallback: If month > 12 and day <= 12, tolerate MM-DD-YYYY gracefully
+    if (month > 12 && day <= 12) {
+      const temp = day;
+      day = month;
+      month = temp;
+    }
   } else {
+    // 2. Year-Month-Day: YYYY-MM-DD or YYYY/MM/DD (ISO standard format)
+    const ymd = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/.exec(value);
+    if (ymd) {
+      year = Number(ymd[1]);
+      month = Number(ymd[2]);
+      day = Number(ymd[3]);
+    } else {
+      return null;
+    }
+  }
+
+  if (year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) {
     return null;
   }
 
-  // Round-trip through Date to reject overflow like 2026-02-30 or 13/45/2026.
+  // Round-trip through Date to reject calendar overflow like 31-02-2026 or 31-04-2026.
   const date = new Date(Date.UTC(year, month - 1, day));
-  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null;
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+    return null;
+  }
 
   return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
@@ -356,9 +379,9 @@ export function parseScheduleCsv(text: string, context: ScheduleCsvContext): Sch
     const startDate = rawStart === "" ? null : parseDate(rawStart);
     const endDate = rawEnd === "" ? null : parseDate(rawEnd);
     if (rawStart === "") messages.push("Start Date is required");
-    else if (startDate === null) messages.push(`Start Date "${rawStart}" is not a valid date (use YYYY-MM-DD)`);
+    else if (startDate === null) messages.push(`Start Date "${rawStart}" is not a valid date (use DD-MM-YYYY)`);
     if (rawEnd === "") messages.push("End Date is required");
-    else if (endDate === null) messages.push(`End Date "${rawEnd}" is not a valid date (use YYYY-MM-DD)`);
+    else if (endDate === null) messages.push(`End Date "${rawEnd}" is not a valid date (use DD-MM-YYYY)`);
     if (startDate !== null && endDate !== null && endDate < startDate) {
       messages.push("End Date must be on or after Start Date");
     }

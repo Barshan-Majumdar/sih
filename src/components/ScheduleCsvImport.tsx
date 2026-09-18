@@ -175,7 +175,7 @@ export function ScheduleCsvImport({
         <div className="min-w-0">
           <p className="app-section-title">Import schedule from CSV</p>
           <p className="app-section-description" id={hintId}>
-            One activity per row, with the columns {SCHEDULE_CSV_COLUMNS.join(", ")}. Rows naming an
+            One activity per row, with the columns {SCHEDULE_CSV_COLUMNS.join(", ")}. Dates should be formatted as DD-MM-YYYY (e.g. 01-10-2026). Rows naming an
             existing activity update it, the rest are created.
           </p>
         </div>
