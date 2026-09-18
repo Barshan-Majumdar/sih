@@ -41,6 +41,23 @@
   --color-app-accent: #2c4a6b;
   --color-app-grid: rgba(16, 23, 32, 0.03);
 
+  /* Semantic compatibility aliases */
+  --color-border: #dde3ea;
+  --color-input: #dde3ea;
+  --color-ring: #2c4a6b;
+  --color-background: #ffffff;
+  --color-foreground: #101720;
+  --color-card: #ffffff;
+  --color-card-foreground: #101720;
+  --color-muted-foreground: #4d5a6b;
+  --color-destructive: #a83a3a;
+  --color-destructive-foreground: #ffffff;
+  --color-secondary: #f1f4f8;
+  --color-secondary-foreground: #101720;
+  --color-accent: #f1f4f8;
+  --color-accent-foreground: #101720;
+  --color-primary-foreground: #ffffff;
+
   --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -84,12 +101,30 @@
   --color-app-sidebar: #0a0e14;
   --color-app-accent: #6b8fb8;
   --color-app-grid: transparent;
+
+  /* Semantic compatibility aliases (dark) */
+  --color-border: #232c38;
+  --color-input: #232c38;
+  --color-ring: #6b8fb8;
+  --color-background: #131920;
+  --color-foreground: #e6ecf4;
+  --color-card: #171e27;
+  --color-card-foreground: #e6ecf4;
+  --color-muted-foreground: #8b98a8;
+  --color-destructive: #c96a6a;
+  --color-destructive-foreground: #ffffff;
+  --color-secondary: #1c242f;
+  --color-secondary-foreground: #e6ecf4;
+  --color-accent: #1c242f;
+  --color-accent-foreground: #e6ecf4;
+  --color-primary-foreground: #101720;
 }
 
 @theme inline {
   --color-primary: var(--color-primary);
   --color-primary-active: var(--color-primary-active);
   --color-primary-disabled: var(--color-primary-disabled);
+  --color-primary-foreground: var(--color-primary-foreground);
   --color-ink: var(--color-ink);
   --color-body: var(--color-body);
   --color-muted: var(--color-muted);
@@ -117,6 +152,22 @@
   --color-app-panel: var(--color-app-panel);
   --color-app-sidebar: var(--color-app-sidebar);
   --color-app-accent: var(--color-app-accent);
+
+  /* Semantic compatibility tokens */
+  --color-border: var(--color-border);
+  --color-input: var(--color-input);
+  --color-ring: var(--color-ring);
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  --color-card: var(--color-card);
+  --color-card-foreground: var(--color-card-foreground);
+  --color-muted-foreground: var(--color-muted-foreground);
+  --color-destructive: var(--color-destructive);
+  --color-destructive-foreground: var(--color-destructive-foreground);
+  --color-secondary: var(--color-secondary);
+  --color-secondary-foreground: var(--color-secondary-foreground);
+  --color-accent: var(--color-accent);
+  --color-accent-foreground: var(--color-accent-foreground);
 
   --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);

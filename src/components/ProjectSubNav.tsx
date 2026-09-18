@@ -77,9 +77,16 @@ export function ProjectSubNav({ projectId, active }: { projectId: string; active
   );
 
   useEffect(() => {
-    const likelyRoutes = ["", "/lookahead", "/weekly-plan", "/gantt", "/dashboard"].map(
-      (href) => `/projects/${projectId}${href}`
-    );
+    const likelyRoutes = [
+      "",
+      "/field-intake",
+      "/review-queue",
+      "/plan-vs-actual",
+      "/lookahead",
+      "/weekly-plan",
+      "/gantt",
+      "/dashboard",
+    ].map((href) => `/projects/${projectId}${href}`);
     const timeout = window.setTimeout(() => {
       for (const href of likelyRoutes) {
         router.prefetch(href);
@@ -101,7 +108,7 @@ export function ProjectSubNav({ projectId, active }: { projectId: string; active
   return (
     <nav
       aria-label="Project workspace"
-      className="fixed bottom-3 left-[84px] right-3 z-30 rounded-xl border border-hairline bg-canvas/95 p-2 shadow-[0_16px_40px_rgba(17,17,17,0.14)] ring-1 ring-hairline-soft backdrop-blur-xl md:bottom-auto md:left-4 md:right-auto md:top-[88px] md:w-[58px] md:rounded-xl md:p-1.5"
+      className="fixed bottom-3 left-[84px] right-3 z-30 rounded-xl border border-hairline bg-canvas/95 p-2 shadow-[0_16px_40px_rgba(17,17,17,0.14)] ring-1 ring-hairline-soft backdrop-blur-xl md:bottom-auto md:left-4 md:right-auto md:top-[88px] md:w-[58px] md:max-h-[calc(100vh-100px)] md:overflow-y-auto md:rounded-xl md:p-1.5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
     >
       <div className="flex items-center gap-1 overflow-x-auto md:flex-col md:overflow-visible">
         {PROJECT_TABS.map((tab) => (
@@ -156,21 +163,23 @@ function ProjectRailLink({
 }
 
 const ACTIVE_TAB_BY_SEGMENT: Record<string, string> = {
-  activity: "Activity",
-  baselines: "Baselines",
-  dashboard: "Dashboard",
-  drawings: "Drawings",
-  files: "Files",
-  gantt: "Gantt",
-  impacts: "Impacts",
-  lookahead: "Lookahead",
-  members: "Members",
-  "pull-planning": "Pull Planning",
-  rfis: "RFIs",
-  roadblocks: "Roadblocks",
-  submittals: "Submittals",
+  "": "Tasks",
+  "field-intake": "Field Intake",
+  "review-queue": "Review Queue",
+  "plan-vs-actual": "Plan vs Actual",
+  gantt: "Gantt (CPM)",
   tasks: "Tasks",
+  lookahead: "Lookahead",
   "weekly-plan": "Weekly Plan",
+  "pull-planning": "Pull Planning",
+  roadblocks: "Roadblocks",
+  impacts: "Impacts",
+  files: "Files (OCR)",
+  drawings: "Drawings",
+  dashboard: "Dashboard",
+  baselines: "Baselines",
+  activity: "Activity Log",
+  members: "Members",
 };
 
 export function ProjectRouteSubNav() {

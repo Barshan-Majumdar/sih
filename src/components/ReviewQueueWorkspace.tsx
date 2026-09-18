@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { submitReviewDecision } from "@/app/actions/field-progress";
+import { formatDate } from "@/lib/utils";
 import {
   CheckCircle2,
   XCircle,
@@ -13,17 +14,19 @@ import {
   Layers,
   ArrowRight,
   RotateCcw,
+  TrendingUp,
+  Loader2,
 } from "lucide-react";
 
-interface CandidateMatchData {
+export interface CandidateMatchData {
   id: string;
   confidenceScore: number;
   componentScores: Record<string, unknown> | null;
   task: {
     id: string;
     name: string;
-    startDate: Date;
-    endDate: Date;
+    startDate: Date | string;
+    endDate: Date | string;
     progress: number;
     status: string;
   };
@@ -33,14 +36,14 @@ export interface ObservationData {
   id: string;
   rawText: string;
   eventType: string;
-  extractedDate: Date;
+  extractedDate: Date | string;
   progressPercent: number | null;
   matchStatus: string;
   task?: {
     id: string;
     name: string;
   } | null;
-  candidateMatches: CandidateMatchData[];
+  candidateMatches?: CandidateMatchData[];
 }
 
 interface ReviewQueueWorkspaceProps {
@@ -57,9 +60,11 @@ export function ReviewQueueWorkspace({
   unmatched,
 }: ReviewQueueWorkspaceProps) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<"pending" | "auto" | "unmatched">("pending");
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<Record<string, string>>({});
 
   const handleDecision = async (
     candidateMatchId: string,
@@ -79,7 +84,10 @@ export function ReviewQueueWorkspace({
           : `Match rejected.`
       );
       setTimeout(() => setToastMessage(null), 4000);
-      router.refresh();
+
+      startTransition(() => {
+        router.refresh();
+      });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to submit decision";
       alert(message);
@@ -88,24 +96,24 @@ export function ReviewQueueWorkspace({
     }
   };
 
-  const getActiveList = () => {
+  const currentList = useMemo(() => {
     switch (activeTab) {
       case "pending":
-        return pendingReview;
+        return pendingReview ?? [];
       case "auto":
-        return autoLinked;
+        return autoLinked ?? [];
       case "unmatched":
-        return unmatched;
+        return unmatched ?? [];
+      default:
+        return [];
     }
-  };
-
-  const currentList = getActiveList();
+  }, [activeTab, pendingReview, autoLinked, unmatched]);
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4">
-        <div className="flex items-center justify-between w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <CheckCircle2 className="w-6 h-6 text-primary" />
@@ -115,13 +123,22 @@ export function ReviewQueueWorkspace({
               Verify AI-matched field observations before progress updates the master engineering schedule.
             </p>
           </div>
-          <Link
-            href={`/projects/${projectId}/field-intake`}
-            className="hidden sm:inline-flex items-center gap-2 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow hover:bg-primary/90"
-          >
-            <Layers className="w-4 h-4" />
-            Submit New DPR
-          </Link>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href={`/projects/${projectId}/plan-vs-actual`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent transition-colors"
+            >
+              <TrendingUp className="w-4 h-4 text-primary" />
+              Plan vs Actual
+            </Link>
+            <Link
+              href={`/projects/${projectId}/field-intake`}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow hover:bg-primary/90 transition-colors"
+            >
+              <Layers className="w-4 h-4" />
+              Submit New DPR
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -196,12 +213,17 @@ export function ReviewQueueWorkspace({
       ) : (
         <div className="space-y-4">
           {currentList.map((obs) => {
-            const topCandidate = obs.candidateMatches[0];
+            const candidateMatches = obs.candidateMatches ?? [];
+            const selectedId = selectedCandidateId[obs.id];
+            const topCandidate =
+              (selectedId ? candidateMatches.find((cm) => cm.id === selectedId) : null) ??
+              candidateMatches[0];
             const confidencePct = topCandidate ? Math.round(topCandidate.confidenceScore * 100) : 0;
             const rawReasons = topCandidate?.componentScores?.matching_reasons;
             const reasons = Array.isArray(rawReasons) ? (rawReasons as string[]) : [];
             const conflictVal = topCandidate?.componentScores?.conflict_penalty;
             const isConflict = typeof conflictVal === "number" && conflictVal < 0;
+            const isSubmitting = submittingId === topCandidate?.id;
 
             return (
               <div
@@ -214,14 +236,14 @@ export function ReviewQueueWorkspace({
                     <span className="px-2.5 py-1 rounded text-xs font-semibold bg-primary/10 text-primary uppercase tracking-wide">
                       {obs.eventType}
                     </span>
-                    {obs.progressPercent !== null && (
+                    {obs.progressPercent !== null && obs.progressPercent !== undefined && (
                       <span className="px-2.5 py-1 rounded text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400">
                         {Math.round(obs.progressPercent)}% Progress
                       </span>
                     )}
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
-                      {new Date(obs.extractedDate).toLocaleDateString()}
+                      {formatDate(obs.extractedDate)}
                     </span>
                   </div>
 
@@ -230,19 +252,52 @@ export function ReviewQueueWorkspace({
                       <span className="text-xs font-medium text-muted-foreground">Confidence:</span>
                       <div className="flex items-center gap-1.5 bg-muted px-2.5 py-1 rounded-full">
                         <Sparkles className="w-3.5 h-3.5 text-primary" />
-                        <span className={`text-xs font-bold ${
-                          confidencePct >= 90
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : confidencePct >= 70
-                            ? "text-amber-600 dark:text-amber-400"
-                            : "text-red-500"
-                        }`}>
+                        <span
+                          className={`text-xs font-bold ${
+                            confidencePct >= 90
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : confidencePct >= 70
+                              ? "text-amber-600 dark:text-amber-400"
+                              : "text-red-500"
+                          }`}
+                        >
                           {confidencePct}%
                         </span>
                       </div>
                     </div>
                   )}
                 </div>
+
+                {/* Candidate Selector if Multiple Matches Exist */}
+                {candidateMatches.length > 1 && (
+                  <div className="flex items-center gap-2 bg-muted/40 p-2 rounded-lg border border-border/50">
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      Multiple Ranked Candidates ({candidateMatches.length}):
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {candidateMatches.map((cm, idx) => {
+                        const isSelected = topCandidate?.id === cm.id;
+                        return (
+                          <button
+                            key={cm.id}
+                            type="button"
+                            onClick={() =>
+                              setSelectedCandidateId((prev) => ({ ...prev, [obs.id]: cm.id }))
+                            }
+                            className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors ${
+                              isSelected
+                                ? "bg-primary text-primary-foreground shadow-xs font-semibold"
+                                : "bg-card border border-border text-foreground hover:bg-accent"
+                            }`}
+                          >
+                            #{idx + 1}: {cm.task?.name ? cm.task.name.slice(0, 24) : "Task"} (
+                            {Math.round(cm.confidenceScore * 100)}%)
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Content Split: Field Evidence vs Matched Schedule Task */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -263,13 +318,16 @@ export function ReviewQueueWorkspace({
                       <ArrowRight className="w-3.5 h-3.5" />
                       Matched Schedule Activity
                     </p>
-                    {topCandidate ? (
+                    {topCandidate && topCandidate.task ? (
                       <div>
                         <p className="text-base font-bold text-foreground">
                           {topCandidate.task.name}
                         </p>
                         <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                          <span>Dates: {new Date(topCandidate.task.startDate).toLocaleDateString()} - {new Date(topCandidate.task.endDate).toLocaleDateString()}</span>
+                          <span>
+                            Dates: {formatDate(topCandidate.task.startDate)} -{" "}
+                            {formatDate(topCandidate.task.endDate)}
+                          </span>
                           <span>Current: {topCandidate.task.progress}%</span>
                         </div>
                       </div>
@@ -284,7 +342,9 @@ export function ReviewQueueWorkspace({
                 {/* Explainability Signals Breakdown */}
                 {topCandidate && (
                   <div className="space-y-1.5 pt-1">
-                    <p className="text-xs font-semibold text-muted-foreground">Explainable AI Matching Signals:</p>
+                    <p className="text-xs font-semibold text-muted-foreground">
+                      Explainable AI Matching Signals:
+                    </p>
                     <div className="flex flex-wrap gap-1.5">
                       {reasons.length > 0 ? (
                         reasons.map((reason: string, rIdx: number) => (
@@ -311,26 +371,74 @@ export function ReviewQueueWorkspace({
                 )}
 
                 {/* Reviewer Action Buttons */}
-                {topCandidate && obs.matchStatus !== "AUTO_LINKED" && (
-                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/50">
-                    <button
-                      type="button"
-                      disabled={submittingId === topCandidate.id}
-                      onClick={() => handleDecision(topCandidate.id, "REJECTED", topCandidate.task.name)}
-                      className="px-3 py-1.5 text-xs font-medium text-destructive border border-destructive/30 rounded hover:bg-destructive/10 disabled:opacity-50 flex items-center gap-1 transition-colors"
+                {topCandidate ? (
+                  <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                    {obs.matchStatus === "AUTO_LINKED" ? (
+                      <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Verified & linked directly to master schedule
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">
+                        Requires supervisor signoff before updating CPM schedule
+                      </span>
+                    )}
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={isSubmitting || isPending}
+                        onClick={() =>
+                          handleDecision(
+                            topCandidate.id,
+                            "REJECTED",
+                            topCandidate.task?.name ?? "Activity"
+                          )
+                        }
+                        className="px-3 py-1.5 text-xs font-medium text-destructive border border-destructive/30 rounded hover:bg-destructive/10 disabled:opacity-50 flex items-center gap-1 transition-colors"
+                      >
+                        {isSubmitting ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <XCircle className="w-3.5 h-3.5" />
+                        )}
+                        {obs.matchStatus === "AUTO_LINKED" ? "Override & Revoke" : "Reject Match"}
+                      </button>
+
+                      {obs.matchStatus !== "AUTO_LINKED" && (
+                        <button
+                          type="button"
+                          disabled={isSubmitting || isPending}
+                          onClick={() =>
+                            handleDecision(
+                              topCandidate.id,
+                              "APPROVED",
+                              topCandidate.task?.name ?? "Activity"
+                            )
+                          }
+                          className="px-4 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5 transition-colors shadow-sm"
+                        >
+                          {isSubmitting ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          )}
+                          Approve & Update Schedule
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-border/50 text-xs text-muted-foreground">
+                    <span>
+                      Observation recorded. You can link this activity once scheduled in the CPM plan.
+                    </span>
+                    <Link
+                      href={`/projects/${projectId}/gantt`}
+                      className="text-primary font-medium hover:underline inline-flex items-center gap-1"
                     >
-                      <XCircle className="w-3.5 h-3.5" />
-                      Reject Match
-                    </button>
-                    <button
-                      type="button"
-                      disabled={submittingId === topCandidate.id}
-                      onClick={() => handleDecision(topCandidate.id, "APPROVED", topCandidate.task.name)}
-                      className="px-4 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5 transition-colors shadow-sm"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Approve & Update Schedule
-                    </button>
+                      View Schedule Gantt &rarr;
+                    </Link>
                   </div>
                 )}
               </div>

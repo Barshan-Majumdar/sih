@@ -31,6 +31,7 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
   const [reportDate, setReportDate] = useState(new Date().toISOString().split("T")[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
   const [result, setResult] = useState<{
     success: boolean;
     observationsCount?: number;
@@ -73,8 +74,9 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
   };
 
   const toggleRecording = () => {
-    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-      alert("Speech recognition is not supported in this browser. Please type your DPR text.");
+    setVoiceError(null);
+    if (typeof window === "undefined" || !("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+      setVoiceError("Speech recognition is not supported in this browser. Please type your DPR text.");
       return;
     }
 
@@ -88,7 +90,7 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
       start: () => void;
       stop: () => void;
       onresult: ((event: SpeechRecognitionEvent) => void) | null;
-      onerror: (() => void) | null;
+      onerror: ((event: unknown) => void) | null;
       onend: (() => void) | null;
     }
     type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
@@ -98,26 +100,34 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
       (window as unknown as Record<string, unknown>).webkitSpeechRecognition
     ) as SpeechRecognitionConstructor;
 
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = "en-IN";
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = "en-IN";
 
-    if (!isRecording) {
-      setIsRecording(true);
-      recognition.start();
+      if (!isRecording) {
+        setIsRecording(true);
+        recognition.start();
 
-      recognition.onresult = (event: SpeechRecognitionEvent) => {
-        const transcript = event.results[0][0].transcript;
-        setDprText((prev) => (prev ? `${prev} ${transcript}` : transcript));
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
+          const transcript = event.results[0][0].transcript;
+          setDprText((prev) => (prev ? `${prev} ${transcript}` : transcript));
+          setIsRecording(false);
+        };
+
+        recognition.onerror = () => {
+          setIsRecording(false);
+          setVoiceError("Microphone input error or permission denied.");
+        };
+        recognition.onend = () => setIsRecording(false);
+      } else {
         setIsRecording(false);
-      };
-
-      recognition.onerror = () => setIsRecording(false);
-      recognition.onend = () => setIsRecording(false);
-    } else {
+        recognition.stop();
+      }
+    } catch (e: unknown) {
       setIsRecording(false);
-      recognition.stop();
+      setVoiceError(e instanceof Error ? e.message : "Failed to start speech recognition.");
     }
   };
 
@@ -231,6 +241,12 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
                 Audio is transcribed directly into the DPR intake form for extraction.
               </p>
             </div>
+            {voiceError && (
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 rounded-lg text-xs flex items-center justify-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{voiceError}</span>
+              </div>
+            )}
             {dprText && (
               <div className="text-left bg-muted/40 p-4 rounded-lg border border-border">
                 <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Transcribed Text:</p>
@@ -245,21 +261,40 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
             <Upload className="w-10 h-10 text-muted-foreground mx-auto" />
             <div>
               <p className="text-sm font-medium text-foreground">
-                Drag & drop scanned PDF DPRs, site logs, or Excel sheets
+                Drag & drop site logs, daily notes (.txt, .csv, .md), or scanned documents
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Scanned documents are converted via the local OCRmyPDF worker into searchable text.
+                Text and log files are parsed immediately into the form. Scanned documents link with OCR.
               </p>
             </div>
             <input
               type="file"
-              accept=".pdf,.xlsx,.csv,.png,.jpg"
+              accept=".txt,.csv,.md,.json,.pdf,.xlsx,.png,.jpg"
               className="hidden"
               id="file-upload"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
-                  setDprText(`[Attached file: ${file.name}] Processing document via OCR pipeline...`);
+                  if (
+                    file.type.startsWith("text/") ||
+                    file.name.endsWith(".txt") ||
+                    file.name.endsWith(".csv") ||
+                    file.name.endsWith(".md") ||
+                    file.name.endsWith(".json")
+                  ) {
+                    const reader = new FileReader();
+                    reader.onload = (readEvt) => {
+                      const content = readEvt.target?.result;
+                      if (typeof content === "string") {
+                        setDprText(content);
+                        setActiveTab("text");
+                      }
+                    };
+                    reader.readAsText(file);
+                  } else {
+                    setDprText(`[Attached Field Document: ${file.name}] Raw site log submitted for automated schedule linking and observation extraction.`);
+                    setActiveTab("text");
+                  }
                 }
               }}
             />
@@ -325,7 +360,7 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
           }`}
         >
           {result.success ? (
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                 <div>
@@ -333,17 +368,26 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
                     Report Processed Successfully!
                   </p>
                   <p className="text-xs mt-0.5 opacity-90">
-                    Extracted {result.observationsCount} atomic observations ({result.autoLinkedCount} auto-linked with $\ge 90\%$ confidence).
+                    Extracted {result.observationsCount} atomic observations ({result.autoLinkedCount} auto-linked with &ge; 90% confidence).
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => router.push(`/projects/${projectId}/review-queue`)}
-                className="text-xs font-semibold px-3 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-colors"
-              >
-                Open Review Queue &rarr;
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => router.push(`/projects/${projectId}/review-queue`)}
+                  className="text-xs font-semibold px-3 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-colors shadow-sm"
+                >
+                  Review Queue &rarr;
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/projects/${projectId}/plan-vs-actual`)}
+                  className="text-xs font-semibold px-3 py-1.5 bg-card border border-border text-foreground rounded hover:bg-accent transition-colors"
+                >
+                  Plan vs. Actual &rarr;
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex items-center gap-2 text-sm">
