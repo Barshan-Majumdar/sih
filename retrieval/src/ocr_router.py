@@ -55,7 +55,10 @@ def image_to_pdf(source: Path, destination: Path) -> None:
                 image = image.convert("RGB")
             normalized = source.with_suffix(".normalized.png")
             image.save(normalized, format="PNG")
-        destination.write_bytes(img2pdf.convert(str(normalized)))
+        pdf_bytes = img2pdf.convert(str(normalized))
+        if pdf_bytes is None:
+            raise RuntimeError("Failed to convert image to PDF")
+        destination.write_bytes(pdf_bytes)
     else:
         with Image.open(source) as image:
             rgb_image = image.convert("RGB")
