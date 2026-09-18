@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -19,7 +20,7 @@ export interface AppUserSession {
   };
 }
 
-export async function getCurrentSession(): Promise<AppUserSession | null> {
+export const getCurrentSession = cache(async (): Promise<AppUserSession | null> => {
   try {
     const clerkUser = await currentUser();
     if (!clerkUser) return null;
@@ -32,21 +33,32 @@ export async function getCurrentSession(): Promise<AppUserSession | null> {
       "User";
     const image = clerkUser.imageUrl || null;
 
-    // Upsert user in database
-    const user = await prisma.user.upsert({
-      where: { email },
-      update: {
-        clerkId: clerkUser.id,
-        name,
-        image,
-      },
-      create: {
-        clerkId: clerkUser.id,
-        email,
-        name,
-        image,
+    // Fast read check first to avoid unnecessary remote database writes on every GET request
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [{ clerkId: clerkUser.id }, { email }],
       },
     });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          clerkId: clerkUser.id,
+          email,
+          name,
+          image,
+        },
+      });
+    } else if (user.clerkId !== clerkUser.id || user.name !== name || user.image !== image) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          clerkId: clerkUser.id,
+          name,
+          image,
+        },
+      });
+    }
 
     let firstMembership = await prisma.member.findFirst({
       where: { userId: user.id },
@@ -87,7 +99,7 @@ export async function getCurrentSession(): Promise<AppUserSession | null> {
     console.error("getCurrentSession error:", err);
     return null;
   }
-}
+});
 
 /**
  * Use in Server Components / Server Actions that require a signed-in user.

@@ -76,26 +76,6 @@ export function ProjectSubNav({ projectId, active }: { projectId: string; active
     [projectId]
   );
 
-  useEffect(() => {
-    const likelyRoutes = [
-      "",
-      "/field-intake",
-      "/review-queue",
-      "/plan-vs-actual",
-      "/lookahead",
-      "/weekly-plan",
-      "/gantt",
-      "/dashboard",
-    ].map((href) => `/projects/${projectId}${href}`);
-    const timeout = window.setTimeout(() => {
-      for (const href of likelyRoutes) {
-        router.prefetch(href);
-      }
-    }, 600);
-
-    return () => window.clearTimeout(timeout);
-  }, [projectId, router]);
-
   const prefetchProjectRoute = useCallback(
     (href: string) => {
       if (projectRoutes.includes(href)) {

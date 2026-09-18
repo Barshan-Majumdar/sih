@@ -54,8 +54,8 @@ export default function RootLayout({
         style={{ colorScheme: "light" }}
         suppressHydrationWarning
       >
-        <head>
-          <script dangerouslySetInnerHTML={{ __html: themeInitializer }} />
+        <head suppressHydrationWarning>
+          <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: themeInitializer }} />
         </head>
         <body className="min-h-full flex flex-col bg-canvas text-ink">
           {children}

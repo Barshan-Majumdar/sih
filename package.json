@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
+    "retrieval:dev": "python -m uvicorn src.server:app --port 8000 --reload --app-dir retrieval",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test"

@@ -114,6 +114,7 @@ export async function acceptInvite(input: unknown): Promise<ActionResult<Project
     });
 
     revalidatePath(`/projects/${invite.projectId}`);
+    revalidatePath(`/projects/${invite.projectId}/members`);
     return ok(member);
   } catch (error) {
     return fail(error);

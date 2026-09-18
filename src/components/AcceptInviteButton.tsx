@@ -14,14 +14,18 @@ export function AcceptInviteButton({ token, projectId }: { token: string; projec
   async function handleAccept() {
     setError(null);
     setLoading(true);
-    const result = await acceptInvite({ token });
-    setLoading(false);
-    if (!result.success) {
-      setError(result.error);
-      return;
+    try {
+      const result = await acceptInvite({ token });
+      if (!result.success) {
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
+      router.push(`/projects/${projectId}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to join project");
+      setLoading(false);
     }
-    router.push(`/projects/${projectId}`);
-    router.refresh();
   }
 
   return (
