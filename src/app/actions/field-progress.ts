@@ -5,7 +5,9 @@ import { prisma } from "@/lib/prisma";
 import {
   extractObservationsFromDpr,
   matchFieldEvidence,
+  indexScheduleActivities,
   type ExtractedObservationItem,
+  type CandidateMatchResult,
 } from "@/lib/retrieval-client";
 import { logActivity } from "@/lib/activity-log";
 
@@ -29,7 +31,7 @@ export type ReviewDecisionInput = {
  * runs hybrid schedule-linking with contextual reranking, and persists to DB.
  */
 export async function submitDprReport(input: SubmitDprInput) {
-  const { projectId, rawText, inputType = "FREE_TEXT", reportDate } = input;
+  const { projectId, rawText, inputType = "FREE_TEXT", reportDate, userId } = input;
   const effectiveDate = reportDate ? new Date(reportDate) : new Date();
 
   // 1. Persist the raw DPR container
@@ -61,7 +63,36 @@ export async function submitDprReport(input: SubmitDprInput) {
     ];
   }
 
-  // 3. Process each observation and match against master schedule
+  // 3. Fetch current project tasks to index and match against
+  const projectTasks = await prisma.task.findMany({
+    where: { projectId },
+    include: { assignedTo: { include: { user: true } } },
+  });
+
+  if (projectTasks.length > 0) {
+    try {
+      await indexScheduleActivities(
+        projectTasks.map((t) => ({
+          id: t.id,
+          activity_id: t.wbsCode || t.id,
+          name: t.name,
+          level: t.level || 1,
+          metadata: {
+            discipline: t.discipline,
+            assigned_to: t.assignedTo?.user?.name || undefined,
+            status: t.status,
+          },
+          planned_start_date: t.startDate ? t.startDate.toISOString().split("T")[0] : undefined,
+          planned_end_date: t.endDate ? t.endDate.toISOString().split("T")[0] : undefined,
+          status: t.status,
+        }))
+      );
+    } catch (indexErr) {
+      console.warn("Auto-indexing tasks before DPR match failed:", indexErr);
+    }
+  }
+
+  // 4. Process each observation and match against master schedule
   let autoLinkedCount = 0;
   const createdObservations = [];
 
@@ -83,7 +114,7 @@ export async function submitDprReport(input: SubmitDprInput) {
 
     // Run Stage 1 & Stage 2 matching against project schedule
     try {
-      const matchResult = await matchFieldEvidence(
+      let matchResult = await matchFieldEvidence(
         {
           id: obs.id,
           raw_text: item.raw_text,
@@ -94,19 +125,51 @@ export async function submitDprReport(input: SubmitDprInput) {
         5
       );
 
+      // Direct keyword / task name match fallback if microservice returned no matches
+      if (!matchResult.matches || matchResult.matches.length === 0) {
+        const textLower = `${item.raw_text} ${rawText}`.toLowerCase();
+        const candidateScores: Array<{ task: typeof projectTasks[0]; score: number }> = [];
+
+        for (const t of projectTasks) {
+          const nameLower = t.name.toLowerCase();
+          if (textLower.includes(nameLower)) {
+            candidateScores.push({ task: t, score: 0.95 });
+            continue;
+          }
+          const words = nameLower.split(/\s+/).filter((w) => w.length > 2);
+          const matchedCount = words.filter((w) => textLower.includes(w)).length;
+          if (words.length > 0 && matchedCount > 0) {
+            const ratio = matchedCount / words.length;
+            if (ratio >= 0.4) {
+              candidateScores.push({ task: t, score: 0.70 + ratio * 0.25 });
+            }
+          }
+        }
+
+        if (candidateScores.length > 0) {
+          candidateScores.sort((a, b) => b.score - a.score);
+          matchResult = {
+            matches: candidateScores.slice(0, 5).map((cs, idx) => ({
+              schedule_activity_id: cs.task.id,
+              activity_id: cs.task.wbsCode || cs.task.id,
+              name: cs.task.name,
+              confidence_score: cs.score,
+              component_scores: { direct_keyword_score: cs.score },
+              matching_reasons: [`Direct keyword overlap with "${cs.task.name}"`],
+              rank: idx + 1,
+            })),
+          };
+        }
+      }
+
       // Persist CandidateMatches with component score breakdowns
       if (matchResult.matches && matchResult.matches.length > 0) {
         for (const candidate of matchResult.matches) {
-          // Check if candidate task exists in DB
-          const task = await prisma.task.findFirst({
-            where: {
-              projectId,
-              OR: [
-                { id: candidate.schedule_activity_id },
-                { name: { equals: candidate.name, mode: "insensitive" } },
-              ],
-            },
-          });
+          const task = projectTasks.find(
+            (t) =>
+              t.id === candidate.schedule_activity_id ||
+              t.name.toLowerCase() === candidate.name.toLowerCase()
+          );
 
           if (task) {
             await prisma.candidateMatch.create({
@@ -123,28 +186,101 @@ export async function submitDprReport(input: SubmitDprInput) {
           }
         }
 
-        // Apply PRD Section 13 Routing Thresholds
+        // Apply Routing Thresholds:
+        // >= 0.75 or single match >= 0.65 auto-links and directly updates the task on the schedule
         const topMatch = matchResult.matches[0];
-        if (topMatch && topMatch.confidence_score >= 0.9) {
-          const matchedTask = await prisma.task.findFirst({
-            where: {
-              projectId,
-              OR: [
-                { id: topMatch.schedule_activity_id },
-                { name: { equals: topMatch.name, mode: "insensitive" } },
-              ],
-            },
-          });
+        const isAutoLink =
+          topMatch &&
+          (topMatch.confidence_score >= 0.75 ||
+            (matchResult.matches.length === 1 && topMatch.confidence_score >= 0.65));
 
-          await prisma.extractedObservation.update({
-            where: { id: obs.id },
-            data: {
-              matchStatus: "AUTO_LINKED",
-              taskId: matchedTask?.id || null,
-            },
-          });
-          autoLinkedCount++;
-        } else if (topMatch && topMatch.confidence_score >= 0.7) {
+        if (isAutoLink && topMatch) {
+          const matchedTask = projectTasks.find(
+            (t) =>
+              t.id === topMatch.schedule_activity_id ||
+              t.name.toLowerCase() === topMatch.name.toLowerCase()
+          );
+
+          if (matchedTask) {
+            // 1. Mark observation as AUTO_LINKED
+            await prisma.extractedObservation.update({
+              where: { id: obs.id },
+              data: {
+                matchStatus: "AUTO_LINKED",
+                taskId: matchedTask.id,
+              },
+            });
+
+            // 2. Compute updated progress & status
+            const newProgress =
+              item.progress_percent !== null && item.progress_percent !== undefined
+                ? Math.round(item.progress_percent)
+                : item.event_type === "COMPLETED"
+                ? 100
+                : matchedTask.progress;
+
+            const newStatus =
+              newProgress >= 100
+                ? "DONE"
+                : newProgress > 0
+                ? "IN_PROGRESS"
+                : matchedTask.status;
+
+            // 3. Update task in database
+            await prisma.task.update({
+              where: { id: matchedTask.id },
+              data: {
+                progress: newProgress,
+                status: newStatus,
+                actualStartDate: matchedTask.actualStartDate || obsDate,
+                actualFinishDate: newProgress >= 100 ? obsDate : matchedTask.actualFinishDate,
+              },
+            });
+
+            // 4. Record ApprovedScheduleEvent with automated ReviewDecision
+            try {
+              const candidateMatch = await prisma.candidateMatch.findFirst({
+                where: { observationId: obs.id, taskId: matchedTask.id },
+              });
+              if (candidateMatch) {
+                const autoDecision = await prisma.reviewDecision.create({
+                  data: {
+                    candidateMatchId: candidateMatch.id,
+                    decision: "APPROVED",
+                    reviewedBy: "System (Auto-Linked DPR)",
+                    notes: `Auto-linked with ${Math.round(topMatch.confidence_score * 100)}% confidence`,
+                  },
+                });
+                await prisma.approvedScheduleEvent.create({
+                  data: {
+                    eventType: item.event_type || "PROGRESS",
+                    actualDate: obsDate,
+                    progressPercent: newProgress,
+                    taskId: matchedTask.id,
+                    sourceObservationId: obs.id,
+                    reviewDecisionId: autoDecision.id,
+                  },
+                });
+              }
+            } catch (eventErr) {
+              console.warn("Could not record ApprovedScheduleEvent for auto-link:", eventErr);
+            }
+
+            // 5. Activity log
+            if (userId || dailyReport.id) {
+              await logActivity({
+                projectId,
+                taskId: matchedTask.id,
+                userId: userId || "SYSTEM",
+                action: "AUTO_LINK_PROGRESS",
+                detail: `Field intake auto-linked observation. Progress updated to ${newProgress}% (${newStatus}).`,
+                source: "SYSTEM",
+              });
+            }
+
+            autoLinkedCount++;
+          }
+        } else if (topMatch && topMatch.confidence_score >= 0.60) {
           await prisma.extractedObservation.update({
             where: { id: obs.id },
             data: { matchStatus: "PENDING_REVIEW" },
@@ -177,6 +313,8 @@ export async function submitDprReport(input: SubmitDprInput) {
 
   revalidatePath(`/projects/${projectId}/review-queue`);
   revalidatePath(`/projects/${projectId}/gantt`);
+  revalidatePath(`/projects/${projectId}/tasks`);
+  revalidatePath(`/projects/${projectId}`);
 
   return {
     success: true,

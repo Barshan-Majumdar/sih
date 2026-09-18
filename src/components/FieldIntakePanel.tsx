@@ -60,8 +60,9 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
         autoLinkedCount: res.autoLinkedCount,
       });
 
-      // Clear input on success
+      // Clear input on success and refresh page data
       setDprText("");
+      router.refresh();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to process DPR report";
       setResult({

@@ -42,19 +42,7 @@ export interface CandidateMatchResult {
   activity_id: string;
   name: string;
   confidence_score: number;
-  component_scores: {
-    semantic_score: number;
-    bm25_score: number;
-    discipline_score: number;
-    location_score: number;
-    asset_score: number;
-    wbs_score: number;
-    activity_type_score: number;
-    temporal_score: number;
-    dependency_score: number;
-    conflict_penalty: number;
-    [key: string]: number;
-  };
+  component_scores: Record<string, any>;
   matching_reasons: string[];
   rank: number;
 }
@@ -152,7 +140,21 @@ export async function matchFieldEvidence(
     const errorText = await res.text();
     throw new Error(`Candidate matching failed (${res.status}): ${errorText}`);
   }
-  return res.json();
+  const data = await res.json();
+  const rawMatches = Array.isArray(data.matches) ? data.matches : [];
+  const normalizedMatches: CandidateMatchResult[] = rawMatches.map((m: any, idx: number) => ({
+    schedule_activity_id: m.schedule_activity_id || m.activity_db_id || m.activity_id || "",
+    activity_id: m.activity_id || m.activity_code || m.activity_db_id || "",
+    name: m.name || m.activity_name || "",
+    confidence_score: typeof m.confidence_score === "number" ? m.confidence_score : 0,
+    component_scores: m.contextual_feature_scores || m.component_scores || {},
+    matching_reasons: Array.isArray(m.matching_reasons) ? m.matching_reasons : [],
+    rank: m.final_rank || m.rank || idx + 1,
+  }));
+  return {
+    ...data,
+    matches: normalizedMatches,
+  };
 }
 
 /**
@@ -174,5 +176,8 @@ export async function extractObservationsFromDpr(
     const errorText = await res.text();
     throw new Error(`DPR observation extraction failed (${res.status}): ${errorText}`);
   }
-  return res.json();
+  const data = await res.json();
+  return {
+    observations: data.observations || data.items || [],
+  };
 }

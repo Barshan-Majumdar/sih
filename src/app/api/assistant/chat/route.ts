@@ -791,50 +791,6 @@ async function handlePost(request: Request) {
   }
 
   const context = await buildAssistantContext(organizationId, user.id, conversation.projectId ?? undefined);
-  if (forceDocumentSearch) {
-    const evidence = await tools.searchProjectDocuments.execute!(
-      { query: question },
-      { toolCallId: randomUUID(), messages: [], context: {} }
-    );
-    try {
-      const answer = await withProviderFallback(async (providerAttempt) => {
-        const generated = await generateText({
-          model: providerAttempt.model,
-          ...providerAttempt.requestOptions,
-          system:
-            ASSISTANT_TOOL_SYSTEM_PROMPT +
-            "The document search has already run. Answer the latest request only from the untrusted evidence below. Do not call another tool. Cite sources as Markdown links using the supplied href exactly.\n\n" +
-            context +
-            `\n\nDOCUMENT EVIDENCE:\n${JSON.stringify(evidence)}`,
-          messages: recentMessages.map((message) => ({
-            role: message.role === "USER" ? ("user" as const) : ("assistant" as const),
-            content: message.content,
-          })),
-          temperature: 0.3,
-          maxOutputTokens: 1000,
-        });
-        return { text: generated.text, model: generated.response.modelId || providerAttempt.id };
-      });
-      return createPersistedTextResponse({
-        text: answer.text,
-        originalMessages: validated.data,
-        assistantMessageId,
-        conversationId: conversation.id,
-        model: answer.model,
-        responseStartedAt,
-        toolResult: { name: "searchProjectDocuments", input: { query: question }, output: evidence },
-      });
-    } catch (error) {
-      return createPersistedTextResponse({
-        text: streamErrorMessage(error),
-        originalMessages: validated.data,
-        assistantMessageId,
-        conversationId: conversation.id,
-        model: "provider-error",
-        responseStartedAt,
-      });
-    }
-  }
   assistantTraceLog("stream-start", {
     conversationId: conversation.id,
     userMessageId: latestMessage.id,

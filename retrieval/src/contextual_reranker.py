@@ -660,10 +660,18 @@ class ContextualReranker:
             rrf_norm = min(candidate.rrf_score / max_rrf, 1.0)
 
             # Combined Final Score with Adaptive Weighting
-            final_score = (
-                r_weight * rrf_norm
-                + c_weight * feature_scores.aggregate_context_score
-            )
+            has_active_context = bool(context and (
+                context.discipline or context.location or context.asset or
+                context.wbs_path or context.activity_type or context.identifiers or context.extracted_date
+            ))
+
+            if not has_active_context:
+                final_score = rrf_norm
+            else:
+                final_score = (
+                    r_weight * rrf_norm
+                    + c_weight * feature_scores.aggregate_context_score
+                )
 
             # Calibrated Confidence Score
             confidence_score = 1.0 / (1.0 + math.exp(-6.0 * (final_score - 0.5)))

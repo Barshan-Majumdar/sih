@@ -5,7 +5,13 @@ import json
 import os
 from typing import Any, Dict, List, Optional
 
-DEFAULT_MODEL = "gemini-3.5-flash"
+try:
+    from .. import env_loader  # noqa: F401
+except Exception:
+    pass
+
+DEFAULT_MODEL = "gemini-3.5-flash-lite"
+FALLBACK_MODELS = ["gemini-3.5-flash-lite", "gemini-3.5-flash"]
 
 _RESPONSE_SCHEMA = {
     "type": "ARRAY",
@@ -58,22 +64,35 @@ class GeminiExtractionClient:
                 )
             )
 
-        response = self.client.models.generate_content(
-            model=self.model_name,
-            contents=[types.Content(role="user", parts=parts)],
-            config={
-                "response_mime_type": "application/json",
-                "response_schema": _RESPONSE_SCHEMA,
-            },
-        )
+        models_to_try = [self.model_name] + [m for m in FALLBACK_MODELS if m != self.model_name]
+        last_error = None
 
-        parsed = getattr(response, "parsed", None)
-        if isinstance(parsed, list):
-            return parsed
+        for model in models_to_try:
+            try:
+                response = self.client.models.generate_content(
+                    model=model,
+                    contents=[types.Content(role="user", parts=parts)],
+                    config={
+                        "response_mime_type": "application/json",
+                        "response_schema": _RESPONSE_SCHEMA,
+                    },
+                )
+                self.model_name = model
 
-        text = (getattr(response, "text", None) or "").strip()
-        if not text:
-            return []
+                parsed = getattr(response, "parsed", None)
+                if isinstance(parsed, list):
+                    return parsed
 
-        decoded = json.loads(text)
-        return decoded if isinstance(decoded, list) else []
+                text = (getattr(response, "text", None) or "").strip()
+                if not text:
+                    return []
+
+                decoded = json.loads(text)
+                return decoded if isinstance(decoded, list) else []
+            except Exception as err:
+                last_error = err
+                continue
+
+        if last_error:
+            raise last_error
+        return []

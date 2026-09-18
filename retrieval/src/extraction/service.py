@@ -51,6 +51,7 @@ class ExtractionService:
 
         return ExtractResponse(
             items=items,
+            observations=items,
             model=self.client.model_name,
             elapsed_ms=round(elapsed_ms, 2),
             discarded=discarded,

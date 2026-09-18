@@ -36,6 +36,7 @@ class ExtractRequest(BaseModel):
 
 class ExtractResponse(BaseModel):
     items: List[ExtractedObservationItem]
+    observations: Optional[List[ExtractedObservationItem]] = None
     model: str
     elapsed_ms: float
     discarded: int = 0

@@ -85,7 +85,7 @@ type ChatWorkspaceProps = {
   onPromptConsumed: () => void;
   draftPrompt: string | null;
   suggestions: string[];
-  onSent: (prompt: string) => void;
+  onSent: (prompt: string, conversationId?: string) => void;
   onUpdated: () => void;
   onRecovered: (detail: AssistantConversationDetail) => void;
 };
@@ -105,7 +105,7 @@ function ChatWorkspace({
   const [attachments, setAttachments] = useState<AssistantAttachmentView[]>([]);
   const [uploading, setUploading] = useState(false);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
-  const pendingSentRef = useRef(false);
+  const lastPendingPromptRef = useRef<string | null>(null);
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
@@ -120,6 +120,9 @@ function ChatWorkspace({
     transport,
     onFinish: onUpdated,
   });
+  // Keep a ref so async closures can read the latest status without stale captures.
+  const statusRef = useRef(status);
+  statusRef.current = status;
   const busy = status === "submitted" || status === "streaming";
 
   const uploadAttachments = useCallback(
@@ -188,14 +191,30 @@ function ChatWorkspace({
         url: attachment.url,
       }));
       const sentAt = new Date().toISOString();
-      onSent(trimmed);
+      onSent(trimmed, detail.conversation.id);
       setInput("");
       setAttachments([]);
       setAttachmentError(null);
       const expectedMessageCount = messages.length + 2;
+      // adoptPersistedResponse is a last-resort fallback for broken/dropped
+      // connections.  It must NOT interrupt an active stream.  We gate every
+      // poll on the SDK status: if it is still "submitted" or "streaming" we
+      // skip the check and let the live stream finish normally.
       const adoptPersistedResponse = async () => {
-        for (let attempt = 0; attempt < 30; attempt += 1) {
-          await new Promise((resolve) => window.setTimeout(resolve, 4_000));
+        // Wait a generous initial delay so a fast, healthy response completes
+        // inside the stream before we ever poll.
+        await new Promise((resolve) => window.setTimeout(resolve, 15_000));
+        for (let attempt = 0; attempt < 20; attempt += 1) {
+          // If the SDK is still actively streaming, step aside.
+          const currentStatus = statusRef.current;
+          if (currentStatus === "submitted" || currentStatus === "streaming") {
+            await new Promise((resolve) => window.setTimeout(resolve, 5_000));
+            continue;
+          }
+          // If the SDK finished (status === "ready" or "error"), check whether
+          // a meaningful assistant message is already displayed.  If so, we
+          // don't need to recover.
+          if (messages.length >= expectedMessageCount) return;
           try {
             const persisted = await fetchJson<AssistantConversationDetail>(
               `/api/assistant/conversations/${detail.conversation.id}`
@@ -204,13 +223,13 @@ function ChatWorkspace({
               persisted.messages.at(-1)?.role === "assistant" &&
               persisted.messages.length >= expectedMessageCount
             ) {
-              await stop();
               onRecovered(persisted);
               return;
             }
           } catch {
             // Retry while the provider is still completing or the connection is recovering.
           }
+          await new Promise((resolve) => window.setTimeout(resolve, 5_000));
         }
       };
       void adoptPersistedResponse();
@@ -220,12 +239,19 @@ function ChatWorkspace({
         metadata: { createdAt: sentAt, completedAt: sentAt, durationMs: 0 },
       });
     },
-    [attachments, busy, detail.conversation.id, messages.length, onRecovered, onSent, sendMessage, stop]
+    [attachments, busy, detail.conversation.id, messages.length, onRecovered, onSent, sendMessage]
   );
 
   useEffect(() => {
-    if (!pendingPrompt || pendingSentRef.current || status !== "ready") return;
-    pendingSentRef.current = true;
+    if (draftPrompt !== null && draftPrompt !== undefined) {
+      setInput(draftPrompt);
+    }
+  }, [draftPrompt]);
+
+  useEffect(() => {
+    if (!pendingPrompt || status !== "ready") return;
+    if (lastPendingPromptRef.current === pendingPrompt) return;
+    lastPendingPromptRef.current = pendingPrompt;
     send(pendingPrompt);
     onPromptConsumed();
   }, [onPromptConsumed, pendingPrompt, send, status]);
@@ -278,6 +304,28 @@ export function GlobalAssistant() {
   const [pdfDocument, setPdfDocument] = useState<PdfViewerDocument | null>(null);
   const dialogRef = useRef<HTMLElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  // Track which conversations were pre-created but never had a message sent,
+  // so we can delete them when the panel closes.
+  const emptyConversationIdsRef = useRef<Set<string>>(new Set());
+
+  /** Silently delete an empty conversation (no messages) from the DB and from the sidebar. */
+  const deleteEmptyConversation = useCallback(async (conversationId: string) => {
+    emptyConversationIdsRef.current.delete(conversationId);
+    setBootstrap((current) =>
+      current
+        ? { ...current, conversations: current.conversations.filter((c) => c.id !== conversationId) }
+        : current
+    );
+    await fetch(`/api/assistant/conversations/${conversationId}`, { method: "DELETE" }).catch(() => undefined);
+  }, []);
+
+  /** Remove all tracked empty conversations from both the DB and sidebar. */
+  const pruneEmptyConversations = useCallback(() => {
+    const ids = Array.from(emptyConversationIdsRef.current);
+    ids.forEach((id) => {
+      void deleteEmptyConversation(id);
+    });
+  }, [deleteEmptyConversation]);
 
   const loadConversation = useCallback(async (conversationId: string) => {
     setLoading(true);
@@ -398,13 +446,16 @@ export function GlobalAssistant() {
     const toggleAssistant = (event: Event) => {
       const requestedOpen = (event as CustomEvent<{ open?: boolean }>).detail?.open;
       const nextOpen = typeof requestedOpen === "boolean" ? requestedOpen : !open;
-      if (!nextOpen) setPdfDocument(null);
+      if (!nextOpen) {
+        setPdfDocument(null);
+        pruneEmptyConversations();
+      }
       setOpen(nextOpen);
       if (nextOpen) void loadWorkspace();
     };
     window.addEventListener("agira:toggle-assistant", toggleAssistant);
     return () => window.removeEventListener("agira:toggle-assistant", toggleAssistant);
-  }, [loadWorkspace, open]);
+  }, [loadWorkspace, open, pruneEmptyConversations]);
 
   useEffect(() => {
     const openConversation = async (event: Event) => {
@@ -456,13 +507,16 @@ export function GlobalAssistant() {
           }
         );
 
+        // Mark as empty until a message is sent.
+        emptyConversationIdsRef.current.add(conversation.id);
         setBootstrap({
           ...nextBootstrap,
           conversations: [conversation, ...nextBootstrap.conversations],
         });
         setScopeId(detail.projectId);
         setActive({ conversation, messages: [] });
-        setPendingPrompt(null);
+        // Auto-send a summary prompt so the conversation isn't blank.
+        setPendingPrompt(`Summarize the project file "${detail.fileName}" for me.`);
         setDraftPrompt(null);
         setSuggestions(fileSuggestions(detail.fileName));
         setDraftVersion((version) => version + 1);
@@ -516,9 +570,12 @@ export function GlobalAssistant() {
               ? { ...current, conversations: [conversation, ...current.conversations] }
               : current
           );
+          // Mark as empty — will be pruned if closed before first message.
+          emptyConversationIdsRef.current.add(conversation.id);
           setActive({ conversation, messages: [] });
         }
-        setDraftPrompt(`What does "${detail.fileName}" say?`);
+        // Auto-send so the user immediately gets an answer.
+        setPendingPrompt(`What does "${detail.fileName}" say?`);
         setDraftVersion((version) => version + 1);
         setRailOpen(false);
       } catch (openError) {
@@ -575,7 +632,7 @@ export function GlobalAssistant() {
           );
           setActive({ conversation, messages: [] });
         }
-        const draft = detail.action === "SUBMITTAL"
+              const draft = detail.action === "SUBMITTAL"
           ? `Create a submittal from "${detail.fileName}": `
           : detail.action === "ROADBLOCK"
             ? `Flag [task name] as a roadblock from "${detail.fileName}": `
@@ -622,6 +679,7 @@ export function GlobalAssistant() {
     [bootstrap, loadConversation]
   );
 
+
   const createConversation = useCallback(
     async (prompt?: string) => {
       setLoading(true);
@@ -633,6 +691,8 @@ export function GlobalAssistant() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ projectId: scopeId }),
         });
+        // Mark as empty until the user sends a message.
+        emptyConversationIdsRef.current.add(conversation.id);
         setBootstrap((current) =>
           current
             ? { ...current, conversations: [conversation, ...current.conversations] }
@@ -668,13 +728,17 @@ export function GlobalAssistant() {
       }
   }
 
-  const handleSent = useCallback((prompt: string) => {
+  const handleSent = useCallback((prompt: string, conversationId?: string) => {
+    const targetId = conversationId ?? active?.conversation.id;
+    if (targetId) {
+      emptyConversationIdsRef.current.delete(targetId);
+    }
     setBootstrap((current) =>
       current
         ? {
             ...current,
             conversations: current.conversations.map((conversation) =>
-              conversation.id === active?.conversation.id && conversation.messageCount === 0
+              conversation.id === targetId && conversation.messageCount === 0
                 ? { ...conversation, title: initialTitle(prompt), messageCount: 1 }
                 : conversation
             ),
@@ -702,7 +766,14 @@ export function GlobalAssistant() {
   return (
     <>
       {open && (
-        <div className="assistant-theme fixed inset-0 z-50 h-dvh min-h-0 overflow-hidden bg-[var(--assistant-overlay)] backdrop-blur-[18px] backdrop-saturate-150">
+        <div
+          className="assistant-theme fixed inset-0 z-50 h-dvh min-h-0 overflow-hidden bg-[var(--assistant-overlay)] backdrop-blur-[18px] backdrop-saturate-150"
+          onKeyDown={(e) => {
+            if (e.key === "Escape" && !pdfDocument) {
+              pruneEmptyConversations();
+            }
+          }}
+        >
           <aside
             ref={dialogRef}
             role="dialog"
@@ -728,6 +799,7 @@ export function GlobalAssistant() {
                       type="button"
                       onClick={() => {
                         setPdfDocument(null);
+                        pruneEmptyConversations();
                         setOpen(false);
                       }}
                       className="flex min-w-0 items-center justify-center gap-1.5 rounded-sm px-2 text-xs font-medium text-[var(--assistant-rail-faint)] transition-colors hover:bg-[var(--assistant-layer-hover)] hover:text-[var(--assistant-rail-text)]"
@@ -858,6 +930,7 @@ export function GlobalAssistant() {
                   type="button"
                   onClick={() => {
                     setPdfDocument(null);
+                    pruneEmptyConversations();
                     setOpen(false);
                   }}
                   className="flex h-9 w-9 items-center justify-center rounded-md text-[var(--assistant-text-faint)] hover:bg-[var(--assistant-layer-hover)] hover:text-[var(--assistant-text)] md:hidden"
@@ -883,7 +956,7 @@ export function GlobalAssistant() {
                 <div className="flex flex-1 items-center justify-center text-sm text-[var(--assistant-text-faint)]">Loading conversations...</div>
               ) : active ? (
                 <ChatWorkspace
-                  key={`${active.conversation.id}:${active.conversation.messageCount}:${draftVersion}`}
+                  key={active.conversation.id}
                   detail={active}
                   projectScoped={scopeId !== null}
                   pendingPrompt={pendingPrompt}

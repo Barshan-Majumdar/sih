@@ -6,6 +6,7 @@ and running Stage 1 & Stage 2 matching.
 
 from typing import List, Dict, Any, Optional
 import time
+from . import env_loader  # noqa: F401
 from fastapi import FastAPI, HTTPException, Query, Body
 from pydantic import BaseModel, Field
 

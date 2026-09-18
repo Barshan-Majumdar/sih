@@ -67,7 +67,10 @@ class CandidateMatch:
     def to_dict(self) -> Dict[str, Any]:
         return {
             "activity_id": self.activity_id,
+            "activity_db_id": self.activity_id,
             "activity_name": self.activity_name,
+            "schedule_activity_id": self.activity_id,
+            "name": self.activity_name,
             "activity_code": self.activity_code,
             "bm25_score": round(self.bm25_score, 4),
             "vector_score": round(self.vector_score, 4),
@@ -146,6 +149,8 @@ class RerankedCandidateMatch:
             "activity_id": self.activity_id,
             "activity_db_id": self.activity_db_id,
             "activity_name": self.activity_name,
+            "schedule_activity_id": self.activity_db_id,
+            "name": self.activity_name,
             "original_retrieval_scores": self.original_retrieval_scores,
             "contextual_feature_scores": self.contextual_feature_scores,
             "final_score": round(self.final_score, 6),
