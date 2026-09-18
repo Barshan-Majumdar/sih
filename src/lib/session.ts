@@ -48,10 +48,25 @@ export async function getCurrentSession(): Promise<AppUserSession | null> {
       },
     });
 
-    const firstMembership = await prisma.member.findFirst({
+    let firstMembership = await prisma.member.findFirst({
       where: { userId: user.id },
       orderBy: { createdAt: "asc" },
     });
+
+    if (!firstMembership) {
+      const existingOrg = await prisma.organization.findFirst({
+        orderBy: { createdAt: "asc" },
+      });
+      if (existingOrg) {
+        firstMembership = await prisma.member.create({
+          data: {
+            organizationId: existingOrg.id,
+            userId: user.id,
+            role: "owner",
+          },
+        });
+      }
+    }
 
     return {
       user: {
@@ -104,6 +119,20 @@ export async function requireActiveOrganization() {
   }
 
   if (!membership) {
+    const existingOrg = await prisma.organization.findFirst({
+      orderBy: { createdAt: "asc" },
+    });
+    if (existingOrg) {
+      const created = await prisma.member.create({
+        data: {
+          organizationId: existingOrg.id,
+          userId: session.user.id,
+          role: "owner",
+        },
+      });
+      return { user: session.user, organizationId: created.organizationId };
+    }
+
     // Auto-create a default workspace organization so the user is immediately productive
     const cleanSlug = `workspace-${session.user.id.slice(-6).toLowerCase()}-${Date.now().toString(36)}`;
     const newOrg = await prisma.organization.create({
