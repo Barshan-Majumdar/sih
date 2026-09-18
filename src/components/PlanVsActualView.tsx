@@ -79,6 +79,9 @@ export function PlanVsActualView({
     <div className="space-y-6">
       {/* Header */}
       <div className="border-b border-border pb-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+          {projectName} &middot; ID: {projectId.slice(-8)}
+        </p>
         <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <TrendingUp className="w-6 h-6 text-primary" />
           Authoritative Plan vs. Actual Progress

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { submitReviewDecision } from "@/app/actions/field-progress";
 import {
@@ -11,14 +12,13 @@ import {
   Calendar,
   Layers,
   ArrowRight,
-  ShieldCheck,
   RotateCcw,
 } from "lucide-react";
 
 interface CandidateMatchData {
   id: string;
   confidenceScore: number;
-  componentScores: any;
+  componentScores: Record<string, unknown> | null;
   task: {
     id: string;
     name: string;
@@ -29,7 +29,7 @@ interface CandidateMatchData {
   };
 }
 
-interface ObservationData {
+export interface ObservationData {
   id: string;
   rawText: string;
   eventType: string;
@@ -80,8 +80,9 @@ export function ReviewQueueWorkspace({
       );
       setTimeout(() => setToastMessage(null), 4000);
       router.refresh();
-    } catch (err: any) {
-      alert(err?.message || "Failed to submit decision");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to submit decision";
+      alert(message);
     } finally {
       setSubmittingId(null);
     }
@@ -104,14 +105,23 @@ export function ReviewQueueWorkspace({
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-primary" />
-            Human-in-the-Loop Review Queue
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Verify AI-matched field observations before progress updates the master engineering schedule.
-          </p>
+        <div className="flex items-center justify-between w-full">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+              <CheckCircle2 className="w-6 h-6 text-primary" />
+              Human-in-the-Loop Review Queue
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Verify AI-matched field observations before progress updates the master engineering schedule.
+            </p>
+          </div>
+          <Link
+            href={`/projects/${projectId}/field-intake`}
+            className="hidden sm:inline-flex items-center gap-2 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow hover:bg-primary/90"
+          >
+            <Layers className="w-4 h-4" />
+            Submit New DPR
+          </Link>
         </div>
       </div>
 
@@ -188,8 +198,10 @@ export function ReviewQueueWorkspace({
           {currentList.map((obs) => {
             const topCandidate = obs.candidateMatches[0];
             const confidencePct = topCandidate ? Math.round(topCandidate.confidenceScore * 100) : 0;
-            const reasons = topCandidate?.componentScores?.matching_reasons || [];
-            const isConflict = topCandidate?.componentScores?.conflict_penalty < 0;
+            const rawReasons = topCandidate?.componentScores?.matching_reasons;
+            const reasons = Array.isArray(rawReasons) ? (rawReasons as string[]) : [];
+            const conflictVal = topCandidate?.componentScores?.conflict_penalty;
+            const isConflict = typeof conflictVal === "number" && conflictVal < 0;
 
             return (
               <div
@@ -241,7 +253,7 @@ export function ReviewQueueWorkspace({
                       Field DPR Note
                     </p>
                     <p className="text-sm text-foreground leading-relaxed">
-                      "{obs.rawText}"
+                      &ldquo;{obs.rawText}&rdquo;
                     </p>
                   </div>
 

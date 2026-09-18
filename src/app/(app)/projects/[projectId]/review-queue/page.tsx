@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getProjectReviewQueue } from "@/app/actions/field-progress";
-import { ReviewQueueWorkspace } from "@/components/ReviewQueueWorkspace";
+import { ReviewQueueWorkspace, type ObservationData } from "@/components/ReviewQueueWorkspace";
 
 interface ReviewQueuePageProps {
   params: Promise<{ projectId: string }>;
@@ -23,9 +23,9 @@ export default async function ReviewQueuePage({ params }: ReviewQueuePageProps) 
     <div className="max-w-6xl mx-auto py-6 px-4 sm:px-6">
       <ReviewQueueWorkspace
         projectId={project.id}
-        autoLinked={queueData.autoLinked as any}
-        pendingReview={queueData.pendingReview as any}
-        unmatched={queueData.unmatched as any}
+        autoLinked={queueData.autoLinked as unknown as ObservationData[]}
+        pendingReview={queueData.pendingReview as unknown as ObservationData[]}
+        unmatched={queueData.unmatched as unknown as ObservationData[]}
       />
     </div>
   );

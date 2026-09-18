@@ -38,7 +38,7 @@ const TIERS = [
     period: "per organization / month",
     eyebrow: "Standardize delivery",
     description: "For organizations building a repeatable planning standard.",
-    features: ["Everything in Core", "Autodesk and Procore integrations", "Advanced portfolio analytics", "Priority support", "Early feature access"],
+    features: ["Everything in Core", "Python Retrieval and OCR engines", "Advanced portfolio analytics", "Priority support", "Early feature access"],
     cta: "Contact us",
     ctaHref: "mailto:sales@agira.dev",
     featured: false,
@@ -52,7 +52,7 @@ const COMPARISON = [
   ["Lookahead and weekly planning", "Included", "Included", "Included"],
   ["Portfolio management", "-", "Included", "Included"],
   ["Agent", "-", "Included", "Included"],
-  ["Autodesk and Procore", "-", "-", "Included"],
+  ["Python Retrieval & OCR", "-", "-", "Included"],
   ["Priority support", "-", "-", "Included"],
 ] as const;
 

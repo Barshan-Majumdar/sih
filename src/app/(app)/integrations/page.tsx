@@ -1,93 +1,106 @@
-import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { requireActiveOrganization } from "@/lib/session";
-import { canUseIntegrations } from "@/lib/plans";
-import { isProcoreConfigured } from "@/lib/procore";
-import { fetchProcoreProjectsForOrg } from "@/app/actions/procore";
-import { ProcoreIntegrationPanel } from "@/components/ProcoreIntegrationPanel";
+import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/Card";
 import { AppPageHeader } from "@/components/PageHeader";
+import { Cpu, FileSearch, Sparkles, CheckCircle2, ShieldBan } from "lucide-react";
 
-export default async function IntegrationsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ connected?: string; error?: string }>;
-}) {
-  const { user, organizationId } = await requireActiveOrganization();
-  const params = await searchParams;
-
-  const [org, membership, procoreConnection] = await Promise.all([
-    prisma.organization.findUniqueOrThrow({ where: { id: organizationId } }),
-    prisma.member.findUnique({
-      where: { organizationId_userId: { organizationId, userId: user.id } },
-    }),
-    prisma.procoreConnection.findUnique({ where: { organizationId } }),
-  ]);
-
-  const isOwner = membership?.role === "owner";
-  const isProPlan = canUseIntegrations(org.planTier);
-  const projects = isOwner
-    ? await prisma.project.findMany({
-        where: { organizationId, isArchived: false },
-        select: { id: true, name: true, procoreProjectId: true },
-        orderBy: { name: "asc" },
-      })
-    : [];
-  const procoreProjects =
-    procoreConnection && isOwner && isProPlan ? await fetchProcoreProjectsForOrg(organizationId) : [];
+export default async function IntegrationsPage() {
+  const { organizationId } = await requireActiveOrganization();
+  const org = await prisma.organization.findUniqueOrThrow({ where: { id: organizationId } });
 
   return (
     <div className="app-page app-page-narrow">
       <AppPageHeader
-        eyebrow="Organization"
-        title="Integrations"
-        description={`Connect ${org.name} to the systems your project teams already use.`}
+        eyebrow="Organization Architecture"
+        title="Connected Engines & Integrations"
+        description={`Active intelligence services powering real-time schedule linking for ${org.name}.`}
       />
 
-      {params.connected && (
-        <Card className="p-4 mb-6 border-success/40 bg-success/5">
-          <p className="text-sm text-success font-medium">Procore connected successfully.</p>
-        </Card>
-      )}
-
-      {params.error && (
-        <Card className="p-4 mb-6 border-error/40 bg-error/5">
-          <p className="text-sm text-error font-medium">{decodeURIComponent(params.error)}</p>
-        </Card>
-      )}
-
       <div className="space-y-6">
-        <ProcoreIntegrationPanel
-          isConfigured={isProcoreConfigured()}
-          isProPlan={isProPlan}
-          isOwner={isOwner}
-          isConnected={!!procoreConnection}
-          companyName={procoreConnection?.procoreCompanyName ?? null}
-          projects={projects}
-          procoreProjects={procoreProjects}
-        />
-
-        <Card className="p-6 opacity-90">
-          <div className="flex items-start justify-between gap-4 mb-2">
-            <h2 className="app-card-title">Autodesk Construction Cloud</h2>
-            <span className="shrink-0 rounded-full bg-surface-soft px-2.5 py-0.5 text-xs font-medium text-muted">
-              Coming soon
+        {/* Python NLP & Retrieval Service */}
+        <Card className="p-6 border-primary/20 bg-primary/5">
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Cpu className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="app-card-title text-base">Python Domain Brain & Hybrid Retrieval Service</h2>
+                <p className="text-xs text-muted-foreground">FastAPI &middot; BM25 Lexical Search &middot; FAISS Dense Vector &middot; 8-Signal Reranker</p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <CheckCircle2 className="h-3 w-3" />
+              Active (Port 8000)
             </span>
           </div>
-          <p className="text-sm text-muted">
-            Pull PDF drawings from ACC into your project Drawings log — same one-way sync pattern as Procore.
-            Backend support is built; we&apos;re waiting on broader APS developer access before enabling connect in the UI.
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Performs Reciprocal Rank Fusion (RRF) and 8-signal contextual reranking (WBS hierarchy, trade domain, keyword overlap, milestone priority, temporal proximity, and a -0.40 conflict penalty) to map noisy field notes to schedule WBS IDs.
           </p>
-          <p className="text-xs text-muted-soft mt-3">
-            Until then, upload drawings manually on any project&apos;s{" "}
-            <Link href="/projects" className="underline hover:text-ink">
-              Drawings
-            </Link>{" "}
-            tab. Included on the{" "}
-            <Link href="/pricing" className="underline hover:text-ink">
-              Pro
-            </Link>{" "}
-            plan when live.
+        </Card>
+
+        {/* Self-Hosted OCR Worker */}
+        <Card className="p-6 border-blue-500/20 bg-blue-500/5">
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                <FileSearch className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="app-card-title text-base">Self-Hosted OCRmyPDF Engine</h2>
+                <p className="text-xs text-muted-foreground">Docker Service &middot; Tesseract OCR &middot; Scanned Site Logs & Drawings</p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <CheckCircle2 className="h-3 w-3" />
+              Active (Port 8010)
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Extracts searchable text layers and progress entries from handwritten daily logs, scanned inspection sheets, and engineering PDFs without relying on third-party cloud OCR APIs.
+          </p>
+        </Card>
+
+        {/* Google Gemini & OpenAI Providers */}
+        <Card className="p-6 border-purple-500/20 bg-purple-500/5">
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-500">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="app-card-title text-base">Multi-Modal AI Extraction Copilot</h2>
+                <p className="text-xs text-muted-foreground">Google Gemini 2.5 Flash (Priority #1) &middot; OpenAI GPT-4o-mini (Priority #2)</p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <CheckCircle2 className="h-3 w-3" />
+              Connected
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Extracts normalized 1-to-N engineering observations from raw audio dictation and text progress logs with strict structured JSON schema enforcement.
+          </p>
+        </Card>
+
+        {/* Commercial ERPs Note */}
+        <Card className="p-6 opacity-75 border-border">
+          <div className="flex items-start justify-between gap-4 mb-2">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                <ShieldBan className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="app-card-title text-base">Commercial ERPs (Procore / Autodesk ACC)</h2>
+                <p className="text-xs text-muted-foreground">Proprietary Paid Ecosystems</p>
+              </div>
+            </div>
+            <span className="shrink-0 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+              Decoupled
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            To ensure complete self-hosted independence and eliminate recurring vendor subscription costs for Smart India Hackathon Problem Statement 26122, paid commercial connectors have been decoupled in favor of our native, 100% self-hosted open-source engine.
           </p>
         </Card>
       </div>

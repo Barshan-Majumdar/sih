@@ -28,7 +28,7 @@ export default async function LandingPage() {
 
 const PROOF_METRICS = [
   ["4", "roles with a purpose-built view: PM, scheduler, superintendent, trade partner"],
-  ["2", "connected systems: Autodesk Construction Cloud and Procore"],
+  ["100%", "self-hosted & open: zero paid commercial vendor lock-in"],
   ["1", "plan, from the master schedule to the weekly commitment"],
   ["0", "writes without your confirmation"],
 ] as const;
@@ -417,14 +417,14 @@ function RolesBand() {
 
 const INTEGRATIONS = [
   {
-    name: "Autodesk Construction Cloud",
-    body: "Connect an Autodesk project and pull current drawings into the schedule and document log.",
-    detail: "Available on the Pro plan.",
+    name: "Python Hybrid Retrieval Engine (BM25 + FAISS)",
+    body: "Domain-specific microservice executing lexical search, dense vector retrieval, and an 8-signal contextual reranker for real-time progress linking.",
+    detail: "Self-Hosted & Active (Port 8000)",
   },
   {
-    name: "Procore",
-    body: "Sync RFIs and submittals from Procore so schedule risk shows up without duplicate entry.",
-    detail: "Available on the Pro plan.",
+    name: "Document OCR Engine (OCRmyPDF)",
+    body: "Self-hosted worker extracting searchable text and engineering observations from scanned PDFs, daily progress notes, and jobsite drawings.",
+    detail: "Self-Hosted & Active (Port 8010)",
   },
 ] as const;
 

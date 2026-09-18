@@ -61,10 +61,11 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
 
       // Clear input on success
       setDprText("");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to process DPR report";
       setResult({
         success: false,
-        error: err?.message || "Failed to process DPR report",
+        error: message,
       });
     } finally {
       setIsSubmitting(false);
@@ -77,7 +78,26 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
       return;
     }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    interface SpeechRecognitionEvent {
+      results: Array<Array<{ transcript: string }>>;
+    }
+    interface SpeechRecognitionInstance {
+      continuous: boolean;
+      interimResults: boolean;
+      lang: string;
+      start: () => void;
+      stop: () => void;
+      onresult: ((event: SpeechRecognitionEvent) => void) | null;
+      onerror: (() => void) | null;
+      onend: (() => void) | null;
+    }
+    type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
+
+    const SpeechRecognition = (
+      (window as unknown as Record<string, unknown>).SpeechRecognition ||
+      (window as unknown as Record<string, unknown>).webkitSpeechRecognition
+    ) as SpeechRecognitionConstructor;
+
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = false;
@@ -87,7 +107,7 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
       setIsRecording(true);
       recognition.start();
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[0][0].transcript;
         setDprText((prev) => (prev ? `${prev} ${transcript}` : transcript));
         setIsRecording(false);

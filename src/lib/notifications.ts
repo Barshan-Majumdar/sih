@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { env } from "@/lib/env";
 import { sendEmail, renderEmailHtml } from "@/lib/email";
 
 /**

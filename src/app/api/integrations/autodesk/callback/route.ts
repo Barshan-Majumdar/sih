@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { completeAutodeskOAuth } from "@/app/actions/autodesk";
-import { env } from "@/lib/env";
 import { observeApiRequest, reportException } from "@/lib/observability";
 
 async function handleGet(request: Request) {
