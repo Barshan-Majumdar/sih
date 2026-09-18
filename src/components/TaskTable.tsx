@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { updateTaskStatus, deleteTask } from "@/app/actions/tasks";
+import { updateTaskStatus, updateTaskProgress, deleteTask } from "@/app/actions/tasks";
 import { canManageSchedule, canResolveRoadblocks } from "@/lib/permissions";
 import { StatusBadge } from "@/components/StatusBadge";
 import { RoadblockDialog } from "@/components/RoadblockDialog";
@@ -149,6 +149,8 @@ function TaskRowView({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [deleting, setDeleting] = useState(false);
+  const [editingProgress, setEditingProgress] = useState(false);
+  const [customProgress, setCustomProgress] = useState(task.progress);
   const duration = Math.max(daysBetween(task.startDate, task.endDate), 1);
 
   function handleStatusChange(status: TaskStatus) {
@@ -157,6 +159,18 @@ function TaskRowView({
       const result = await updateTaskStatus({ taskId: task.id, status });
       if (!result.success) setError(result.error);
     });
+  }
+
+  function handleSaveProgress(newVal: number) {
+    setEditingProgress(false);
+    const clamped = Math.min(100, Math.max(0, isNaN(newVal) ? 0 : newVal));
+    if (clamped !== task.progress) {
+      setError(null);
+      startTransition(async () => {
+        const result = await updateTaskProgress({ taskId: task.id, progress: clamped });
+        if (!result.success) setError(result.error);
+      });
+    }
   }
 
   function handleDelete() {
@@ -199,15 +213,65 @@ function TaskRowView({
         <td className="py-2.5 px-3 text-muted whitespace-nowrap">{formatDate(task.endDate)}</td>
         <td className="py-2.5 px-3 text-muted whitespace-nowrap text-right font-mono text-xs">{duration} d</td>
         <td className="py-2.5 px-3">
-          <div className="flex w-24 items-center gap-2" aria-label={`${task.progress}% complete`}>
-            <span className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-strong">
-              <span
-                className="block h-full rounded-full bg-success"
-                style={{ width: `${task.progress}%` }}
+          {canEdit && editingProgress ? (
+            <div className="flex w-24 items-center gap-1">
+              <input
+                type="number"
+                min={0}
+                max={100}
+                autoFocus
+                disabled={pending}
+                value={customProgress}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  setCustomProgress(isNaN(val) ? 0 : Math.min(100, Math.max(0, val)));
+                }}
+                onBlur={() => handleSaveProgress(customProgress)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSaveProgress(customProgress);
+                  } else if (e.key === "Escape") {
+                    setEditingProgress(false);
+                    setCustomProgress(task.progress);
+                  }
+                }}
+                className="w-14 h-6 px-1 text-xs font-mono rounded border border-ink bg-canvas text-right focus:outline-none"
               />
-            </span>
-            <span className="w-8 text-right font-mono text-[11px] text-muted">{task.progress}%</span>
-          </div>
+              <span className="text-[11px] text-muted font-mono">%</span>
+            </div>
+          ) : canEdit ? (
+            <button
+              type="button"
+              onClick={() => {
+                setCustomProgress(task.progress);
+                setEditingProgress(true);
+              }}
+              disabled={pending}
+              title="Click to edit progress percentage"
+              className="group flex w-24 items-center gap-2 text-left rounded py-0.5 px-1 -mx-1 hover:bg-surface-soft transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <span className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-strong">
+                <span
+                  className="block h-full rounded-full bg-success transition-all"
+                  style={{ width: `${task.progress}%` }}
+                />
+              </span>
+              <span className="w-8 text-right font-mono text-[11px] text-muted group-hover:text-ink font-medium">
+                {task.progress}%
+              </span>
+            </button>
+          ) : (
+            <div className="flex w-24 items-center gap-2" aria-label={`${task.progress}% complete`}>
+              <span className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-strong">
+                <span
+                  className="block h-full rounded-full bg-success"
+                  style={{ width: `${task.progress}%` }}
+                />
+              </span>
+              <span className="w-8 text-right font-mono text-[11px] text-muted">{task.progress}%</span>
+            </div>
+          )}
         </td>
         <td className="py-2.5 px-3">
           {canEdit ? (

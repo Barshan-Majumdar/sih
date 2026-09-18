@@ -4,9 +4,19 @@ import { prisma } from "@/lib/prisma";
 import { createSearchablePdf, ocrServiceConfig } from "@/lib/ocr-service";
 import { deleteStoredFile, readStoredFile, uploadFile } from "@/lib/storage";
 import { logger, reportException } from "@/lib/observability";
+import { env } from "@/lib/env";
 
 export const MAX_EXTRACTED_TEXT_CHARS = 250_000;
 export const MAX_DOCUMENT_CHUNK_CHARS = 1_500;
+
+/** Supported image MIME types for Gemini Vision OCR. */
+const GEMINI_VISION_SUPPORTED = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+  "application/pdf",
+]);
 
 export type ExtractedDocumentChunk = {
   pageNumber: number;
@@ -59,6 +69,149 @@ function chunkPageText(text: string, pageNumber: number): ExtractedDocumentChunk
   }
   push(current);
   return chunks;
+}
+
+/**
+ * Gemini Vision OCR — calls Gemini's multimodal API directly to extract text
+ * from an image or scanned PDF. This is the zero-install OCR fallback that
+ * works when ocrmypdf/tesseract are not available on the system.
+ *
+ * Returns a DocumentExtractionResult with all text on pageNumber=1.
+ */
+async function geminiVisionOcr(
+  bytes: Uint8Array,
+  mediaType: string,
+  fileName: string
+): Promise<DocumentExtractionResult> {
+  const apiKey = env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return {
+      status: "UNSUPPORTED",
+      text: null,
+      pageCount: null,
+      error: "No OCR engine is configured. Set GEMINI_API_KEY or install ocrmypdf to enable OCR.",
+      chunks: [],
+    };
+  }
+
+  if (!GEMINI_VISION_SUPPORTED.has(mediaType)) {
+    return {
+      status: "UNSUPPORTED",
+      text: null,
+      pageCount: null,
+      error: `File type "${mediaType}" is not supported for OCR.`,
+      chunks: [],
+    };
+  }
+
+  const startedAt = performance.now();
+  logger.info("document.gemini_ocr.started", { mediaType, sizeBytes: bytes.byteLength, fileName });
+
+  try {
+    // Use Gemini REST API directly (no SDK dependency)
+    const model = env.GEMINI_MODEL || "gemini-2.5-flash";
+    const base64Data = Buffer.from(bytes).toString("base64");
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: "You are a professional document OCR and text extraction assistant. Extract ALL text from this document exactly as it appears, preserving structure, tables, headings, and line breaks. Output ONLY the extracted text with no commentary, metadata, or markdown formatting wrappers.",
+                },
+                {
+                  inline_data: {
+                    mime_type: mediaType,
+                    data: base64Data,
+                  },
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0,
+            maxOutputTokens: 8192,
+          },
+        }),
+        signal: AbortSignal.timeout(90_000),
+      }
+    );
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => response.statusText);
+      logger.error("document.gemini_ocr.api_error", new Error(`Gemini API returned ${response.status}`), {
+        status: response.status,
+        body: errText.slice(0, 500),
+      });
+      throw new Error(`Gemini API returned ${response.status}: ${errText.slice(0, 200)}`);
+    }
+
+    const json = await response.json() as {
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> }; finishReason?: string }>;
+      error?: { message: string };
+    };
+
+    if (json.error) {
+      throw new Error(`Gemini API error: ${json.error.message}`);
+    }
+
+    const rawText = json.candidates?.[0]?.content?.parts
+      ?.map((p) => p.text ?? "")
+      .join("")
+      .trim() ?? "";
+
+    if (!rawText) {
+      logger.warn("document.gemini_ocr.empty_response", {
+        fileName,
+        finishReason: json.candidates?.[0]?.finishReason,
+        durationMs: Math.round(performance.now() - startedAt),
+      });
+      return {
+        status: "UNSUPPORTED",
+        text: null,
+        pageCount: 1,
+        error: "Gemini Vision OCR found no text in this file. The file may contain only graphics.",
+        chunks: [],
+      };
+    }
+
+    const normalized = normalizeExtractedText(rawText).slice(0, MAX_EXTRACTED_TEXT_CHARS);
+    const chunks = chunkPageText(normalized, 1);
+
+    logger.info("document.gemini_ocr.completed", {
+      fileName,
+      charCount: normalized.length,
+      chunkCount: chunks.length,
+      durationMs: Math.round(performance.now() - startedAt),
+    });
+
+    return {
+      status: "READY",
+      text: normalized,
+      pageCount: 1,
+      error: null,
+      chunks,
+    };
+  } catch (error) {
+    reportException(error, "document.gemini_ocr.failed", {
+      fileName,
+      mediaType,
+      sizeBytes: bytes.byteLength,
+      durationMs: Math.round(performance.now() - startedAt),
+    });
+    return {
+      status: "FAILED",
+      text: null,
+      pageCount: null,
+      error: "Gemini Vision OCR failed to process this file.",
+      chunks: [],
+    };
+  }
 }
 
 export async function extractDocumentText(
@@ -157,31 +310,59 @@ export async function processProjectDocument(
 
     if (result.status === "UNSUPPORTED") {
       if (searchableStorageKey) {
+        // We have a previously-generated searchable PDF — re-use it.
         const existingSearchablePdf = await readStoredFile(searchableStorageKey);
         result = await extractDocumentText(existingSearchablePdf.bytes, "application/pdf");
-      } else if (!ocrServiceConfig()) {
-        result = {
-          ...result,
-          error: "No searchable text was found. Configure the free OCR worker to process scanned PDFs and images.",
-        };
-      } else {
-        const searchablePdf = await createSearchablePdf(bytes, document.mediaType, document.fileName);
-        result = await extractDocumentText(searchablePdf, "application/pdf");
-        if (result.status !== "READY") {
-          throw new Error("OCR output did not contain searchable text");
+      } else if (ocrServiceConfig()) {
+        // Try the configured OCR worker (ocrmypdf) first.
+        try {
+          const searchablePdf = await createSearchablePdf(bytes, document.mediaType, document.fileName);
+          const ocrResult = await extractDocumentText(searchablePdf, "application/pdf");
+          if (ocrResult.status === "READY") {
+            result = ocrResult;
+            searchableStorageKey =
+              document.searchableStorageKey ?? `${document.storageKey}.searchable.pdf`;
+            searchableFileUrl = await uploadFile(
+              searchableStorageKey,
+              Buffer.from(searchablePdf),
+              "application/pdf"
+            );
+            uploadedSearchableKey = searchableStorageKey;
+            ocrEngine = "ocrmypdf";
+            ocrProcessedAt = new Date();
+          } else {
+            // OCR worker returned a PDF with no text — fall back to Gemini Vision.
+            logger.warn("document.ocr_worker.no_text", {
+              documentId: document.id,
+              mediaType: document.mediaType,
+            });
+            result = await geminiVisionOcr(bytes, document.mediaType, document.fileName);
+            if (result.status === "READY") {
+              ocrEngine = "gemini-vision";
+              ocrProcessedAt = new Date();
+            }
+          }
+        } catch (ocrError) {
+          // OCR worker unreachable or failed — fall back to Gemini Vision.
+          reportException(ocrError, "document.ocr_worker.failed_fallback_to_gemini", {
+            documentId: document.id,
+          });
+          result = await geminiVisionOcr(bytes, document.mediaType, document.fileName);
+          if (result.status === "READY") {
+            ocrEngine = "gemini-vision";
+            ocrProcessedAt = new Date();
+          }
         }
-        searchableStorageKey =
-          document.searchableStorageKey ?? `${document.storageKey}.searchable.pdf`;
-        searchableFileUrl = await uploadFile(
-          searchableStorageKey,
-          Buffer.from(searchablePdf),
-          "application/pdf"
-        );
-        uploadedSearchableKey = searchableStorageKey;
-        ocrEngine = "ocrmypdf";
-        ocrProcessedAt = new Date();
+      } else {
+        // No OCR worker configured — try Gemini Vision directly.
+        result = await geminiVisionOcr(bytes, document.mediaType, document.fileName);
+        if (result.status === "READY") {
+          ocrEngine = "gemini-vision";
+          ocrProcessedAt = new Date();
+        }
       }
     }
+
     const processed = await prisma.$transaction(async (transaction) => {
       await transaction.documentChunk.deleteMany({ where: { documentId: document.id } });
       if (result.chunks.length > 0) {
@@ -237,3 +418,5 @@ export async function processProjectDocument(
     });
   }
 }
+
+

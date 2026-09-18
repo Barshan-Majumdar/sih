@@ -1572,6 +1572,9 @@ function normalizeTaskState(params: {
 
   if (params.status === "DONE" && params.progress === undefined) progress = 100;
   if (params.status === "NOT_STARTED" && params.progress === undefined) progress = 0;
+  if ((status === "IN_PROGRESS" || status === "DELAYED") && progress >= 100 && params.progress === undefined) {
+    progress = 50;
+  }
   if (params.progress === 100 && params.status === undefined) status = "DONE";
   if (
     params.progress !== undefined &&

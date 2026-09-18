@@ -17,7 +17,7 @@ import { wouldCreateCycle } from "@/lib/critical-path";
 import { activityChanges, logActivity } from "@/lib/activity-log";
 import { notifyUser } from "@/lib/notifications";
 import { TASK_STATUS_LABELS, formatDate } from "@/lib/utils";
-import type { Task, TaskDependency } from "@prisma/client";
+import type { Task, TaskDependency, TaskStatus } from "@prisma/client";
 
 /** Emails a project member (by ProjectMember id) that a task/roadblock now involves them. */
 async function notifyMember(params: {
@@ -134,6 +134,8 @@ const updateTaskSchema = z
     assignedToId: z.string().cuid().optional().nullable(),
     startDate: z.coerce.date({ message: "A valid start date is required" }),
     endDate: z.coerce.date({ message: "A valid end date is required" }),
+    status: taskStatusSchema.optional(),
+    progress: z.number().int().min(0).max(100).optional(),
   })
   .refine((data) => data.endDate >= data.startDate, {
     message: "End date must be on or after start date",
@@ -153,6 +155,30 @@ export async function updateTask(input: unknown): Promise<ActionResult<Task>> {
       await requireProjectMemberReference(existing.projectId, parsed.data.assignedToId);
     }
 
+    let nextStatus = parsed.data.status ?? existing.status;
+    let nextProgress = parsed.data.progress ?? existing.progress;
+
+    if (parsed.data.status !== undefined && parsed.data.progress === undefined) {
+      if (nextStatus === "DONE") nextProgress = 100;
+      else if (nextStatus === "NOT_STARTED") nextProgress = 0;
+      else if (nextStatus === "IN_PROGRESS") {
+        if (existing.progress >= 100) nextProgress = 50;
+        else if (existing.progress <= 0) nextProgress = 10;
+      } else if (nextStatus === "DELAYED") {
+        if (existing.progress >= 100) nextProgress = 50;
+      }
+    } else if (parsed.data.progress !== undefined && parsed.data.status === undefined) {
+      if (nextProgress === 100) nextStatus = "DONE";
+      else if (nextProgress === 0 && existing.status === "DONE") nextStatus = "NOT_STARTED";
+      else if (nextProgress > 0 && nextProgress < 100 && (existing.status === "DONE" || existing.status === "NOT_STARTED")) {
+        nextStatus = "IN_PROGRESS";
+      }
+    } else if (parsed.data.status !== undefined && parsed.data.progress !== undefined) {
+      if (nextStatus === "DONE") nextProgress = 100;
+      else if (nextStatus === "NOT_STARTED") nextProgress = 0;
+      else if (nextStatus === "IN_PROGRESS" && nextProgress >= 100) nextProgress = 50;
+    }
+
     const task = await prisma.task.update({
       where: { id: parsed.data.taskId },
       data: {
@@ -160,6 +186,12 @@ export async function updateTask(input: unknown): Promise<ActionResult<Task>> {
         assignedToId: parsed.data.assignedToId ?? null,
         startDate: parsed.data.startDate,
         endDate: parsed.data.endDate,
+        status: nextStatus,
+        progress: nextProgress,
+        ...(nextStatus === "DONE" && !existing.actualFinishDate ? { actualFinishDate: new Date() } : {}),
+        ...(nextStatus !== "DONE" && existing.actualFinishDate ? { actualFinishDate: null } : {}),
+        ...(nextStatus === "NOT_STARTED" ? { actualStartDate: null, actualFinishDate: null } : {}),
+        ...(nextStatus === "IN_PROGRESS" && !existing.actualStartDate ? { actualStartDate: new Date() } : {}),
       },
     });
 
@@ -169,10 +201,10 @@ export async function updateTask(input: unknown): Promise<ActionResult<Task>> {
       taskName: task.name,
       userId: user.id,
       action: "task_updated",
-      detail: `Updated dates/assignment for "${task.name}"`,
+      detail: `Updated "${task.name}"`,
       entityType: "TASK",
       entityId: task.id,
-      changes: activityChanges(existing, task, ["name", "assignedToId", "startDate", "endDate"]),
+      changes: activityChanges(existing, task, ["name", "assignedToId", "startDate", "endDate", "status", "progress"]),
     });
 
     // Only notify on a genuinely new assignment, not every edit.
@@ -193,6 +225,10 @@ export async function updateTask(input: unknown): Promise<ActionResult<Task>> {
 
     revalidatePath(`/projects/${existing.projectId}`);
     revalidatePath(`/projects/${existing.projectId}/gantt`);
+    revalidatePath(`/projects/${existing.projectId}/lookahead`);
+    revalidatePath(`/projects/${existing.projectId}/plan-vs-actual`);
+    revalidatePath(`/projects/${existing.projectId}/dashboard`);
+    revalidatePath(`/projects/${existing.projectId}/tasks/${task.id}`);
     return ok(task);
   } catch (error) {
     return fail(error);
@@ -248,7 +284,9 @@ export async function updateTaskDates(input: unknown): Promise<ActionResult<Task
     revalidatePath(`/projects/${existing.projectId}`);
     revalidatePath(`/projects/${existing.projectId}/gantt`);
     revalidatePath(`/projects/${existing.projectId}/lookahead`);
+    revalidatePath(`/projects/${existing.projectId}/plan-vs-actual`);
     revalidatePath(`/projects/${existing.projectId}/dashboard`);
+    revalidatePath(`/projects/${existing.projectId}/tasks/${task.id}`);
     return ok(task);
   } catch (error) {
     return fail(error);
@@ -258,6 +296,7 @@ export async function updateTaskDates(input: unknown): Promise<ActionResult<Task
 const updateTaskStatusSchema = z.object({
   taskId: z.string().min(1, "taskId is required"),
   status: taskStatusSchema,
+  progress: z.number().int().min(0).max(100).optional(),
 });
 
 export async function updateTaskStatus(input: unknown): Promise<ActionResult<Task>> {
@@ -270,12 +309,40 @@ export async function updateTaskStatus(input: unknown): Promise<ActionResult<Tas
     const user = await requireUser();
     const existing = await requireTaskEditAccess(user.id, parsed.data.taskId);
 
+    let nextProgress: number;
+    if (parsed.data.progress !== undefined) {
+      nextProgress = parsed.data.progress;
+    } else if (parsed.data.status === "DONE") {
+      nextProgress = 100;
+    } else if (parsed.data.status === "NOT_STARTED") {
+      nextProgress = 0;
+    } else if (parsed.data.status === "IN_PROGRESS") {
+      if (existing.progress >= 100) {
+        nextProgress = 50;
+      } else if (existing.progress <= 0) {
+        nextProgress = 10;
+      } else {
+        nextProgress = existing.progress;
+      }
+    } else if (parsed.data.status === "DELAYED") {
+      if (existing.progress >= 100) {
+        nextProgress = 50;
+      } else {
+        nextProgress = existing.progress;
+      }
+    } else {
+      nextProgress = existing.progress;
+    }
+
     const task = await prisma.task.update({
       where: { id: parsed.data.taskId },
       data: {
         status: parsed.data.status,
-        ...(parsed.data.status === "DONE" ? { progress: 100 } : {}),
-        ...(parsed.data.status === "NOT_STARTED" ? { progress: 0 } : {}),
+        progress: nextProgress,
+        ...(parsed.data.status === "DONE" && !existing.actualFinishDate ? { actualFinishDate: new Date() } : {}),
+        ...(parsed.data.status !== "DONE" && existing.actualFinishDate ? { actualFinishDate: null } : {}),
+        ...(parsed.data.status === "NOT_STARTED" ? { actualStartDate: null, actualFinishDate: null } : {}),
+        ...(parsed.data.status === "IN_PROGRESS" && !existing.actualStartDate ? { actualStartDate: new Date() } : {}),
       },
     });
 
@@ -285,7 +352,7 @@ export async function updateTaskStatus(input: unknown): Promise<ActionResult<Tas
       taskName: task.name,
       userId: user.id,
       action: "status_changed",
-      detail: `Status changed from ${TASK_STATUS_LABELS[existing.status]} to ${TASK_STATUS_LABELS[task.status]} on "${task.name}"`,
+      detail: `Status changed from ${TASK_STATUS_LABELS[existing.status]} (${existing.progress}%) to ${TASK_STATUS_LABELS[task.status]} (${task.progress}%) on "${task.name}"`,
       entityType: "TASK",
       entityId: task.id,
       changes: activityChanges(existing, task, ["status", "progress"]),
@@ -293,7 +360,72 @@ export async function updateTaskStatus(input: unknown): Promise<ActionResult<Tas
 
     revalidatePath(`/projects/${existing.projectId}`);
     revalidatePath(`/projects/${existing.projectId}/gantt`);
+    revalidatePath(`/projects/${existing.projectId}/lookahead`);
+    revalidatePath(`/projects/${existing.projectId}/plan-vs-actual`);
     revalidatePath(`/projects/${existing.projectId}/dashboard`);
+    revalidatePath(`/projects/${existing.projectId}/tasks/${task.id}`);
+    return ok(task);
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+const updateTaskProgressSchema = z.object({
+  taskId: z.string().min(1, "taskId is required"),
+  progress: z.number().int().min(0, "Progress must be between 0 and 100").max(100, "Progress must be between 0 and 100"),
+});
+
+export async function updateTaskProgress(input: unknown): Promise<ActionResult<Task>> {
+  const parsed = updateTaskProgressSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues.map((i) => i.message).join(", ") };
+  }
+
+  try {
+    const user = await requireUser();
+    const existing = await requireTaskEditAccess(user.id, parsed.data.taskId);
+
+    let nextStatus: TaskStatus = existing.status;
+    if (parsed.data.progress === 100) {
+      nextStatus = "DONE";
+    } else if (parsed.data.progress === 0 && existing.status === "DONE") {
+      nextStatus = "NOT_STARTED";
+    } else if (parsed.data.progress > 0 && parsed.data.progress < 100) {
+      if (existing.status === "DONE" || existing.status === "NOT_STARTED") {
+        nextStatus = "IN_PROGRESS";
+      }
+    }
+
+    const task = await prisma.task.update({
+      where: { id: parsed.data.taskId },
+      data: {
+        progress: parsed.data.progress,
+        status: nextStatus,
+        ...(nextStatus === "DONE" && !existing.actualFinishDate ? { actualFinishDate: new Date() } : {}),
+        ...(nextStatus !== "DONE" && existing.actualFinishDate ? { actualFinishDate: null } : {}),
+        ...(nextStatus === "NOT_STARTED" ? { actualStartDate: null, actualFinishDate: null } : {}),
+        ...(nextStatus === "IN_PROGRESS" && !existing.actualStartDate ? { actualStartDate: new Date() } : {}),
+      },
+    });
+
+    await logActivity({
+      projectId: existing.projectId,
+      taskId: task.id,
+      taskName: task.name,
+      userId: user.id,
+      action: "task_updated",
+      detail: `Progress set to ${task.progress}% (${TASK_STATUS_LABELS[task.status]}) on "${task.name}"`,
+      entityType: "TASK",
+      entityId: task.id,
+      changes: activityChanges(existing, task, ["progress", "status"]),
+    });
+
+    revalidatePath(`/projects/${existing.projectId}`);
+    revalidatePath(`/projects/${existing.projectId}/gantt`);
+    revalidatePath(`/projects/${existing.projectId}/lookahead`);
+    revalidatePath(`/projects/${existing.projectId}/plan-vs-actual`);
+    revalidatePath(`/projects/${existing.projectId}/dashboard`);
+    revalidatePath(`/projects/${existing.projectId}/tasks/${task.id}`);
     return ok(task);
   } catch (error) {
     return fail(error);
