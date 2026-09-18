@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import {
   createUIMessageStream,
   createUIMessageStreamResponse,
-  generateText,
   safeValidateUIMessages,
   stepCountIs,
   streamText,
@@ -56,7 +55,6 @@ import {
   getAssistantAttempts,
   getAssistantModelOrder,
   providerErrorMessage,
-  withProviderFallback,
 } from "@/lib/ai-provider";
 import { prisma } from "@/lib/prisma";
 import { isProjectDocumentQuestion } from "@/lib/project-document-search";

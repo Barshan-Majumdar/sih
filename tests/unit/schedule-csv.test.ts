@@ -217,15 +217,15 @@ describe("parseScheduleCsv assignee", () => {
 });
 
 describe("parseScheduleCsv dates", () => {
-  it("accepts ISO and US formats and normalizes both to ISO", () => {
+  it("accepts ISO and standard formats and normalizes both to ISO", () => {
     const rows = parseScheduleCsv(
-      file("A,,2026-10-06,2026-10-17,,,", "B,,3/7/2026,12/25/2026,,,", "C,,03/07/2026,2026-12-25,,,"),
+      file("A,,2026-10-06,2026-10-17,,,", "B,,3/7/2026,25/12/2026,,,", "C,,03/07/2026,2026-12-25,,,"),
       CONTEXT
     ).rows;
     expect(rows.map((r) => [r.startDate, r.endDate])).toEqual([
       ["2026-10-06", "2026-10-17"],
-      ["2026-03-07", "2026-12-25"],
-      ["2026-03-07", "2026-12-25"],
+      ["2026-07-03", "2026-12-25"],
+      ["2026-07-03", "2026-12-25"],
     ]);
   });
 
@@ -235,20 +235,20 @@ describe("parseScheduleCsv dates", () => {
 
   it("rejects impossible and malformed dates", () => {
     expect(messagesOn(file("A,,13/45/2026,2026-10-17,,,"), 2)).toEqual([
-      'Start Date "13/45/2026" is not a valid date (use YYYY-MM-DD)',
+      'Start Date "13/45/2026" is not a valid date (use DD-MM-YYYY)',
     ]);
     expect(messagesOn(file("B,,2026-02-30,2026-10-17,,,"), 2)).toEqual([
-      'Start Date "2026-02-30" is not a valid date (use YYYY-MM-DD)',
+      'Start Date "2026-02-30" is not a valid date (use DD-MM-YYYY)',
     ]);
     expect(messagesOn(file("C,,2026-10-06,next tuesday,,,"), 2)).toEqual([
-      'End Date "next tuesday" is not a valid date (use YYYY-MM-DD)',
+      'End Date "next tuesday" is not a valid date (use DD-MM-YYYY)',
     ]);
   });
 
   it("accepts a leap day in a leap year and rejects it otherwise", () => {
     expect(messagesOn(file("A,,2024-02-29,2024-03-01,,,"), 2)).toEqual([]);
     expect(messagesOn(file("A,,2026-02-29,2026-03-01,,,"), 2)).toEqual([
-      'Start Date "2026-02-29" is not a valid date (use YYYY-MM-DD)',
+      'Start Date "2026-02-29" is not a valid date (use DD-MM-YYYY)',
     ]);
   });
 
@@ -259,7 +259,7 @@ describe("parseScheduleCsv dates", () => {
 
   it("does not compare dates when one of them failed to parse", () => {
     expect(messagesOn(file("A,,not-a-date,2026-10-06,,,"), 2)).toEqual([
-      'Start Date "not-a-date" is not a valid date (use YYYY-MM-DD)',
+      'Start Date "not-a-date" is not a valid date (use DD-MM-YYYY)',
     ]);
   });
 });
@@ -400,7 +400,7 @@ describe("parseScheduleCsv cross-row rules", () => {
     const text = file("A,nobody@acme.com,2026-13-01,2026-10-17,Blocked,150,Ghost");
     expect(messagesOn(text, 2)).toEqual([
       'No project member has the email "nobody@acme.com"',
-      'Start Date "2026-13-01" is not a valid date (use YYYY-MM-DD)',
+      'Start Date "2026-13-01" is not a valid date (use DD-MM-YYYY)',
       'Status "Blocked" must be one of NOT_STARTED, IN_PROGRESS, DONE, DELAYED',
       "Progress % must be a whole number between 0 and 100",
       'Predecessor "Ghost" does not match any task in this file or in the project',

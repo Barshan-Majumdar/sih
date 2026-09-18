@@ -122,7 +122,9 @@ function ChatWorkspace({
   });
   // Keep a ref so async closures can read the latest status without stale captures.
   const statusRef = useRef(status);
-  statusRef.current = status;
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
   const busy = status === "submitted" || status === "streaming";
 
   const uploadAttachments = useCallback(
@@ -242,11 +244,13 @@ function ChatWorkspace({
     [attachments, busy, detail.conversation.id, messages.length, onRecovered, onSent, sendMessage]
   );
 
-  useEffect(() => {
+  const [prevDraft, setPrevDraft] = useState(draftPrompt);
+  if (draftPrompt !== prevDraft) {
+    setPrevDraft(draftPrompt);
     if (draftPrompt !== null && draftPrompt !== undefined) {
       setInput(draftPrompt);
     }
-  }, [draftPrompt]);
+  }
 
   useEffect(() => {
     if (!pendingPrompt || status !== "ready") return;
@@ -956,7 +960,7 @@ export function GlobalAssistant() {
                 <div className="flex flex-1 items-center justify-center text-sm text-[var(--assistant-text-faint)]">Loading conversations...</div>
               ) : active ? (
                 <ChatWorkspace
-                  key={active.conversation.id}
+                  key={`${active.conversation.id}-${draftVersion}`}
                   detail={active}
                   projectScoped={scopeId !== null}
                   pendingPrompt={pendingPrompt}

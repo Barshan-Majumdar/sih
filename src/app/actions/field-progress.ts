@@ -7,7 +7,6 @@ import {
   matchFieldEvidence,
   indexScheduleActivities,
   type ExtractedObservationItem,
-  type CandidateMatchResult,
 } from "@/lib/retrieval-client";
 import { logActivity } from "@/lib/activity-log";
 

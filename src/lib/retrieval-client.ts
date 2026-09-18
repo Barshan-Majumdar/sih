@@ -42,7 +42,7 @@ export interface CandidateMatchResult {
   activity_id: string;
   name: string;
   confidence_score: number;
-  component_scores: Record<string, any>;
+  component_scores: Record<string, unknown>;
   matching_reasons: string[];
   rank: number;
 }
@@ -141,8 +141,22 @@ export async function matchFieldEvidence(
     throw new Error(`Candidate matching failed (${res.status}): ${errorText}`);
   }
   const data = await res.json();
-  const rawMatches = Array.isArray(data.matches) ? data.matches : [];
-  const normalizedMatches: CandidateMatchResult[] = rawMatches.map((m: any, idx: number) => ({
+  interface RawCandidateMatch {
+    schedule_activity_id?: string;
+    activity_db_id?: string;
+    activity_id?: string;
+    activity_code?: string;
+    name?: string;
+    activity_name?: string;
+    confidence_score?: number;
+    contextual_feature_scores?: Record<string, unknown>;
+    component_scores?: Record<string, unknown>;
+    matching_reasons?: string[];
+    final_rank?: number;
+    rank?: number;
+  }
+  const rawMatches: RawCandidateMatch[] = Array.isArray(data.matches) ? data.matches : [];
+  const normalizedMatches: CandidateMatchResult[] = rawMatches.map((m: RawCandidateMatch, idx: number) => ({
     schedule_activity_id: m.schedule_activity_id || m.activity_db_id || m.activity_id || "",
     activity_id: m.activity_id || m.activity_code || m.activity_db_id || "",
     name: m.name || m.activity_name || "",
