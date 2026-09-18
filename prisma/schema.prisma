@@ -1,0 +1,973 @@
+// Prisma schema for the Construction Scheduling & Collaboration MVP.
+// Better Auth core + organization plugin models are defined below to match
+// what `better-auth`'s Prisma adapter expects; app-specific models follow.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Better Auth core models ----------
+
+model User {
+  id                        String   @id @default(cuid())
+  name                      String
+  email                     String   @unique
+  emailVerified             Boolean  @default(false)
+  image                     String?
+  clerkId                   String?  @unique
+  role                      String?  @default("MEMBER")
+  emailNotificationsEnabled Boolean  @default(true)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  sessions                 Session[]
+  accounts                 Account[]
+  projectMembers           ProjectMember[]
+  taskUpdates              TaskUpdate[]
+  activityLogEntries       ActivityLogEntry[]
+  fileAccessAuditEntries   FileAccessAuditEntry[]
+  assistantConversations   AssistantConversation[]
+  assistantAttachments     AssistantAttachment[]
+  removedWeeklyCommitments WeeklyCommitment[]      @relation("WeeklyCommitmentRemovedBy")
+
+  members     Member[]
+  invitations Invitation[]
+
+  @@map("user")
+}
+
+model Session {
+  id                   String   @id @default(cuid())
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token                String   @unique
+  expiresAt            DateTime
+  ipAddress            String?
+  userAgent            String?
+  activeOrganizationId String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ---------- Better Auth organization plugin models ----------
+// Org membership only gates which org's projects a user can be invited into.
+// Permission roles live on ProjectMember (below), not here.
+
+enum PlanTier {
+  FREE
+  CORE
+  PRO
+}
+
+model Organization {
+  id                   String   @id @default(cuid())
+  name                 String
+  slug                 String   @unique
+  logo                 String?
+  createdAt            DateTime @default(now())
+  metadata             String?
+  planTier             PlanTier @default(FREE)
+
+  members  Member[]
+  projects Project[]
+
+  invitations Invitation[]
+
+  procoreConnection      ProcoreConnection?
+  autodeskConnection     AutodeskConnection?
+  assistantConversations AssistantConversation[]
+  fileAccessAuditEntries FileAccessAuditEntry[]
+
+  @@map("organization")
+}
+
+// Durable fixed-window counters used to protect the Agent endpoint across
+// serverless instances. subjectId is a user ID or organization ID depending
+// on kind; a loose reference lets expired windows be pruned independently.
+model AssistantUsageWindow {
+  id          String   @id @default(cuid())
+  kind        String
+  subjectId   String
+  windowStart DateTime
+  count       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([kind, subjectId, windowStart])
+  @@index([windowStart])
+  @@map("assistant_usage_window")
+}
+
+model Member {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("member") // unused for app permissions; kept for Better Auth compatibility
+  createdAt      DateTime     @default(now())
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("member")
+}
+
+// ---------- App-specific models ----------
+
+enum ProjectRole {
+  PROJECT_MANAGER
+  SCHEDULER
+  SUPERINTENDENT
+  TRADE
+}
+
+enum TaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  DONE
+  DELAYED
+}
+
+enum RoadblockStatus {
+  OPEN
+  RESOLVED
+}
+
+enum RoadblockType {
+  CHANGE_ORDER
+  INSPECTION
+  LABOR
+  MATERIAL
+  WEATHER
+  OTHER
+}
+
+enum CommitmentStatus {
+  COMMITTED
+  COMPLETED
+  NOT_COMPLETED
+}
+
+enum SirStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SubmittalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVISE_RESUBMIT
+}
+
+enum RfiStatus {
+  OPEN
+  ANSWERED
+  CLOSED
+}
+
+enum IntegrationSource {
+  NATIVE
+  PROCORE
+  AUTODESK
+}
+
+enum FileAccessAction {
+  VIEW
+  DOWNLOAD
+}
+
+enum FileAccessOutcome {
+  ALLOWED
+  DENIED
+}
+
+enum ActivitySource {
+  UI
+  AGENT
+  SYSTEM
+  INTEGRATION
+}
+
+model Project {
+  id                String       @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name              String
+  startDate         DateTime
+  endDate           DateTime
+  isArchived        Boolean      @default(false)
+  archivedAt        DateTime?
+  procoreProjectId  String?
+  autodeskProjectId String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  members ProjectMember[]
+  invites ProjectInvite[]
+  tasks   Task[]
+
+  scheduleImpactRequests ScheduleImpactRequest[]
+  submittals             Submittal[]
+  rfis                   RFI[]
+  drawings               Drawing[]
+  baselines              Baseline[]
+  activityLogEntries     ActivityLogEntry[]
+  fileAccessAuditEntries FileAccessAuditEntry[]
+  assistantConversations AssistantConversation[]
+  assistantAttachments   AssistantAttachment[]
+  dailyReports           DailyReport[]
+
+  @@map("project")
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  projectId String
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      ProjectRole
+  createdAt DateTime    @default(now())
+
+  tasks           Task[] @relation("TaskAssignee")
+  ownedRoadblocks Task[] @relation("RoadblockOwner")
+
+  weeklyCommitments WeeklyCommitment[]
+
+  submittedSirs    ScheduleImpactRequest[] @relation("SirSubmitter")
+  reviewedSirs     ScheduleImpactRequest[] @relation("SirReviewer")
+  submittals       Submittal[]
+  rfisRaised       RFI[]
+  drawingsUploaded Drawing[]
+  baselinesCreated Baseline[]
+
+  @@unique([projectId, userId])
+  @@map("project_member")
+}
+
+model ProjectInvite {
+  id        String      @id @default(cuid())
+  projectId String
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  token     String      @unique @default(cuid())
+  role      ProjectRole
+  createdAt DateTime    @default(now())
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  @@map("project_invite")
+}
+
+enum AssistantMessageRole {
+  USER
+  ASSISTANT
+}
+
+enum AssistantActionKind {
+  ROADBLOCK_CHANGE
+  TASK_CHANGE
+  TASK_PROGRESS_CHANGE
+  WEEKLY_COMMITMENT_CHANGE
+  SCHEDULE_IMPACT_CHANGE
+  BASELINE_CHANGE
+  SCHEDULE_CHANGE
+  PROJECT_CONTROL_CHANGE
+}
+
+enum AssistantActionStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  EXPIRED
+}
+
+enum ProjectFileSource {
+  AI_UPLOAD
+  DIRECT_UPLOAD
+}
+
+enum DocumentProcessingStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+  UNSUPPORTED
+}
+
+model AssistantConversation {
+  id              String                    @id @default(cuid())
+  organizationId  String
+  organization    Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId       String?
+  project         Project?                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdById     String
+  createdBy       User                      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  title           String                    @default("New conversation")
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  messages        AssistantMessage[]
+  actionProposals AssistantActionProposal[]
+  attachments     AssistantAttachment[]
+
+  @@index([organizationId, createdById, updatedAt])
+  @@index([projectId])
+  @@map("assistant_conversation")
+}
+
+model AssistantMessage {
+  id             String                @id @default(cuid())
+  conversationId String
+  conversation   AssistantConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           AssistantMessageRole
+  content        String                @db.Text
+  parts          Json?
+  model          String?
+  createdAt      DateTime              @default(now())
+  completedAt    DateTime?
+  durationMs     Int?
+  attachments    AssistantAttachment[]
+
+  @@index([conversationId, createdAt])
+  @@map("assistant_message")
+}
+
+model AssistantAttachment {
+  id               String                   @id @default(cuid())
+  conversationId   String?
+  conversation     AssistantConversation?   @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  messageId        String?
+  message          AssistantMessage?        @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  projectId        String
+  project          Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedById     String
+  uploadedBy       User                     @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  fileName         String
+  mediaType        String
+  sizeBytes        Int
+  contentHash      String?
+  storageKey       String                   @unique
+  fileUrl          String
+  searchableStorageKey String?              @unique
+  searchableFileUrl String?
+  ocrEngine         String?
+  ocrProcessedAt    DateTime?
+  source           ProjectFileSource        @default(AI_UPLOAD)
+  extractionStatus DocumentProcessingStatus @default(PENDING)
+  extractedText    String?                  @db.Text
+  extractionError  String?
+  pageCount        Int?
+  processedAt      DateTime?
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  chunks           DocumentChunk[]
+  rfis             RFI[]
+  submittals       Submittal[]
+  roadblockTasks   Task[]                   @relation("RoadblockSourceAttachment")
+
+  @@index([conversationId, createdAt])
+  @@index([messageId])
+  @@index([projectId])
+  @@index([projectId, extractionStatus])
+  @@index([projectId, contentHash])
+  @@map("assistant_attachment")
+}
+
+model DocumentChunk {
+  id         String              @id @default(cuid())
+  documentId String
+  document   AssistantAttachment @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  pageNumber Int
+  chunkIndex Int
+  text       String              @db.Text
+  createdAt  DateTime            @default(now())
+
+  @@unique([documentId, pageNumber, chunkIndex])
+  @@index([documentId, pageNumber])
+  @@map("document_chunk")
+}
+
+model AssistantActionProposal {
+  id             String                @id @default(cuid())
+  conversationId String
+  conversation   AssistantConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  projectId      String
+  taskId         String?
+  createdById    String
+  kind           AssistantActionKind
+  status         AssistantActionStatus @default(PENDING)
+  payload        Json
+  snapshot       Json
+  result         Json?
+  expiresAt      DateTime
+  confirmedAt    DateTime?
+  cancelledAt    DateTime?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  @@index([conversationId, createdAt])
+  @@index([createdById, status])
+  @@index([projectId, taskId])
+  @@map("assistant_action_proposal")
+}
+
+model Task {
+  id                String           @id @default(cuid())
+  projectId         String
+  project           Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name              String
+  assignedToId      String?
+  assignedTo        ProjectMember?   @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  startDate         DateTime
+  endDate           DateTime
+  actualStartDate   DateTime?
+  actualFinishDate  DateTime?
+  status            TaskStatus       @default(NOT_STARTED)
+  progress          Int              @default(0)
+  isRoadblock       Boolean          @default(false)
+  roadblockNote     String?
+  roadblockStatus   RoadblockStatus?
+  roadblockRaisedBy String?
+  roadblockType     RoadblockType?
+  roadblockOwnerId  String?
+  roadblockOwner    ProjectMember?   @relation("RoadblockOwner", fields: [roadblockOwnerId], references: [id], onDelete: SetNull)
+  roadblockDueDate  DateTime?
+  roadblockAttachmentId String?
+  roadblockAttachment AssistantAttachment? @relation("RoadblockSourceAttachment", fields: [roadblockAttachmentId], references: [id], onDelete: SetNull)
+  roadblockPageNumber Int?
+  roadblockCitationExcerpt String? @db.Text
+  resolvedAt        DateTime?
+  sequenceOrder     Int              @default(0)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  predecessorLinks  TaskDependency[]   @relation("SuccessorTask")
+  successorLinks    TaskDependency[]   @relation("PredecessorTask")
+  weeklyCommitments WeeklyCommitment[]
+  updates           TaskUpdate[]
+
+  scheduleImpactRequests ScheduleImpactRequest[]
+  submittals             Submittal[]
+  rfis                   RFI[]
+  drawings               Drawing[]
+
+  // Schedule Linking & Progress Verification
+  extractedObservations  ExtractedObservation[]
+  candidateMatches       CandidateMatch[]
+  approvedEvents         ApprovedScheduleEvent[]
+  discipline             Discipline?      @default(CIVIL)
+  wbsCode                String?
+  level                  Int?             @default(1)
+
+  @@index([roadblockAttachmentId])
+  @@map("task")
+}
+
+// A directed edge: `predecessor` must happen before `successor`.
+model TaskDependency {
+  id            String   @id @default(cuid())
+  predecessorId String
+  predecessor   Task     @relation("PredecessorTask", fields: [predecessorId], references: [id], onDelete: Cascade)
+  successorId   String
+  successor     Task     @relation("SuccessorTask", fields: [successorId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@unique([predecessorId, successorId])
+  @@index([successorId])
+  @@map("task_dependency")
+}
+
+// A trade/team commits to completing a task within a given week (Last Planner / Weekly Work Plan).
+// Commits are one-way: once created, only its status/reasonForVariance can change.
+model WeeklyCommitment {
+  id                String           @id @default(cuid())
+  taskId            String
+  task              Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  weekStartDate     DateTime
+  committedById     String
+  committedBy       ProjectMember    @relation(fields: [committedById], references: [id], onDelete: Cascade)
+  status            CommitmentStatus @default(COMMITTED)
+  reasonForVariance String?
+  removedAt         DateTime?
+  removedById       String?
+  removedBy         User?            @relation("WeeklyCommitmentRemovedBy", fields: [removedById], references: [id], onDelete: SetNull)
+  removalReason     String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@unique([taskId, weekStartDate])
+  @@index([weekStartDate])
+  @@index([removedAt])
+  @@map("weekly_commitment")
+}
+
+// Field Tracking: a running progress log on a task (note + optional photo), from any project member.
+model TaskUpdate {
+  id          String   @id @default(cuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  note        String?
+  photoUrl    String?
+  storageKey  String?  @unique
+  fileName    String?
+  mediaType   String?
+  sizeBytes   Int?
+  contentHash String?
+  createdAt   DateTime @default(now())
+
+  @@index([taskId])
+  @@index([contentHash])
+  @@map("task_update")
+}
+
+// A field-reported condition that may require changing the schedule. Trade
+// partners (typically) submit; a Project Manager or Superintendent reviews.
+model ScheduleImpactRequest {
+  id                 String         @id @default(cuid())
+  projectId          String
+  project            Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  taskId             String?
+  task               Task?          @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  description        String
+  proposedNewEndDate DateTime?
+  status             SirStatus      @default(PENDING)
+  submittedById      String
+  submittedBy        ProjectMember  @relation("SirSubmitter", fields: [submittedById], references: [id], onDelete: Cascade)
+  reviewedById       String?
+  reviewedBy         ProjectMember? @relation("SirReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewNote         String?
+  createdAt          DateTime       @default(now())
+  reviewedAt         DateTime?
+
+  @@index([projectId])
+  @@map("schedule_impact_request")
+}
+
+// Native (no Procore) submittal tracking, linked to an optional schedule task.
+model Submittal {
+  id            String            @id @default(cuid())
+  projectId     String
+  project       Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  taskId        String?
+  task          Task?             @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  attachmentId String?
+  attachment AssistantAttachment? @relation(fields: [attachmentId], references: [id], onDelete: SetNull)
+  pageNumber Int?
+  citationExcerpt String? @db.Text
+  title         String
+  specSection   String?
+  status        SubmittalStatus   @default(PENDING)
+  dueDate       DateTime?
+  submittedById String
+  submittedBy   ProjectMember     @relation(fields: [submittedById], references: [id], onDelete: Cascade)
+  source        IntegrationSource @default(NATIVE)
+  externalId    String?
+  lastSyncedAt  DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@unique([projectId, source, externalId])
+  @@index([projectId])
+  @@index([attachmentId])
+  @@map("submittal")
+}
+
+// Native (no Procore) RFI tracking, linked to an optional schedule task.
+model RFI {
+  id               String               @id @default(cuid())
+  projectId        String
+  project          Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  taskId           String?
+  task             Task?                @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  attachmentId     String?
+  attachment       AssistantAttachment? @relation(fields: [attachmentId], references: [id], onDelete: SetNull)
+  pageNumber       Int?
+  citationExcerpt  String?              @db.Text
+  question         String
+  answer           String?
+  status           RfiStatus            @default(OPEN)
+  dueDate          DateTime?
+  raisedById       String
+  raisedBy         ProjectMember        @relation(fields: [raisedById], references: [id], onDelete: Cascade)
+  source           IntegrationSource    @default(NATIVE)
+  externalId       String?
+  lastSyncedAt     DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@unique([projectId, source, externalId])
+  @@index([projectId])
+  @@index([attachmentId])
+  @@map("rfi")
+}
+
+// Org-level Procore OAuth connection. One per organization.
+model ProcoreConnection {
+  id                   String       @id @default(cuid())
+  organizationId       String       @unique
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  accessToken          String
+  refreshToken         String
+  accessTokenExpiresAt DateTime
+  procoreCompanyId     String
+  procoreCompanyName   String?
+  connectedByUserId    String
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@map("procore_connection")
+}
+
+// Org-level Autodesk ACC OAuth connection. One per organization.
+model AutodeskConnection {
+  id                   String       @id @default(cuid())
+  organizationId       String       @unique
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  accessToken          String
+  refreshToken         String
+  accessTokenExpiresAt DateTime
+  autodeskHubId        String
+  autodeskHubName      String?
+  connectedByUserId    String
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@map("autodesk_connection")
+}
+
+// Native (no Autodesk) drawing storage, optionally linked to a schedule task.
+model Drawing {
+  id           String            @id @default(cuid())
+  projectId    String
+  project      Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  taskId       String?
+  task         Task?             @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  title        String
+  discipline   String?
+  fileUrl      String
+  storageKey   String?           @unique
+  fileName     String?
+  mediaType    String?
+  sizeBytes    Int?
+  contentHash  String?
+  revision     Int               @default(1)
+  isSuperseded Boolean           @default(false)
+  uploadedById String
+  uploadedBy   ProjectMember     @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  source       IntegrationSource @default(NATIVE)
+  externalId   String?
+  lastSyncedAt DateTime?
+  createdAt    DateTime          @default(now())
+
+  @@unique([projectId, source, externalId])
+  @@index([projectId])
+  @@index([projectId, contentHash])
+  @@map("drawing")
+}
+
+// A named snapshot of every task's dates/status at a point in time, for
+// comparing "planned" vs "current" (S-Curve, variance reporting).
+model Baseline {
+  id          String        @id @default(cuid())
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name        String
+  createdById String
+  createdBy   ProjectMember @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+
+  snapshots BaselineTaskSnapshot[]
+
+  @@index([projectId])
+  @@map("baseline")
+}
+
+// Point-in-time copy of a task's schedule data. taskId/taskName are
+// denormalized (not a live FK) so the snapshot survives task deletion.
+model BaselineTaskSnapshot {
+  id         String     @id @default(cuid())
+  baselineId String
+  baseline   Baseline   @relation(fields: [baselineId], references: [id], onDelete: Cascade)
+  taskId     String
+  taskName   String
+  startDate  DateTime
+  endDate    DateTime
+  status     TaskStatus
+
+  @@index([baselineId])
+  @@map("baseline_task_snapshot")
+}
+
+// Append-only audit trail of schedule-relevant changes (data traceability).
+// taskName is denormalized so entries survive task deletion.
+model ActivityLogEntry {
+  id         String         @id @default(cuid())
+  projectId  String
+  project    Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  taskId     String?
+  taskName   String?
+  userId     String
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action     String
+  detail     String?
+  entityType String?
+  entityId   String?
+  source     ActivitySource @default(UI)
+  changes    Json?
+  createdAt  DateTime       @default(now())
+
+  @@index([projectId, createdAt])
+  @@index([projectId, source, createdAt])
+  @@index([projectId, entityType, createdAt])
+  @@map("activity_log_entry")
+}
+
+// Append-only security trail for project-file views, downloads, and denied access.
+// Names are denormalized so an audit record remains meaningful after deletion.
+model FileAccessAuditEntry {
+  id             String            @id @default(cuid())
+  organizationId String
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  projectName    String
+  userId         String?
+  user           User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userName       String?
+  storageKey     String
+  fileName       String
+  action         FileAccessAction
+  outcome        FileAccessOutcome
+  rangeRequested Boolean           @default(false)
+  userAgent      String?
+  denialReason   String?
+  dedupeKey      String?           @unique
+  createdAt      DateTime          @default(now())
+
+  @@index([projectId, createdAt])
+  @@index([organizationId, createdAt])
+  @@index([userId, createdAt])
+  @@map("file_access_audit_entry")
+}
+
+model Invitation {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           String?
+  status         String       @default("pending")
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  inviterId      String
+  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("invitation")
+}
+
+// ==============================================================================
+// SIH26122 Intelligent Schedule Linking & Progress Ingestion Models
+// ==============================================================================
+
+enum EventType {
+  STARTED
+  COMPLETED
+  PAUSED
+  REWORK
+  PROGRESS
+}
+
+enum MatchStatus {
+  PENDING
+  AUTO_LINKED
+  PENDING_REVIEW
+  UNMATCHED
+}
+
+enum Decision {
+  APPROVED
+  REJECTED
+  REASSIGNED
+}
+
+enum Discipline {
+  CIVIL
+  PIPING
+  ELECTRICAL
+  INSTRUMENTATION
+  MECHANICAL
+  HVAC
+  OTHER
+}
+
+enum ReportInputType {
+  FREE_TEXT
+  FILE_UPLOAD
+  VOICE_RECORDING
+}
+
+enum ReportPipelineStatus {
+  SUBMITTED
+  PROCESSING
+  AUTO_LINKED
+  NEEDS_REVIEW
+  APPROVED
+  APPLIED
+  REJECTED
+}
+
+model DailyReport {
+  id              String               @id @default(cuid())
+  title           String?
+  inputType       ReportInputType      @default(FREE_TEXT)
+  rawContent      String               @db.Text
+  pipelineStatus  ReportPipelineStatus @default(SUBMITTED)
+  fileUrl         String?
+  audioUrl        String?
+  transcribedText String?              @db.Text
+
+  projectId       String
+  project         Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  observations    ExtractedObservation[]
+
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([projectId])
+  @@map("daily_report")
+}
+
+model ExtractedObservation {
+  id              String      @id @default(cuid())
+  rawText         String      @db.Text
+  eventType       EventType   @default(PROGRESS)
+  extractedDate   DateTime
+  progressPercent Float?
+  matchStatus     MatchStatus @default(PENDING)
+
+  taskId          String?
+  task            Task?       @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  sourceSpan      Json?
+
+  dailyReportId   String?
+  dailyReport     DailyReport? @relation(fields: [dailyReportId], references: [id], onDelete: SetNull)
+
+  candidateMatches       CandidateMatch[]
+  approvedScheduleEvents ApprovedScheduleEvent[]
+
+  createdAt DateTime @default(now())
+
+  @@index([taskId])
+  @@index([matchStatus])
+  @@map("extracted_observation")
+}
+
+model CandidateMatch {
+  id              String @id @default(cuid())
+  confidenceScore Float
+  componentScores Json?
+
+  observationId String
+  observation   ExtractedObservation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  taskId        String
+  task          Task                 @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  reviewDecisions ReviewDecision[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([observationId, taskId])
+  @@index([observationId])
+  @@index([taskId])
+  @@map("candidate_match")
+}
+
+model ReviewDecision {
+  id         String   @id @default(cuid())
+  decision   Decision
+  reviewedBy String?
+  reviewedAt DateTime @default(now())
+  notes      String?
+
+  candidateMatchId String
+  candidateMatch   CandidateMatch @relation(fields: [candidateMatchId], references: [id], onDelete: Cascade)
+
+  approvedScheduleEvents ApprovedScheduleEvent[]
+
+  @@index([candidateMatchId])
+  @@map("review_decision")
+}
+
+model ApprovedScheduleEvent {
+  id              String    @id @default(cuid())
+  eventType       EventType
+  actualDate      DateTime
+  progressPercent Float?
+
+  taskId          String
+  task            Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  sourceObservationId String
+  sourceObservation   ExtractedObservation @relation(fields: [sourceObservationId], references: [id], onDelete: Cascade)
+
+  reviewDecisionId String
+  reviewDecision   ReviewDecision @relation(fields: [reviewDecisionId], references: [id], onDelete: Cascade)
+
+  approvedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([taskId])
+  @@index([sourceObservationId])
+  @@index([reviewDecisionId])
+  @@map("approved_schedule_event")
+}
+

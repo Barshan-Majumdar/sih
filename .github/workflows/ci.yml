@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Dummy values satisfy lib/env.ts validation for steps that never touch
+# real services (lint, typecheck, unit tests, build).
+env:
+  BETTER_AUTH_SECRET: ci-dummy-secret-0000000000000000
+  BETTER_AUTH_URL: http://localhost:3000
+  GOOGLE_CLIENT_ID: ci-dummy
+  GOOGLE_CLIENT_SECRET: ci-dummy
+
+jobs:
+  quality:
+    name: Lint, typecheck, unit tests, build
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx eslint src --max-warnings=0
+      - run: npx tsc --noEmit
+      - run: npx vitest run tests/unit
+      - run: npm run build
+
+  integration:
+    name: Integration tests (real database)
+    runs-on: ubuntu-latest
+    env:
+      # Provide a dedicated TEST database as a repo secret — tests create and
+      # clean up their own isolated fixtures, but don't point this at prod.
+      DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Run integration tests (skipped when TEST_DATABASE_URL secret is unset)
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "TEST_DATABASE_URL secret not configured — skipping integration tests."
+            exit 0
+          fi
+          npx prisma migrate deploy
+          npx vitest run tests/integration
+
+  e2e:
+    name: E2E tests (Playwright)
+    # Manual trigger only: needs a seeded test database and takes several minutes.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Run E2E (skipped when TEST_DATABASE_URL secret is unset)
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "TEST_DATABASE_URL secret not configured — skipping E2E."
+            exit 0
+          fi
+          npx prisma migrate deploy
+          npm run db:seed || echo "Seed failed (likely already seeded) — continuing"
+          npx playwright install chromium --with-deps
+          npm run test:e2e

@@ -1,0 +1,81 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# agent/tooling-generated docs (not project documentation)
+AGENTS.md
+CLAUDE.md
+DESIGN.md
+DEPLOYMENT.md
+ROADMAP.md
+.agents/
+
+# Local agent review notes / scratch
+agent-runtime-review*.txt
+*-review*.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+
+# Field Tracking photo uploads (local disk storage — dev only, not durable storage)
+/public/uploads/
+
+# PDF.js browser runtime copied from node_modules during install/build
+/public/pdfjs/
+
+# Third-party UI design references (copyrighted assets — private reference only)
+/design-refs/
+
+# Playwright artifacts
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Agent scratch worktrees and local agent state
+.claude/

@@ -1,0 +1,5 @@
+fastapi==0.116.1
+img2pdf==0.6.1
+ocrmypdf==17.8.1
+pillow==11.3.0
+uvicorn==0.35.0
