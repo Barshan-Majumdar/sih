@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 import { LayoutDashboard } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -19,22 +19,13 @@ export function UserMenu() {
 
   return (
     <div className="flex items-center gap-2">
-      <SignedIn>
-        <UserButton
-          appearance={{
-            elements: {
-              avatarBox: "h-8 w-8 rounded-full ring-1 ring-slate-700",
-            },
-          }}
-        />
-      </SignedIn>
-      <SignedOut>
-        <SignInButton mode="modal">
-          <button className="h-8 rounded-full bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-500">
-            Sign in
-          </button>
-        </SignInButton>
-      </SignedOut>
+      <UserButton
+        appearance={{
+          elements: {
+            avatarBox: "h-8 w-8 rounded-full ring-1 ring-slate-700",
+          },
+        }}
+      />
 
       <ThemeToggle />
 

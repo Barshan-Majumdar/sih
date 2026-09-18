@@ -4,6 +4,8 @@ import { ProjectRouteSubNav } from "@/components/ProjectSubNav";
 import { DashboardPdfViewer } from "@/components/PdfViewer";
 import { AppThemeProvider } from "@/components/AppThemeProvider";
 
+export const dynamic = "force-dynamic";
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell" data-app-theme="light" style={{ colorScheme: "light" }}>

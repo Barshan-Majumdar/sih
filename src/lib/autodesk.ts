@@ -25,27 +25,30 @@ type JsonApiResource = {
 type JsonApiList<T> = { data: T[] };
 
 export function isAutodeskConfigured(): boolean {
-  return !!(env.AUTODESK_CLIENT_ID && env.AUTODESK_CLIENT_SECRET);
+  return !!(process.env.AUTODESK_CLIENT_ID && process.env.AUTODESK_CLIENT_SECRET);
 }
 
 export function autodeskRedirectUri(): string {
   const base = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
-  return env.AUTODESK_REDIRECT_URI ?? `${base}/api/integrations/autodesk/callback`;
+  return process.env.AUTODESK_REDIRECT_URI ?? `${base}/api/integrations/autodesk/callback`;
 }
 
 function basicAuthHeader(): string {
-  if (!env.AUTODESK_CLIENT_ID || !env.AUTODESK_CLIENT_SECRET) {
+  const clientId = process.env.AUTODESK_CLIENT_ID;
+  const clientSecret = process.env.AUTODESK_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
     throw new Error("Autodesk isn't configured on this server");
   }
-  const encoded = Buffer.from(`${env.AUTODESK_CLIENT_ID}:${env.AUTODESK_CLIENT_SECRET}`).toString("base64");
+  const encoded = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
   return `Basic ${encoded}`;
 }
 
 export function buildAutodeskAuthorizeUrl(state: string): string {
-  if (!env.AUTODESK_CLIENT_ID) throw new Error("Autodesk isn't configured on this server");
+  const clientId = process.env.AUTODESK_CLIENT_ID;
+  if (!clientId) throw new Error("Autodesk isn't configured on this server");
   const params = new URLSearchParams({
     response_type: "code",
-    client_id: env.AUTODESK_CLIENT_ID,
+    client_id: clientId,
     redirect_uri: autodeskRedirectUri(),
     scope: APS_SCOPES,
     state,

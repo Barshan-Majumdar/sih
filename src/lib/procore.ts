@@ -1,5 +1,3 @@
-import { env } from "@/lib/env";
-
 /** Procore OAuth + REST helpers. Gracefully inactive when PROCORE_CLIENT_ID is unset. */
 
 export type ProcoreEnvironment = "sandbox" | "production";
@@ -23,7 +21,7 @@ export function procoreRedirectUri(): string {
   return "/api/integrations/procore/callback";
 }
 
-export function procoreHosts(environment: ProcoreEnvironment = env.PROCORE_ENV) {
+export function procoreHosts(environment: ProcoreEnvironment = (process.env.PROCORE_ENV as ProcoreEnvironment) || "sandbox") {
   if (environment === "production") {
     return {
       login: "https://login.procore.com",
@@ -37,11 +35,12 @@ export function procoreHosts(environment: ProcoreEnvironment = env.PROCORE_ENV) 
 }
 
 export function buildProcoreAuthorizeUrl(state: string): string {
-  if (!env.PROCORE_CLIENT_ID) throw new Error("Procore isn't configured on this server");
+  const clientId = process.env.PROCORE_CLIENT_ID;
+  if (!clientId) throw new Error("Procore isn't configured on this server");
   const { login } = procoreHosts();
   const params = new URLSearchParams({
     response_type: "code",
-    client_id: env.PROCORE_CLIENT_ID,
+    client_id: clientId,
     redirect_uri: procoreRedirectUri(),
     state,
   });
@@ -49,14 +48,16 @@ export function buildProcoreAuthorizeUrl(state: string): string {
 }
 
 export async function exchangeProcoreCode(code: string): Promise<ProcoreTokenResponse> {
-  if (!env.PROCORE_CLIENT_ID || !env.PROCORE_CLIENT_SECRET) {
+  const clientId = process.env.PROCORE_CLIENT_ID;
+  const clientSecret = process.env.PROCORE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
     throw new Error("Procore isn't configured on this server");
   }
   const { login } = procoreHosts();
   const body = new URLSearchParams({
     grant_type: "authorization_code",
-    client_id: env.PROCORE_CLIENT_ID,
-    client_secret: env.PROCORE_CLIENT_SECRET,
+    client_id: clientId,
+    client_secret: clientSecret,
     code,
     redirect_uri: procoreRedirectUri(),
   });
@@ -73,14 +74,16 @@ export async function exchangeProcoreCode(code: string): Promise<ProcoreTokenRes
 }
 
 export async function refreshProcoreToken(refreshToken: string): Promise<ProcoreTokenResponse> {
-  if (!env.PROCORE_CLIENT_ID || !env.PROCORE_CLIENT_SECRET) {
+  const clientId = process.env.PROCORE_CLIENT_ID;
+  const clientSecret = process.env.PROCORE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
     throw new Error("Procore isn't configured on this server");
   }
   const { login } = procoreHosts();
   const body = new URLSearchParams({
     grant_type: "refresh_token",
-    client_id: env.PROCORE_CLIENT_ID,
-    client_secret: env.PROCORE_CLIENT_SECRET,
+    client_id: clientId,
+    client_secret: clientSecret,
     refresh_token: refreshToken,
   });
   const res = await fetch(`${login}/oauth/token`, {
