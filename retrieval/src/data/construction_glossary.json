@@ -1,46 +1,684 @@
 {
   "description": "Configurable Domain Glossary for Infrastructure & Construction Terminology Normalization with Discipline Tagging",
-  "version": "2.0",
+  "version": "3.0",
   "abbreviations": {
-    "rebar": { "expansion": "reinforcement reinforcing steel", "discipline": "Civil" },
-    "r/f": { "expansion": "reinforcement formwork", "discipline": "Civil" },
-    "rf": { "expansion": "reinforcement", "discipline": "Civil" },
-    "rcc": { "expansion": "reinforced concrete reinforced cement concrete", "discipline": "Civil" },
-    "pcc": { "expansion": "plain cement concrete", "discipline": "Civil" },
-    "conc": { "expansion": "concrete", "discipline": "Civil" },
-    "pour": { "expansion": "concreting pouring", "discipline": "Civil" },
-    "pouring": { "expansion": "concreting pour", "discipline": "Civil" },
-    "concrtng": { "expansion": "concreting pouring", "discipline": "Civil" },
-    "concrting": { "expansion": "concreting pouring", "discipline": "Civil" },
-    "shuttering": { "expansion": "formwork shuttering", "discipline": "Civil" },
-    "excav": { "expansion": "excavation digging", "discipline": "Civil" },
-    "excvtn": { "expansion": "excavation", "discipline": "Civil" },
-    "excvation": { "expansion": "excavation", "discipline": "Civil" },
-    "psc": { "expansion": "prestressed concrete", "discipline": "Structural" },
-    "aac": { "expansion": "autoclaved aerated concrete block masonry", "discipline": "Civil" },
-    "hvac": { "expansion": "ductwork heating ventilation air conditioning insulation", "discipline": "Piping & Utilities" },
-    "mep": { "expansion": "mechanical electrical plumbing", "discipline": "Piping & Utilities" },
-    "m3": { "expansion": "cubic meters", "discipline": "Civil" },
-    "cum": { "expansion": "cubic meters", "discipline": "Civil" },
-    "installtn": { "expansion": "installation", "discipline": null },
-    "erectn": { "expansion": "erection", "discipline": "Structural" },
-    "substructur": { "expansion": "substructure", "discipline": "Civil" },
-    "superstrucure": { "expansion": "superstructure", "discipline": "Structural" },
-    "superstructur": { "expansion": "superstructure", "discipline": "Structural" },
-    "lvl": { "expansion": "level", "discipline": null },
-    "flr": { "expansion": "floor", "discipline": null },
-    "substatn": { "expansion": "substation electrical", "discipline": "Electrical" },
-    "substation": { "expansion": "substation electrical switchyard", "discipline": "Electrical" },
-    "stormwtr": { "expansion": "stormwater", "discipline": "Piping & Utilities" },
-    "electn": { "expansion": "electrical", "discipline": "Electrical" },
-    "conduit": { "expansion": "conduit piping electrical", "discipline": "Electrical" }
+    "rebar": {
+      "expansion": "reinforcement reinforcing steel",
+      "discipline": "Civil"
+    },
+    "r/f": {
+      "expansion": "reinforcement formwork",
+      "discipline": "Civil"
+    },
+    "rf": {
+      "expansion": "reinforcement",
+      "discipline": "Civil"
+    },
+    "rcc": {
+      "expansion": "reinforced concrete reinforced cement concrete",
+      "discipline": "Civil"
+    },
+    "pcc": {
+      "expansion": "plain cement concrete",
+      "discipline": "Civil"
+    },
+    "conc": {
+      "expansion": "concrete",
+      "discipline": "Civil"
+    },
+    "pour": {
+      "expansion": "concreting pouring",
+      "discipline": "Civil"
+    },
+    "pouring": {
+      "expansion": "concreting pour",
+      "discipline": "Civil"
+    },
+    "concrtng": {
+      "expansion": "concreting pouring",
+      "discipline": "Civil"
+    },
+    "concrting": {
+      "expansion": "concreting pouring",
+      "discipline": "Civil"
+    },
+    "shuttering": {
+      "expansion": "formwork shuttering",
+      "discipline": "Civil"
+    },
+    "excav": {
+      "expansion": "excavation digging",
+      "discipline": "Civil"
+    },
+    "excvtn": {
+      "expansion": "excavation",
+      "discipline": "Civil"
+    },
+    "excvation": {
+      "expansion": "excavation",
+      "discipline": "Civil"
+    },
+    "psc": {
+      "expansion": "prestressed concrete",
+      "discipline": "Structural"
+    },
+    "aac": {
+      "expansion": "autoclaved aerated concrete block masonry",
+      "discipline": "Civil"
+    },
+    "hvac": {
+      "expansion": "ductwork heating ventilation air conditioning insulation",
+      "discipline": "Piping & Utilities"
+    },
+    "mep": {
+      "expansion": "mechanical electrical plumbing",
+      "discipline": "Piping & Utilities"
+    },
+    "m3": {
+      "expansion": "cubic meters",
+      "discipline": "Civil"
+    },
+    "cum": {
+      "expansion": "cubic meters",
+      "discipline": "Civil"
+    },
+    "installtn": {
+      "expansion": "installation",
+      "discipline": null
+    },
+    "erectn": {
+      "expansion": "erection",
+      "discipline": "Structural"
+    },
+    "substructur": {
+      "expansion": "substructure",
+      "discipline": "Civil"
+    },
+    "superstrucure": {
+      "expansion": "superstructure",
+      "discipline": "Structural"
+    },
+    "superstructur": {
+      "expansion": "superstructure",
+      "discipline": "Structural"
+    },
+    "lvl": {
+      "expansion": "level",
+      "discipline": null
+    },
+    "flr": {
+      "expansion": "floor",
+      "discipline": null
+    },
+    "substatn": {
+      "expansion": "substation electrical",
+      "discipline": "Electrical"
+    },
+    "substation": {
+      "expansion": "substation electrical switchyard",
+      "discipline": "Electrical"
+    },
+    "stormwtr": {
+      "expansion": "stormwater",
+      "discipline": "Piping & Utilities"
+    },
+    "electn": {
+      "expansion": "electrical",
+      "discipline": "Electrical"
+    },
+    "conduit": {
+      "expansion": "conduit piping electrical",
+      "discipline": "Electrical"
+    },
+    "chainage": {
+      "expansion": "chainage linear distance stationing km",
+      "discipline": "Civil"
+    },
+    "ch": {
+      "expansion": "chainage stationing linear distance",
+      "discipline": "Civil"
+    },
+    "row": {
+      "expansion": "right of way corridor boundary land acquisition",
+      "discipline": "Civil"
+    },
+    "gsb": {
+      "expansion": "granular subbase coarse aggregate road layer",
+      "discipline": "Civil"
+    },
+    "wmm": {
+      "expansion": "wet mix macadam road base granular base",
+      "discipline": "Civil"
+    },
+    "dlc": {
+      "expansion": "dry lean concrete base pavement",
+      "discipline": "Civil"
+    },
+    "pqc": {
+      "expansion": "pavement quality concrete rigid pavement slab",
+      "discipline": "Civil"
+    },
+    "dbm": {
+      "expansion": "dense bituminous macadam asphalt binder course",
+      "discipline": "Civil"
+    },
+    "bc": {
+      "expansion": "bituminous concrete asphalt wearing course surface",
+      "discipline": "Civil"
+    },
+    "pt": {
+      "expansion": "post tensioning tendon stressing",
+      "discipline": "Structural"
+    },
+    "girder": {
+      "expansion": "bridge girder beam precast span",
+      "discipline": "Structural"
+    },
+    "pier": {
+      "expansion": "substructure bridge pier column support",
+      "discipline": "Structural"
+    },
+    "culvert": {
+      "expansion": "box culvert pipe culvert drainage cross-drain",
+      "discipline": "Civil"
+    },
+    "drainage": {
+      "expansion": "stormwater drainage sewer drain ditch",
+      "discipline": "Piping & Utilities"
+    },
+    "sewerage": {
+      "expansion": "sewage collection pipe inspection manhole stp",
+      "discipline": "Piping & Utilities"
+    },
+    "trenching": {
+      "expansion": "trench excavation pipe ditch digging",
+      "discipline": "Civil"
+    },
+    "backfilling": {
+      "expansion": "soil backfilling trench backfill compaction",
+      "discipline": "Civil"
+    },
+    "compaction": {
+      "expansion": "soil roller compaction proctor density roll",
+      "discipline": "Geotechnical"
+    },
+    "embankment": {
+      "expansion": "soil earthwork embankment filling compaction",
+      "discipline": "Geotechnical"
+    },
+    "subgrade": {
+      "expansion": "road subgrade preparation compaction CBR",
+      "discipline": "Civil"
+    },
+    "staging": {
+      "expansion": "falsework staging scaffolding support",
+      "discipline": "Civil"
+    },
+    "deshuttering": {
+      "expansion": "formwork stripping removal deshuttering",
+      "discipline": "Civil"
+    },
+    "curing": {
+      "expansion": "concrete water curing compound ponding",
+      "discipline": "Civil"
+    },
+    "slump": {
+      "expansion": "concrete slump consistency workability test",
+      "discipline": "Quality"
+    },
+    "batching": {
+      "expansion": "concrete batching plant mixing rmc",
+      "discipline": "Civil"
+    },
+    "rmc": {
+      "expansion": "ready mix concrete ready-mixed concrete transport",
+      "discipline": "Civil"
+    },
+    "tremie": {
+      "expansion": "tremie pipe underwater concreting bored pile",
+      "discipline": "Civil"
+    },
+    "bearing": {
+      "expansion": "pot bearing elastomeric bearing bridge expansion",
+      "discipline": "Structural"
+    },
+    "parapet": {
+      "expansion": "bridge crash barrier parapet railing",
+      "discipline": "Civil"
+    },
+    "geogrid": {
+      "expansion": "polymeric geogrid soil reinforcement slope stabilization",
+      "discipline": "Geotechnical"
+    },
+    "geotextile": {
+      "expansion": "geotextile separation drainage filter",
+      "discipline": "Geotechnical"
+    },
+    "gabion": {
+      "expansion": "gabion box rock mattress wire crate slope protection",
+      "discipline": "Civil"
+    },
+    "shotcrete": {
+      "expansion": "sprayed concrete gunite shotcrete lining",
+      "discipline": "Civil"
+    },
+    "waterproofing": {
+      "expansion": "waterproofing membrane bitumen coating sealant",
+      "discipline": "Civil"
+    },
+    "masonry": {
+      "expansion": "brickwork fly ash brick blockwork wall",
+      "discipline": "Civil"
+    },
+    "plastering": {
+      "expansion": "cement sand plaster mortar rendering",
+      "discipline": "Civil"
+    },
+    "flooring": {
+      "expansion": "vitrified tile stone granite flooring screed",
+      "discipline": "Architectural"
+    },
+    "acp": {
+      "expansion": "aluminium composite panel exterior facade cladding",
+      "discipline": "Architectural"
+    },
+    "glazing": {
+      "expansion": "facade curtain wall structural glazing double glass unit",
+      "discipline": "Architectural"
+    },
+    "painting": {
+      "expansion": "emulsion primer putty exterior weathercoat painting",
+      "discipline": "Architectural"
+    },
+    "scaffolding": {
+      "expansion": "cuplock scaffolding staging working platform",
+      "discipline": "Safety"
+    },
+    "barricading": {
+      "expansion": "site safety barricading traffic deviation cone sign",
+      "discipline": "Safety"
+    },
+    "ppe": {
+      "expansion": "personal protective equipment helmet safety shoes harness",
+      "discipline": "Safety"
+    },
+    "dpr": {
+      "expansion": "daily progress report daily site log record",
+      "discipline": "Project Controls"
+    },
+    "wbs": {
+      "expansion": "work breakdown structure schedule hierarchy activity code",
+      "discipline": "Project Controls"
+    },
+    "cpm": {
+      "expansion": "critical path method schedule float early start finish",
+      "discipline": "Project Controls"
+    },
+    "rfi": {
+      "expansion": "request for information technical query design clarification",
+      "discipline": "Project Controls"
+    },
+    "mir": {
+      "expansion": "material inspection report receipt verification test certificate",
+      "discipline": "Quality"
+    },
+    "wir": {
+      "expansion": "work inspection request inspection check sheet approval",
+      "discipline": "Quality"
+    },
+    "ncr": {
+      "expansion": "non conformance report defect rework rectification",
+      "discipline": "Quality"
+    },
+    "ahu": {
+      "expansion": "air handling unit ventilation blower filter coil",
+      "discipline": "Piping & Utilities"
+    },
+    "chiller": {
+      "expansion": "central water cooled air cooled chiller refrigeration",
+      "discipline": "Piping & Utilities"
+    },
+    "ductwork": {
+      "expansion": "sheet metal air duct insulation ventilation dampers",
+      "discipline": "Piping & Utilities"
+    },
+    "firefighting": {
+      "expansion": "fire protection hydrant sprinkler system deluge valve pipe",
+      "discipline": "Piping & Utilities"
+    },
+    "sprinkler": {
+      "expansion": "automatic fire sprinkler piping pendant head nozzle",
+      "discipline": "Piping & Utilities"
+    },
+    "stp": {
+      "expansion": "sewage treatment plant aeration clarifier effluent",
+      "discipline": "Piping & Utilities"
+    },
+    "switchgear": {
+      "expansion": "mv lv switchgear breaker busbar panel distribution",
+      "discipline": "Electrical"
+    },
+    "earthing": {
+      "expansion": "earthing ground mat grounding copper tape electrode pit",
+      "discipline": "Electrical"
+    },
+    "transformer": {
+      "expansion": "power distribution transformer oil cooling bushing",
+      "discipline": "Electrical"
+    },
+    "cp": {
+      "expansion": "cathodic protection pipeline anti-corrosion anode",
+      "discipline": "Electrical"
+    },
+    "ofc": {
+      "expansion": "optical fiber cable telecommunication conduit duct",
+      "discipline": "Instrumentation"
+    },
+    "scada": {
+      "expansion": "supervisory control and data acquisition automation telemetry",
+      "discipline": "Instrumentation"
+    },
+    "stringing": {
+      "expansion": "pipeline pipe stringing distribution along ROW",
+      "discipline": "Piping & Utilities"
+    },
+    "welding": {
+      "expansion": "pipe seam welding SMAW GTAW root hot pass",
+      "discipline": "Piping & Utilities"
+    },
+    "radiography": {
+      "expansion": "radiographic testing NDT weld x-ray inspection",
+      "discipline": "Quality"
+    },
+    "ndt": {
+      "expansion": "non destructive testing ultrasonic radiographic inspection",
+      "discipline": "Quality"
+    },
+    "hydrotest": {
+      "expansion": "hydrostatic pressure testing water pipeline integrity",
+      "discipline": "Quality"
+    },
+    "hdd": {
+      "expansion": "horizontal directional drilling trenchless road crossing",
+      "discipline": "Civil"
+    },
+    "ipc": {
+      "expansion": "interim payment certificate contractor running bill measurement",
+      "discipline": "Commercial"
+    },
+    "rob": {
+      "expansion": "railway over bridge bridge structure",
+      "discipline": "Structural"
+    },
+    "rub": {
+      "expansion": "railway under bridge underpass subway",
+      "discipline": "Structural"
+    },
+    "flyover": {
+      "expansion": "elevated corridor flyover grade separator",
+      "discipline": "Structural"
+    },
+    "geocell": {
+      "expansion": "cellular confinement system geocell slope erosion control",
+      "discipline": "Geotechnical"
+    },
+    "grouting": {
+      "expansion": "cement grout injection tendon duct grouting",
+      "discipline": "Structural"
+    },
+    "camber": {
+      "expansion": "super elevation roadway camber cross slope profile",
+      "discipline": "Civil"
+    },
+    "kerb": {
+      "expansion": "concrete kerb stone roadway shoulder edge channel",
+      "discipline": "Civil"
+    },
+    "median": {
+      "expansion": "central verge median barrier road divider",
+      "discipline": "Civil"
+    },
+    "pavement": {
+      "expansion": "flexible rigid road pavement surface course",
+      "discipline": "Civil"
+    },
+    "subbase": {
+      "expansion": "granular road subbase drainage layer",
+      "discipline": "Civil"
+    },
+    "piling": {
+      "expansion": "bored cast in situ foundation pile installation",
+      "discipline": "Civil"
+    },
+    "borehole": {
+      "expansion": "geotechnical soil investigation borehole drilling core SPT",
+      "discipline": "Geotechnical"
+    },
+    "spt": {
+      "expansion": "standard penetration test soil bearing capacity SPT N value",
+      "discipline": "Geotechnical"
+    },
+    "pile": {
+      "expansion": "deep foundation concrete bored cast in situ pile",
+      "discipline": "Civil"
+    },
+    "abutment": {
+      "expansion": "bridge end support abutment wing wall return wall",
+      "discipline": "Structural"
+    },
+    "span": {
+      "expansion": "superstructure clear bridge span deck length",
+      "discipline": "Structural"
+    },
+    "deck": {
+      "expansion": "bridge superstructure concrete deck slab wearing coat",
+      "discipline": "Structural"
+    },
+    "diaphragm": {
+      "expansion": "concrete diaphragm wall bridge intermediate transverse beam",
+      "discipline": "Structural"
+    },
+    "sheeting": {
+      "expansion": "corrugated profiled color coated roofing metal sheeting",
+      "discipline": "Architectural"
+    },
+    "flashing": {
+      "expansion": "waterproofing ridge flashing gutter drip apron",
+      "discipline": "Architectural"
+    },
+    "manhole": {
+      "expansion": "precast brick masonry sewer drainage inspection manhole",
+      "discipline": "Piping & Utilities"
+    },
+    "catchpit": {
+      "expansion": "surface drainage water collection catch pit silt trap",
+      "discipline": "Piping & Utilities"
+    },
+    "header": {
+      "expansion": "pipeline manifold distribution collector header pipe",
+      "discipline": "Piping & Utilities"
+    },
+    "flange": {
+      "expansion": "pipe connecting flange raised face weld neck gasket",
+      "discipline": "Piping & Utilities"
+    },
+    "valve": {
+      "expansion": "pipeline ball gate check globe control isolation valve",
+      "discipline": "Piping & Utilities"
+    },
+    "actuator": {
+      "expansion": "motorized pneumatic electric valve actuator control",
+      "discipline": "Instrumentation"
+    },
+    "transmitter": {
+      "expansion": "electronic pressure temperature flow level transmitter instrument",
+      "discipline": "Instrumentation"
+    },
+    "flowmeter": {
+      "expansion": "ultrasonic magnetic coriolis inline flow meter sensor",
+      "discipline": "Instrumentation"
+    },
+    "ups": {
+      "expansion": "uninterruptible power supply battery backup emergency power",
+      "discipline": "Electrical"
+    },
+    "inverter": {
+      "expansion": "solar power solar inverter dc ac converter",
+      "discipline": "Electrical"
+    },
+    "busduct": {
+      "expansion": "sandwich copper aluminum power busduct feeder trunking",
+      "discipline": "Electrical"
+    },
+    "cable tray": {
+      "expansion": "perforated ladder type GI cable tray support bracket",
+      "discipline": "Electrical"
+    },
+    "lighting": {
+      "expansion": "energy efficient LED flood street industrial luminaire lighting fixture",
+      "discipline": "Electrical"
+    }
   },
   "synonyms": {
-    "cement pour": { "expansion": "concrete pouring", "discipline": "Civil" },
-    "digging": { "expansion": "excavation earthwork", "discipline": "Civil" },
-    "bar bending": { "expansion": "rebar steel fixing reinforcement", "discipline": "Civil" },
-    "casing pipe": { "expansion": "bored pile casing installation", "discipline": "Civil" },
-    "torch applied": { "expansion": "waterproofing membrane application", "discipline": "Civil" },
-    "wearing course": { "expansion": "asphalt paving surface treatment", "discipline": "Civil" }
+    "cement pour": {
+      "expansion": "concrete pouring",
+      "discipline": "Civil"
+    },
+    "digging": {
+      "expansion": "excavation earthwork",
+      "discipline": "Civil"
+    },
+    "bar bending": {
+      "expansion": "rebar steel fixing reinforcement",
+      "discipline": "Civil"
+    },
+    "casing pipe": {
+      "expansion": "bored pile casing installation",
+      "discipline": "Civil"
+    },
+    "torch applied": {
+      "expansion": "waterproofing membrane application",
+      "discipline": "Civil"
+    },
+    "wearing course": {
+      "expansion": "asphalt paving surface treatment",
+      "discipline": "Civil"
+    },
+    "pipe laying": {
+      "expansion": "pipeline lowering laying pipe stringing alignment",
+      "discipline": "Piping & Utilities"
+    },
+    "pipe stringing": {
+      "expansion": "pipeline pipe stringing distribution along right of way",
+      "discipline": "Piping & Utilities"
+    },
+    "cable pulling": {
+      "expansion": "power instrumentation cable laying in duct trench",
+      "discipline": "Electrical"
+    },
+    "girder launching": {
+      "expansion": "precast bridge span launcher girder erection placement",
+      "discipline": "Structural"
+    },
+    "pile boring": {
+      "expansion": "rotary bored cast-in-situ piling drilling",
+      "discipline": "Civil"
+    },
+    "raft footing": {
+      "expansion": "combined raft foundation concrete pour base mat",
+      "discipline": "Civil"
+    },
+    "post tensioning": {
+      "expansion": "post tensioning tendon stressing grouting",
+      "discipline": "Structural"
+    },
+    "expansion joint": {
+      "expansion": "bridge expansion joint strip seal finger joint",
+      "discipline": "Structural"
+    },
+    "crash barrier": {
+      "expansion": "concrete crash barrier w-beam railing",
+      "discipline": "Civil"
+    },
+    "box culvert": {
+      "expansion": "precast RCC box culvert cross drainage waterway",
+      "discipline": "Civil"
+    },
+    "tack coat": {
+      "expansion": "bituminous tack coat bitumen emulsion spray",
+      "discipline": "Civil"
+    },
+    "prime coat": {
+      "expansion": "bitumen prime coat penetration binder spray",
+      "discipline": "Civil"
+    },
+    "re wall": {
+      "expansion": "reinforced earth wall retaining wall geogrid facia panel",
+      "discipline": "Geotechnical"
+    },
+    "retaining wall": {
+      "expansion": "retaining wall gravity cantilever stone masonry concrete",
+      "discipline": "Civil"
+    },
+    "stone pitching": {
+      "expansion": "stone pitching boulder riprap embankment slope protection",
+      "discipline": "Civil"
+    },
+    "soil nailing": {
+      "expansion": "soil nailing slope stabilization grouted nail shotcrete",
+      "discipline": "Geotechnical"
+    },
+    "fit up": {
+      "expansion": "pipe joint fit-up weld seam bevel alignment tack weld",
+      "discipline": "Piping & Utilities"
+    },
+    "fit-up": {
+      "expansion": "pipe joint fit-up weld seam bevel alignment tack weld",
+      "discipline": "Piping & Utilities"
+    },
+    "cross country": {
+      "expansion": "cross country pipeline corridor pipeline laying",
+      "discipline": "Piping & Utilities"
+    },
+    "valve station": {
+      "expansion": "sectionalizing valve station SV station block valve",
+      "discipline": "Piping & Utilities"
+    },
+    "cable laying": {
+      "expansion": "power cable instrument cable trench laying pulling",
+      "discipline": "Electrical"
+    },
+    "false ceiling": {
+      "expansion": "gypsum grid acoustic suspended false ceiling framing",
+      "discipline": "Architectural"
+    },
+    "toolbox talk": {
+      "expansion": "tbt daily safety briefing hazard identification pre-work meeting",
+      "discipline": "Safety"
+    },
+    "cube test": {
+      "expansion": "compressive strength concrete cube test 7 day 28 day",
+      "discipline": "Quality"
+    },
+    "as built": {
+      "expansion": "as-built drawings redline drawing completion record final layout",
+      "discipline": "Engineering"
+    },
+    "as-built": {
+      "expansion": "as-built drawings redline drawing completion record final layout",
+      "discipline": "Engineering"
+    },
+    "ra bill": {
+      "expansion": "running account bill progress payment measurement sheet invoice",
+      "discipline": "Commercial"
+    },
+    "pile cap": {
+      "expansion": "pile cap foundation cast concrete pier footing",
+      "discipline": "Civil"
+    },
+    "pier cap": {
+      "expansion": "pier cap crosshead bearing seat",
+      "discipline": "Structural"
+    }
   }
 }
