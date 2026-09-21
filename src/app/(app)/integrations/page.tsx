@@ -70,7 +70,7 @@ export default async function IntegrationsPage() {
               </div>
               <div>
                 <h2 className="app-card-title text-base">Multi-Modal AI Extraction Copilot</h2>
-                <p className="text-xs text-muted-foreground">Google Gemini 2.5 Flash (Priority #1) &middot; OpenAI GPT-4o-mini (Priority #2)</p>
+                <p className="text-xs text-muted-foreground">Google Gemini 3.5 Flash-Lite (Priority #1) &middot; OpenAI GPT-4o-mini (Priority #2)</p>
               </div>
             </div>
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">

@@ -16,7 +16,7 @@ const envSchema = z.object({
 
   // LLM Providers: Google Gemini is Priority #1, OpenAI is Priority #2
   GEMINI_API_KEY: z.string().optional(),
-  GEMINI_MODEL: z.string().default("gemini-2.5-flash"),
+  GEMINI_MODEL: z.string().default("gemini-3.5-flash-lite"),
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_MODEL: z.string().default("gpt-4o-mini"),
   OPENROUTER_API_KEY: z.string().optional(),
@@ -65,7 +65,7 @@ export const env = (parsed.success ? parsed.data : {
   NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: "/projects",
   RETRIEVAL_SERVICE_URL: process.env.RETRIEVAL_SERVICE_URL || "http://localhost:8000",
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-  GEMINI_MODEL: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+  GEMINI_MODEL: process.env.GEMINI_MODEL || "gemini-3.5-flash-lite",
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-4o-mini",
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,

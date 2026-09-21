@@ -109,7 +109,7 @@ async function geminiVisionOcr(
 
   try {
     // Use Gemini REST API directly (no SDK dependency)
-    const model = env.GEMINI_MODEL || "gemini-2.5-flash";
+    const model = env.GEMINI_MODEL || "gemini-3.5-flash-lite";
     const base64Data = Buffer.from(bytes).toString("base64");
 
     const response = await fetch(

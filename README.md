@@ -11,7 +11,7 @@ InfraTrack PM is an enterprise-grade infrastructure project controls and progres
 
 ### Key Architectural Pillars
 1. **Multi-Modal Field Intake:** Natural language voice dictation, freeform text DPRs, and scanned document OCR.
-2. **AI Entity & Observation Extraction:** Google Gemini (`gemini-2.5-flash` Priority #1) and OpenAI (`gpt-4o-mini` Priority #2) parsing unstructured logs into 1-to-N normalized engineering observations.
+2. **AI Entity & Observation Extraction:** Google Gemini (`gemini-3.5-flash-lite` Priority #1) and OpenAI (`gpt-4o-mini` Priority #2) parsing unstructured logs into 1-to-N normalized engineering observations.
 3. **Domain Brain & Hybrid Retrieval Microservice:** Python FastAPI service integrating:
    - **BM25 Lexical Search**
    - **FAISS Dense Vector Embeddings**
@@ -31,7 +31,7 @@ InfraTrack PM is an enterprise-grade infrastructure project controls and progres
 | **Web Frontend & API** | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Lucide Icons |
 | **Authentication** | Clerk Auth (`@clerk/nextjs` Core 3) with pre-configured keys |
 | **Database & ORM** | PostgreSQL (Neon serverless pooler), Prisma ORM 6.19 |
-| **Primary LLM** | **Google Gemini** (`gemini-2.5-flash`) via Vercel AI SDK |
+| **Primary LLM** | **Google Gemini** (`gemini-3.5-flash-lite`) via Vercel AI SDK |
 | **Secondary LLM** | **OpenAI** (`gpt-4o-mini`) fallback engine |
 | **NLP & Retrieval Microservice** | Python 3.13, FastAPI, Uvicorn, Rank-BM25, FAISS, Pydantic |
 | **Document OCR** | Dockerized OCRmyPDF worker (port 8010) + client-side PDF.js rendering |
