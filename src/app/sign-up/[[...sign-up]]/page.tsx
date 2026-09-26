@@ -23,7 +23,7 @@ export default function SignUpPage() {
       <div className="relative z-10 mb-8 flex flex-col items-center gap-3 text-center">
         <Link href="/" className="inline-flex items-center gap-2.5 transition-transform hover:scale-105">
           <InfraTrackMark size={36} />
-          <span className="text-2xl font-bold tracking-tight text-white font-display">InfraTrack AI</span>
+          <span className="text-2xl font-bold tracking-tight text-white font-display">InfraTrack</span>
         </Link>
         <div className="inline-flex items-center gap-1.5 rounded-pill border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70 backdrop-blur-md">
           <Sparkles className="h-3 w-3 text-brand-accent" />
