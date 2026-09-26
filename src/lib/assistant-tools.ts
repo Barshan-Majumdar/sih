@@ -1290,7 +1290,7 @@ export function createAssistantTools(context: AssistantToolContext) {
             healthScore: summary.healthScore,
             scheduleVarianceDays: summary.variance,
             openRoadblocks: summary.openRoadblocks,
-            href: `/projects/${project.id}/dashboard`,
+            href: `/dashboard/${project.id}`,
           })),
           sources: [
             {
@@ -1299,7 +1299,7 @@ export function createAssistantTools(context: AssistantToolContext) {
             },
             ...summaries.map(({ project }) => ({
               label: `${project.name} Workspace`,
-              href: `/projects/${project.id}`,
+              href: `/dashboard/${project.id}`,
             })),
           ],
         };
@@ -1328,9 +1328,9 @@ export function createAssistantTools(context: AssistantToolContext) {
             openRoadblocks: summary.openRoadblocks,
           },
           sources: [
-            { label: `${project.name} dashboard`, href: `/projects/${project.id}/dashboard` },
-            { label: "Master schedule", href: `/projects/${project.id}/gantt` },
-            { label: "Weekly plan", href: `/projects/${project.id}/weekly-plan` },
+            { label: `${project.name} dashboard`, href: `/dashboard/${project.id}` },
+            { label: "Master schedule", href: `/gantt/${project.id}` },
+            { label: "Weekly plan", href: `/weekly-plan/${project.id}` },
           ],
         };
       },

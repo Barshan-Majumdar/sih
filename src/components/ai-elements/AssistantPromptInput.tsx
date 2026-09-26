@@ -108,12 +108,11 @@ export function AssistantPromptInput({
           disabled={
             disabled ||
             uploading ||
-            !projectScoped ||
             attachments.length >= MAX_ASSISTANT_ATTACHMENTS
           }
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-[var(--assistant-text-faint)] transition-colors hover:bg-[var(--assistant-layer-hover)] hover:text-[var(--assistant-text)] disabled:cursor-not-allowed disabled:opacity-35"
           aria-label="Attach project files"
-          title={projectScoped ? "Attach PDF or image" : "Choose a project conversation to attach files"}
+          title={attachments.length >= MAX_ASSISTANT_ATTACHMENTS ? "Maximum 4 attachments reached" : "Attach PDF or image"}
         >
           {uploading ? (
             <LoaderCircle size={16} className="animate-spin" aria-hidden />

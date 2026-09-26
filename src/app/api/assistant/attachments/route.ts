@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import {
   MAX_ASSISTANT_ATTACHMENTS,
@@ -27,11 +28,35 @@ async function handlePost(request: Request) {
     return Response.json({ error: "Choose a file to attach." }, { status: 400 });
   }
   const conversation = await requireAssistantConversation(conversationId, user.id, organizationId);
-  if (!conversation.projectId) {
-    return Response.json(
-      { error: "Choose a project conversation before attaching files." },
-      { status: 400 }
-    );
+  let targetProjectId = conversation.projectId;
+  if (!targetProjectId) {
+    const cookieStore = await cookies();
+    const activeCookie = cookieStore.get("agira_active_project")?.value;
+    if (activeCookie && activeCookie !== "new") {
+      const match = await prisma.project.findFirst({
+        where: { id: activeCookie, organizationId, isArchived: false },
+        select: { id: true },
+      });
+      if (match) targetProjectId = match.id;
+    }
+    if (!targetProjectId) {
+      const firstProject = await prisma.project.findFirst({
+        where: { organizationId, isArchived: false },
+        orderBy: { updatedAt: "desc" },
+        select: { id: true },
+      });
+      targetProjectId = firstProject?.id ?? null;
+    }
+    if (!targetProjectId) {
+      return Response.json(
+        { error: "Create or select a project before attaching files." },
+        { status: 400 }
+      );
+    }
+    await prisma.assistantConversation.update({
+      where: { id: conversation.id },
+      data: { projectId: targetProjectId },
+    });
   }
 
   const pendingCount = await prisma.assistantAttachment.count({
@@ -49,7 +74,7 @@ async function handlePost(request: Request) {
     upload = await validateUploadedFile(file, "document");
     await enforceUploadQuota({
       organizationId,
-      projectId: conversation.projectId,
+      projectId: targetProjectId,
       upload,
     });
   } catch (error) {
@@ -61,7 +86,7 @@ async function handlePost(request: Request) {
 
   const fileName = upload.fileName;
   const storageKey = buildStorageKey(
-    `documents/${conversation.projectId}/assistant/${conversation.id}`,
+    `documents/${targetProjectId}/assistant/${conversation.id}`,
     fileName
   );
 
@@ -71,7 +96,7 @@ async function handlePost(request: Request) {
       const attachment = await prisma.assistantAttachment.create({
         data: {
           conversationId: conversation.id,
-          projectId: conversation.projectId,
+          projectId: targetProjectId,
           uploadedById: user.id,
           fileName,
           mediaType: upload.mediaType,
@@ -83,7 +108,7 @@ async function handlePost(request: Request) {
       });
       const processed = await processProjectDocument(attachment, upload.bytes);
       await logActivity({
-        projectId: conversation.projectId,
+        projectId: targetProjectId,
         userId: user.id,
         action: "assistant_file_uploaded",
         detail: `Attached project file "${processed.fileName}" in Agent`,

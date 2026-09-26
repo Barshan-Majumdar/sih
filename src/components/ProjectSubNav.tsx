@@ -88,6 +88,7 @@ const NAV_GROUPS: NavGroup[] = [
 
 const SEGMENT_TO_KEY: Record<string, string> = {
   dashboard: "dashboard",
+  agent: "project-dashboard",
   projects: "projects",
   gantt: "gantt",
   gantt_chart: "gantt",
@@ -122,7 +123,7 @@ export function ProjectRouteSubNav() {
   const { currentKey, currentProjectId } = useMemo(() => {
     // 1. Clean routes: /tool/:projectId
     const cleanMatch = pathname.match(
-      /^\/(dashboard|gantt|gantt_chart|tasks|field-intake|review-queue|plan-vs-actual|lookahead|weekly-plan|pull-planning|roadblocks|impacts|files|drawings|rfis|submittals|baselines|activity|members)\/([^/]+)/
+      /^\/(dashboard|agent|gantt|gantt_chart|tasks|field-intake|review-queue|plan-vs-actual|lookahead|weekly-plan|pull-planning|roadblocks|impacts|files|drawings|rfis|submittals|baselines|activity|members)\/([^/]+)/
     );
     if (cleanMatch) {
       const seg = cleanMatch[1];

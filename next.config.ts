@@ -40,6 +40,7 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
+      { source: "/agent/:projectId", destination: "/projects/:projectId/assistant" },
       { source: "/dashboard/:projectId", destination: "/projects/:projectId/dashboard" },
       { source: "/gantt/:projectId", destination: "/projects/:projectId/gantt" },
       { source: "/gantt_chart/:projectId", destination: "/projects/:projectId/gantt" },

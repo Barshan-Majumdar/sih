@@ -37,6 +37,7 @@ type AssistantConversationProps = {
   busy: boolean;
   suggestions: string[];
   onSuggestion: (suggestion: string) => void;
+  scopeName?: string;
 };
 
 function AssistantRichText({ text, isAnimating }: { text: string; isAnimating: boolean }) {
@@ -111,6 +112,7 @@ export function AssistantConversation({
   busy,
   suggestions,
   onSuggestion,
+  scopeName,
 }: AssistantConversationProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -150,7 +152,7 @@ export function AssistantConversation({
         <div className="mx-auto flex min-h-full max-w-2xl flex-col justify-center py-10">
           <h3 className="font-display text-2xl text-[var(--assistant-text)]">What would you like to do?</h3>
           <p className="mt-2 max-w-md text-sm leading-6 text-[var(--assistant-text-muted)]">
-            Start with an action below, or ask Agent anything about this workspace.
+            Start with an action below, or ask Agent anything about {scopeName ? `"${scopeName}"` : "this workspace"}.
           </p>
           <div className="mt-7 grid gap-2 sm:grid-cols-2">
             {suggestions.map((suggestion) => (

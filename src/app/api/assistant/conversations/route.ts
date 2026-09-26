@@ -11,6 +11,15 @@ export async function GET() {
   const user = await requireUser();
   const { organizationId } = await requireActiveOrganization();
 
+  // Purge any empty conversations (no messages) so they are never kept in DB
+  await prisma.assistantConversation.deleteMany({
+    where: {
+      organizationId,
+      createdById: user.id,
+      messages: { none: {} },
+    },
+  });
+
   const [projects, conversations] = await Promise.all([
     prisma.project.findMany({
       where: {
@@ -25,6 +34,7 @@ export async function GET() {
       where: {
         organizationId,
         createdById: user.id,
+        messages: { some: {} },
         OR: [{ projectId: null }, { project: { members: { some: { userId: user.id } } } }],
       },
       include: { _count: { select: { messages: true } } },

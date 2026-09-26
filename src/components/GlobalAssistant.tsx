@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import {
@@ -59,9 +59,20 @@ function fileSuggestions(fileName: string): string[] {
 }
 
 function focusProjectIdFromPath(pathname: string | null): string | null {
-  const match = pathname?.match(/^\/projects\/([^/]+)/);
-  const projectId = match?.[1];
-  return projectId && projectId !== "new" ? projectId : null;
+  if (!pathname) return null;
+  const match = pathname.match(/^\/projects\/([^/]+)/);
+  if (match?.[1] && match[1] !== "new") return match[1];
+
+  const cleanMatch = pathname.match(
+    /^\/(?:agent|dashboard|gantt|gantt_chart|tasks|field-intake|review-queue|plan-vs-actual|lookahead|weekly-plan|pull-planning|roadblocks|impacts|files|drawings|rfis|submittals|baselines|activity|members)\/([^/]+)/
+  );
+  if (cleanMatch?.[1] && cleanMatch[1] !== "new") return cleanMatch[1];
+  return null;
+}
+
+function isAgentRoute(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return pathname === "/agent" || pathname.startsWith("/agent/") || pathname.endsWith("/assistant");
 }
 
 function initialTitle(prompt: string): string {
@@ -81,6 +92,7 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
 type ChatWorkspaceProps = {
   detail: AssistantConversationDetail;
   projectScoped: boolean;
+  scopeName?: string;
   pendingPrompt: string | null;
   onPromptConsumed: () => void;
   draftPrompt: string | null;
@@ -93,6 +105,7 @@ type ChatWorkspaceProps = {
 function ChatWorkspace({
   detail,
   projectScoped,
+  scopeName,
   pendingPrompt,
   onPromptConsumed,
   draftPrompt,
@@ -267,6 +280,7 @@ function ChatWorkspace({
         busy={busy}
         suggestions={suggestions}
         onSuggestion={send}
+        scopeName={scopeName}
       />
       {error && (
         <div className="mx-auto w-full max-w-3xl px-6 pb-2 text-sm text-error" role="alert">
@@ -290,11 +304,14 @@ function ChatWorkspace({
   );
 }
 
-export function GlobalAssistant() {
+function GlobalAssistantInner() {
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlChatId = searchParams?.get("chatId") ?? null;
   const prevPathnameRef = useRef(pathname);
   const focusProjectId = focusProjectIdFromPath(pathname);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(() => isAgentRoute(pathname));
   const [bootstrap, setBootstrap] = useState<AssistantBootstrap | null>(null);
   const [scopeId, setScopeId] = useState<string | null>(null);
   const [active, setActive] = useState<AssistantConversationDetail | null>(null);
@@ -312,6 +329,19 @@ export function GlobalAssistant() {
   // Track which conversations were pre-created but never had a message sent,
   // so we can delete them when the panel closes.
   const emptyConversationIdsRef = useRef<Set<string>>(new Set());
+
+  const updateUrlWithChat = useCallback(
+    (projectId: string | null, conversationId?: string | null) => {
+      if (typeof window === "undefined") return;
+      const basePath = projectId ? `/agent/${projectId}` : "/agent";
+      const query = conversationId ? `?chatId=${encodeURIComponent(conversationId)}` : "";
+      const fullUrl = `${basePath}${query}`;
+      if (window.location.pathname + window.location.search !== fullUrl) {
+        window.history.replaceState(null, "", fullUrl);
+      }
+    },
+    []
+  );
 
   /** Silently delete an empty conversation (no messages) from the DB and from the sidebar. */
   const deleteEmptyConversation = useCallback(async (conversationId: string) => {
@@ -332,48 +362,139 @@ export function GlobalAssistant() {
     });
   }, [deleteEmptyConversation]);
 
-  const loadConversation = useCallback(async (conversationId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const detail = await fetchJson<AssistantConversationDetail>(
-        `/api/assistant/conversations/${conversationId}`
-      );
-      setActive(detail);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Could not load this conversation.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const handleCloseAssistant = useCallback(() => {
+    setPdfDocument(null);
+    pruneEmptyConversations();
+    setOpen(false);
+    setActive(null);
+    const targetProj = focusProjectId || scopeId;
+    const targetUrl = targetProj ? `/dashboard/${targetProj}` : "/dashboard";
+    router.push(targetUrl);
+  }, [focusProjectId, scopeId, pruneEmptyConversations, router]);
 
-  const loadWorkspace = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const nextBootstrap = await fetchJson<AssistantBootstrap>("/api/assistant/conversations");
-      setBootstrap(nextBootstrap);
-      setSuggestions(null);
-      const nextScope =
-        focusProjectId && nextBootstrap.projects.some((project) => project.id === focusProjectId)
-          ? focusProjectId
-          : null;
-      setScopeId(nextScope);
-      const latest = nextBootstrap.conversations.find((conversation) => conversation.projectId === nextScope);
-      if (latest) {
+  const loadConversation = useCallback(
+    async (conversationId: string) => {
+      setLoading(true);
+      setError(null);
+      try {
         const detail = await fetchJson<AssistantConversationDetail>(
-          `/api/assistant/conversations/${latest.id}`
+          `/api/assistant/conversations/${conversationId}`
         );
         setActive(detail);
-      } else {
-        setActive(null);
+        setScopeId(detail.conversation.projectId);
+        if (isAgentRoute(window.location.pathname)) {
+          updateUrlWithChat(detail.conversation.projectId, detail.conversation.id);
+        }
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : "Could not load this conversation.");
+      } finally {
+        setLoading(false);
       }
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Could not load Agent.");
-    } finally {
-      setLoading(false);
+    },
+    [updateUrlWithChat]
+  );
+
+  const createConversation = useCallback(
+    async (prompt?: string, targetProjectId?: string | null) => {
+      const targetScope = targetProjectId !== undefined ? targetProjectId : (scopeId || focusProjectId);
+      setScopeId(targetScope);
+      setLoading(true);
+      setError(null);
+      if (active && active.messages.length === 0 && emptyConversationIdsRef.current.has(active.conversation.id)) {
+        void deleteEmptyConversation(active.conversation.id);
+      }
+      setActive(null);
+      try {
+        const conversation = await fetchJson<AssistantConversationSummary>("/api/assistant/conversations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId: targetScope }),
+        });
+        emptyConversationIdsRef.current.add(conversation.id);
+        setActive({ conversation, messages: [] });
+        if (isAgentRoute(window.location.pathname)) {
+          updateUrlWithChat(targetScope, null);
+        }
+        setPendingPrompt(prompt ?? null);
+        setSuggestions(null);
+        setRailOpen(false);
+      } catch (createError) {
+        setError(createError instanceof Error ? createError.message : "Could not start a conversation.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [active, deleteEmptyConversation, focusProjectId, scopeId, updateUrlWithChat]
+  );
+
+  const handleOpenAssistant = useCallback(async () => {
+    setOpen(true);
+    setPendingPrompt(null);
+    setDraftPrompt(null);
+    setSuggestions(null);
+    const targetProj = focusProjectId || scopeId;
+    const basePath = targetProj ? `/agent/${targetProj}` : "/agent";
+    router.push(basePath);
+    if (isAgentRoute(window.location.pathname)) {
+      updateUrlWithChat(targetProj, null);
     }
-  }, [focusProjectId]);
+    if (active && active.messages.length === 0 && active.conversation.projectId === targetProj) {
+      return;
+    }
+    await createConversation(undefined, targetProj);
+  }, [focusProjectId, scopeId, router, updateUrlWithChat, active, createConversation]);
+
+  const loadWorkspace = useCallback(
+    async (preferredChatId?: string | null) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const nextBootstrap = await fetchJson<AssistantBootstrap>("/api/assistant/conversations");
+        setBootstrap(nextBootstrap);
+        setSuggestions(null);
+        const nextScope =
+          focusProjectId && nextBootstrap.projects.some((project) => project.id === focusProjectId)
+            ? focusProjectId
+            : null;
+        setScopeId(nextScope);
+
+        if (preferredChatId) {
+          // Explicit chat requested via manual selection
+          const detail = await fetchJson<AssistantConversationDetail>(
+            `/api/assistant/conversations/${preferredChatId}`
+          );
+          setActive(detail);
+          setScopeId(detail.conversation.projectId);
+          if (isAgentRoute(window.location.pathname)) {
+            updateUrlWithChat(detail.conversation.projectId, detail.conversation.id);
+          }
+        } else {
+          // Open fresh new chat each time by default!
+          if (isAgentRoute(window.location.pathname)) {
+            updateUrlWithChat(nextScope, null);
+          }
+          if (active && active.messages.length === 0 && active.conversation.projectId === nextScope) {
+            return;
+          }
+          const conversation = await fetchJson<AssistantConversationSummary>(
+            "/api/assistant/conversations",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ projectId: nextScope }),
+            }
+          );
+          emptyConversationIdsRef.current.add(conversation.id);
+          setActive({ conversation, messages: [] });
+        }
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : "Could not load Agent.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [active, focusProjectId, updateUrlWithChat]
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -426,11 +547,11 @@ export function GlobalAssistant() {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       if (pdfDocument) setPdfDocument(null);
-      else setOpen(false);
+      else handleCloseAssistant();
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [open, pdfDocument]);
+  }, [open, pdfDocument, handleCloseAssistant]);
 
   useEffect(() => {
     const openViewer = (event: Event) => {
@@ -448,27 +569,38 @@ export function GlobalAssistant() {
   }, [open]);
 
   useEffect(() => {
-    if (prevPathnameRef.current !== pathname) {
-      prevPathnameRef.current = pathname;
-      setOpen(false);
-      setPdfDocument(null);
+    const isCurrentlyAgent = isAgentRoute(pathname);
+    if (isCurrentlyAgent) {
+      setOpen(true);
+      // Clean any lingering ?chatId from URL on fresh load so it always opens new chats!
+      if (urlChatId && !active) {
+        const targetProj = focusProjectIdFromPath(pathname);
+        updateUrlWithChat(targetProj, null);
+      }
+      void loadWorkspace(null);
+    } else {
+      if (open) {
+        setOpen(false);
+        setPdfDocument(null);
+        setActive(null);
+      }
     }
+    prevPathnameRef.current = pathname;
   }, [pathname]);
 
   useEffect(() => {
     const toggleAssistant = (event: Event) => {
       const requestedOpen = (event as CustomEvent<{ open?: boolean }>).detail?.open;
       const nextOpen = typeof requestedOpen === "boolean" ? requestedOpen : !open;
-      if (!nextOpen) {
-        setPdfDocument(null);
-        pruneEmptyConversations();
+      if (nextOpen) {
+        handleOpenAssistant();
+      } else {
+        handleCloseAssistant();
       }
-      setOpen(nextOpen);
-      if (nextOpen) void loadWorkspace();
     };
     window.addEventListener("agira:toggle-assistant", toggleAssistant);
     return () => window.removeEventListener("agira:toggle-assistant", toggleAssistant);
-  }, [loadWorkspace, open, pruneEmptyConversations]);
+  }, [handleOpenAssistant, handleCloseAssistant, open]);
 
   useEffect(() => {
     const openConversation = async (event: Event) => {
@@ -487,6 +619,7 @@ export function GlobalAssistant() {
         setActive(detail);
         setSuggestions(null);
         setRailOpen(false);
+        updateUrlWithChat(detail.conversation.projectId, detail.conversation.id);
       } catch (openError) {
         setError(openError instanceof Error ? openError.message : "Could not open this conversation.");
       } finally {
@@ -495,7 +628,7 @@ export function GlobalAssistant() {
     };
     window.addEventListener("agira:open-assistant-conversation", openConversation);
     return () => window.removeEventListener("agira:open-assistant-conversation", openConversation);
-  }, []);
+  }, [updateUrlWithChat]);
 
   useEffect(() => {
     const openProjectFileAgent = async (event: Event) => {
@@ -534,6 +667,7 @@ export function GlobalAssistant() {
         setSuggestions(fileSuggestions(detail.fileName));
         setDraftVersion((version) => version + 1);
         setRailOpen(false);
+        updateUrlWithChat(detail.projectId, conversation.id);
       } catch (openError) {
         setError(openError instanceof Error ? openError.message : "Could not open Agent.");
       } finally {
@@ -543,7 +677,7 @@ export function GlobalAssistant() {
     window.addEventListener("agira:open-project-file-agent", openProjectFileAgent);
     return () =>
       window.removeEventListener("agira:open-project-file-agent", openProjectFileAgent);
-  }, []);
+  }, [updateUrlWithChat]);
 
   useEffect(() => {
     const askAboutFile = async (event: Event) => {
@@ -563,7 +697,9 @@ export function GlobalAssistant() {
         const latest = nextBootstrap.conversations.find(
           (conversation) => conversation.projectId === detail.projectId
         );
+        let activeConvId: string;
         if (latest) {
+          activeConvId = latest.id;
           setActive(
             await fetchJson<AssistantConversationDetail>(
               `/api/assistant/conversations/${latest.id}`
@@ -586,7 +722,9 @@ export function GlobalAssistant() {
           // Mark as empty — will be pruned if closed before first message.
           emptyConversationIdsRef.current.add(conversation.id);
           setActive({ conversation, messages: [] });
+          activeConvId = conversation.id;
         }
+        updateUrlWithChat(detail.projectId, activeConvId);
         // Auto-send so the user immediately gets an answer.
         setPendingPrompt(`What does "${detail.fileName}" say?`);
         setDraftVersion((version) => version + 1);
@@ -599,7 +737,7 @@ export function GlobalAssistant() {
     };
     window.addEventListener("agira:ask-project-file", askAboutFile);
     return () => window.removeEventListener("agira:ask-project-file", askAboutFile);
-  }, []);
+  }, [updateUrlWithChat]);
 
   useEffect(() => {
     const raiseRfiFromFile = async (event: Event) => {
@@ -623,7 +761,9 @@ export function GlobalAssistant() {
         const latest = nextBootstrap.conversations.find(
           (conversation) => conversation.projectId === detail.projectId
         );
+        let activeConvId: string;
         if (latest) {
+          activeConvId = latest.id;
           setActive(
             await fetchJson<AssistantConversationDetail>(
               `/api/assistant/conversations/${latest.id}`
@@ -644,8 +784,10 @@ export function GlobalAssistant() {
               : current
           );
           setActive({ conversation, messages: [] });
+          activeConvId = conversation.id;
         }
-              const draft = detail.action === "SUBMITTAL"
+        updateUrlWithChat(detail.projectId, activeConvId);
+        const draft = detail.action === "SUBMITTAL"
           ? `Create a submittal from "${detail.fileName}": `
           : detail.action === "ROADBLOCK"
             ? `Flag [task name] as a roadblock from "${detail.fileName}": `
@@ -661,11 +803,13 @@ export function GlobalAssistant() {
     };
     window.addEventListener("agira:raise-rfi-from-file", raiseRfiFromFile);
     return () => window.removeEventListener("agira:raise-rfi-from-file", raiseRfiFromFile);
-  }, []);
+  }, [updateUrlWithChat]);
 
   const visibleConversations = useMemo(() => {
     const query = conversationQuery.trim().toLowerCase();
-    const conversations = bootstrap?.conversations ?? [];
+    const conversations = (bootstrap?.conversations ?? []).filter(
+      (conversation) => (conversation.messageCount ?? 0) > 0
+    );
     if (!query) return conversations;
     return conversations.filter((conversation) =>
       conversation.title.toLowerCase().includes(query)
@@ -679,91 +823,110 @@ export function GlobalAssistant() {
     [bootstrap?.projects]
   );
   const selectScope = useCallback(
-    (projectId: string | null) => {
+    async (projectId: string | null) => {
       setScopeId(projectId);
       setRailOpen(false);
       setPendingPrompt(null);
       setDraftPrompt(null);
       setSuggestions(null);
-      const latest = bootstrap?.conversations.find((conversation) => conversation.projectId === projectId);
-      if (latest) void loadConversation(latest.id);
-      else setActive(null);
-    },
-    [bootstrap, loadConversation]
-  );
-
-
-  const createConversation = useCallback(
-    async (prompt?: string) => {
       setLoading(true);
       setError(null);
+      if (active && active.messages.length === 0 && emptyConversationIdsRef.current.has(active.conversation.id)) {
+        void deleteEmptyConversation(active.conversation.id);
+      }
       setActive(null);
       try {
         const conversation = await fetchJson<AssistantConversationSummary>("/api/assistant/conversations", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ projectId: scopeId }),
+          body: JSON.stringify({ projectId }),
         });
-        // Mark as empty until the user sends a message.
         emptyConversationIdsRef.current.add(conversation.id);
-        setBootstrap((current) =>
-          current
-            ? { ...current, conversations: [conversation, ...current.conversations] }
-            : current
-        );
         setActive({ conversation, messages: [] });
-        setPendingPrompt(prompt ?? null);
-        setSuggestions(null);
-        setRailOpen(false);
-      } catch (createError) {
-        setError(createError instanceof Error ? createError.message : "Could not start a conversation.");
+        if (isAgentRoute(window.location.pathname)) {
+          updateUrlWithChat(projectId, null);
+        }
+      } catch (scopeError) {
+        setError(scopeError instanceof Error ? scopeError.message : "Could not switch scope.");
       } finally {
         setLoading(false);
       }
     },
-    [scopeId]
+    [active, deleteEmptyConversation, updateUrlWithChat]
   );
 
   async function deleteConversation(conversationId: string) {
-      if (!window.confirm("Delete this conversation? This cannot be undone.")) return;
-      try {
-        const response = await fetch(`/api/assistant/conversations/${conversationId}`, { method: "DELETE" });
-        if (!response.ok) throw new Error("Could not delete this conversation.");
-        const remaining = bootstrap?.conversations.filter((conversation) => conversation.id !== conversationId) ?? [];
-        setBootstrap((current) => (current ? { ...current, conversations: remaining } : current));
-        if (active?.conversation.id === conversationId) {
-          const next = remaining.find((conversation) => conversation.projectId === scopeId);
-          if (next) void loadConversation(next.id);
-          else setActive(null);
+    if (!window.confirm("Delete this conversation? This cannot be undone.")) return;
+    try {
+      const response = await fetch(`/api/assistant/conversations/${conversationId}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Could not delete this conversation.");
+      const remaining = bootstrap?.conversations.filter((conversation) => conversation.id !== conversationId) ?? [];
+      setBootstrap((current) => (current ? { ...current, conversations: remaining } : current));
+      if (active?.conversation.id === conversationId) {
+        const next = remaining.find((conversation) => conversation.projectId === scopeId);
+        if (next) {
+          void loadConversation(next.id);
+          if (isAgentRoute(window.location.pathname)) {
+            updateUrlWithChat(scopeId, next.id);
+          }
+        } else {
+          void createConversation(undefined, scopeId);
         }
-      } catch (deleteError) {
-        setError(deleteError instanceof Error ? deleteError.message : "Could not delete this conversation.");
       }
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Could not delete this conversation.");
+    }
   }
 
-  const handleSent = useCallback((prompt: string, conversationId?: string) => {
-    const targetId = conversationId ?? active?.conversation.id;
-    if (targetId) {
-      emptyConversationIdsRef.current.delete(targetId);
-    }
-    setBootstrap((current) =>
-      current
-        ? {
+  const handleSent = useCallback(
+    (prompt: string, conversationId?: string) => {
+      const targetId = conversationId ?? active?.conversation.id;
+      if (targetId) {
+        emptyConversationIdsRef.current.delete(targetId);
+        if (isAgentRoute(window.location.pathname)) {
+          updateUrlWithChat(scopeId, targetId);
+        }
+      }
+      setBootstrap((current) => {
+        if (!current) return current;
+        const exists = current.conversations.some((c) => c.id === targetId);
+        if (exists) {
+          return {
             ...current,
-            conversations: current.conversations.map((conversation) =>
-              conversation.id === targetId && conversation.messageCount === 0
-                ? { ...conversation, title: initialTitle(prompt), messageCount: 1 }
-                : conversation
+            conversations: current.conversations.map((c) =>
+              c.id === targetId
+                ? { ...c, title: initialTitle(prompt), messageCount: Math.max(c.messageCount, 1) }
+                : c
             ),
-          }
-        : current
-    );
-  }, [active?.conversation.id]);
+          };
+        }
+        if (active && active.conversation.id === targetId) {
+          const newSummary: AssistantConversationSummary = {
+            ...active.conversation,
+            title: initialTitle(prompt),
+            messageCount: 1,
+            updatedAt: new Date().toISOString(),
+          };
+          return {
+            ...current,
+            conversations: [newSummary, ...current.conversations],
+          };
+        }
+        return current;
+      });
+    },
+    [active, scopeId, updateUrlWithChat]
+  );
 
   const activeTitle =
     bootstrap?.conversations.find((conversation) => conversation.id === active?.conversation.id)?.title ??
     active?.conversation.title ??
     "New conversation";
+
+  const currentProjectId = active?.conversation.projectId ?? scopeId;
+  const currentProject = bootstrap?.projects.find((p) => p.id === currentProjectId);
+  const activeScopeName = currentProject ? currentProject.name : "Portfolio";
+
   const activeSuggestions =
     suggestions ?? (scopeId !== null ? PROJECT_SUGGESTIONS : PORTFOLIO_SUGGESTIONS);
 
@@ -803,6 +966,13 @@ export function GlobalAssistant() {
                   <div className="grid h-9 min-w-0 flex-1 grid-cols-2 rounded-md border border-[var(--assistant-border)] bg-[var(--assistant-layer)] p-1 shadow-inner backdrop-blur-xl" aria-label="Workspace mode">
                     <button
                       type="button"
+                      onClick={() => {
+                        if (isAgentRoute(window.location.pathname)) {
+                          void createConversation();
+                        } else {
+                          void handleOpenAssistant();
+                        }
+                      }}
                       className="flex min-w-0 items-center justify-center gap-1.5 rounded-sm border border-[var(--assistant-border)] bg-[var(--assistant-panel)] px-2 text-xs font-semibold text-[var(--assistant-rail-text)] shadow-[0_2px_12px_var(--assistant-shadow)] backdrop-blur-xl"
                       aria-pressed="true"
                     >
@@ -810,11 +980,7 @@ export function GlobalAssistant() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setPdfDocument(null);
-                        pruneEmptyConversations();
-                        setOpen(false);
-                      }}
+                      onClick={handleCloseAssistant}
                       className="flex min-w-0 items-center justify-center gap-1.5 rounded-sm px-2 text-xs font-medium text-[var(--assistant-rail-faint)] transition-colors hover:bg-[var(--assistant-layer-hover)] hover:text-[var(--assistant-rail-text)]"
                       aria-label="Return to dashboard"
                     >
@@ -861,10 +1027,7 @@ export function GlobalAssistant() {
                     const projectConversations = visibleConversations.filter(
                       (conversation) => conversation.projectId === group.id
                     );
-                    const conversationCount =
-                      bootstrap?.conversations.filter(
-                        (conversation) => conversation.projectId === group.id
-                      ).length ?? 0;
+                    const conversationCount = projectConversations.length;
                     const GroupIcon = group.id === null ? FolderKanban : Building2;
 
                     return (
@@ -894,6 +1057,9 @@ export function GlobalAssistant() {
                                 onClick={() => {
                                   setScopeId(conversation.projectId);
                                   void loadConversation(conversation.id);
+                                  if (isAgentRoute(window.location.pathname)) {
+                                    updateUrlWithChat(conversation.projectId, conversation.id);
+                                  }
                                   setRailOpen(false);
                                 }}
                                 className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left text-[13px] text-[var(--assistant-rail-muted)] transition-colors group-hover/chat:text-[var(--assistant-rail-body)]"
@@ -936,16 +1102,25 @@ export function GlobalAssistant() {
                 >
                   <PanelLeft size={18} aria-hidden />
                 </button>
-                <p className="min-w-0 flex-1 truncate text-[13px] font-semibold text-[var(--assistant-text-strong)]">
-                  {activeTitle}
-                </p>
+                <div className="flex min-w-0 flex-1 items-center gap-2 truncate">
+                  <span className="truncate text-[13px] font-semibold text-[var(--assistant-text-strong)]">
+                    {activeTitle}
+                  </span>
+                  <span className="shrink-0 text-[13px] font-normal text-[var(--assistant-rail-faint)] select-none">
+                    /
+                  </span>
+                  <span className="inline-flex min-w-0 items-center gap-1.5 truncate text-[13px] font-medium text-[var(--assistant-rail-faint)]">
+                    {currentProjectId ? (
+                      <Building2 size={13} className="shrink-0 opacity-70" aria-hidden />
+                    ) : (
+                      <FolderKanban size={13} className="shrink-0 opacity-70" aria-hidden />
+                    )}
+                    <span className="truncate">{activeScopeName}</span>
+                  </span>
+                </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setPdfDocument(null);
-                    pruneEmptyConversations();
-                    setOpen(false);
-                  }}
+                  onClick={handleCloseAssistant}
                   className="flex h-9 w-9 items-center justify-center rounded-md text-[var(--assistant-text-faint)] hover:bg-[var(--assistant-layer-hover)] hover:text-[var(--assistant-text)] md:hidden"
                   aria-label="Close Agent"
                   title="Return to dashboard"
@@ -971,7 +1146,8 @@ export function GlobalAssistant() {
                 <ChatWorkspace
                   key={`${active.conversation.id}-${draftVersion}`}
                   detail={active}
-                  projectScoped={scopeId !== null}
+                  projectScoped={true}
+                  scopeName={activeScopeName}
                   pendingPrompt={pendingPrompt}
                   onPromptConsumed={() => setPendingPrompt(null)}
                   draftPrompt={draftPrompt}
@@ -985,6 +1161,7 @@ export function GlobalAssistant() {
                   messages={[]}
                   busy={false}
                   suggestions={activeSuggestions}
+                  scopeName={activeScopeName}
                   onSuggestion={(suggestion) => void createConversation(suggestion)}
                 />
               )}
@@ -1005,5 +1182,13 @@ export function GlobalAssistant() {
         </div>
       )}
     </>
+  );
+}
+
+export function GlobalAssistant() {
+  return (
+    <Suspense fallback={null}>
+      <GlobalAssistantInner />
+    </Suspense>
   );
 }
