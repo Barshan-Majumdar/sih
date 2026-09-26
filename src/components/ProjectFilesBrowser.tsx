@@ -181,6 +181,8 @@ function SourceAction({ file }: { file: ProjectFileRecord }) {
 }
 
 function OpenInAgentAction({ file, projectId }: { file: ProjectFileRecord; projectId: string }) {
+  const router = useRouter();
+
   if (file.extractionStatus === "PENDING" || file.extractionStatus === "PROCESSING") {
     return (
       <span className="inline-flex h-8 items-center justify-end gap-1 text-xs font-medium text-muted">
@@ -197,13 +199,9 @@ function OpenInAgentAction({ file, projectId }: { file: ProjectFileRecord; proje
   return (
     <button
       type="button"
-      onClick={() =>
-        window.dispatchEvent(
-          new CustomEvent("agira:open-project-file-agent", {
-            detail: { projectId, fileName: file.name },
-          })
-        )
-      }
+      onClick={() => {
+        router.push(`/agent/${projectId}?file=${encodeURIComponent(file.name)}`);
+      }}
       className="btn-interactive inline-flex h-8 items-center justify-center whitespace-nowrap rounded-lg border border-hairline bg-surface-soft px-3 text-xs font-semibold text-ink transition-colors hover:bg-canvas shadow-2xs"
     >
       Open in Agent

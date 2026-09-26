@@ -1,3 +1,10 @@
-import ProjectDashboardPage from "@/app/(app)/projects/[projectId]/dashboard/page";
+import { redirect } from "next/navigation";
 
-export default ProjectDashboardPage;
+export default async function LegacyAssistantPage({
+  params,
+}: {
+  params: Promise<{ projectId: string }>;
+}) {
+  const { projectId } = await params;
+  redirect(`/agent/${projectId}`);
+}

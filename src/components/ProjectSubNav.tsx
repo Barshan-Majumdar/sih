@@ -66,6 +66,7 @@ const NAV_GROUPS: NavGroup[] = [
     heading: "Field & AI Engine",
     collapsedHeading: "Field / AI",
     items: [
+      { segment: "agent", label: "Agent Copilot", icon: Sparkles, badge: "AI" },
       { segment: "field-intake", label: "Field Intake (DPR)", icon: Sparkles, badge: "AI" },
       { segment: "review-queue", label: "Review Queue", icon: ShieldCheck },
       { segment: "plan-vs-actual", label: "Plan vs Actual", icon: TrendingUp },
@@ -88,7 +89,7 @@ const NAV_GROUPS: NavGroup[] = [
 
 const SEGMENT_TO_KEY: Record<string, string> = {
   dashboard: "dashboard",
-  agent: "project-dashboard",
+  agent: "agent",
   projects: "projects",
   gantt: "gantt",
   gantt_chart: "gantt",
@@ -235,6 +236,9 @@ export function ProjectRouteSubNav() {
     if (item.segment === "project-dashboard") {
       return effectiveProjectId ? `/dashboard/${effectiveProjectId}` : "/dashboard";
     }
+    if (item.segment === "agent") {
+      return effectiveProjectId ? `/agent/${effectiveProjectId}` : "/agent";
+    }
     return effectiveProjectId ? `/${item.segment}/${effectiveProjectId}` : "/projects";
   };
 
@@ -243,6 +247,18 @@ export function ProjectRouteSubNav() {
   };
 
   const closeMobile = () => setMobileOpen(false);
+
+  const isAgent = pathname === "/agent" || pathname.startsWith("/agent/") || pathname.endsWith("/assistant");
+
+  useEffect(() => {
+    if (isAgent) {
+      document.body.classList.remove("has-project-rail");
+    }
+  }, [isAgent]);
+
+  if (isAgent) {
+    return null;
+  }
 
   return (
     <>

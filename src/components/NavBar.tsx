@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { AppNavLinks } from "@/components/AppNavLinks";
 import { OrgSwitcher } from "@/components/OrgSwitcher";
@@ -8,12 +9,23 @@ import { AgiraMark } from "@/components/landing/AgiraMark";
 import { PanelLeft, Sparkles } from "lucide-react";
 
 export function NavBar() {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  if (pathname === "/agent" || pathname.startsWith("/agent/")) {
+    return null;
+  }
+
   const handleToggleSidebar = () => {
     window.dispatchEvent(new CustomEvent("agira:toggle-sidebar"));
   };
 
   const handleToggleAssistant = () => {
-    window.dispatchEvent(new CustomEvent("agira:toggle-assistant"));
+    const projectMatch = pathname.match(
+      /^\/(?:dashboard|gantt|gantt_chart|tasks|field-intake|review-queue|plan-vs-actual|lookahead|weekly-plan|pull-planning|roadblocks|impacts|files|drawings|rfis|submittals|baselines|activity|members)\/([^/]+)/
+    );
+    const pid = projectMatch?.[1];
+    router.push(pid ? `/agent/${pid}` : "/agent");
   };
 
   return (

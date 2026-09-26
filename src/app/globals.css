@@ -193,56 +193,56 @@ body {
 }
 
 .assistant-theme {
-  --assistant-overlay: rgba(13, 18, 25, 0.46);
-  --assistant-rail: rgba(21, 27, 36, 0.68);
-  --assistant-panel: rgba(16, 23, 32, 0.68);
-  --assistant-layer: rgba(255, 255, 255, 0.04);
-  --assistant-layer-hover: rgba(255, 255, 255, 0.07);
-  --assistant-layer-strong: rgba(255, 255, 255, 0.1);
-  --assistant-input: rgba(255, 255, 255, 0.055);
-  --assistant-border: rgba(255, 255, 255, 0.08);
-  --assistant-border-strong: rgba(255, 255, 255, 0.16);
+  --assistant-overlay: #080c14;
+  --assistant-rail: #0e1523;
+  --assistant-panel: #080c14;
+  --assistant-layer: #121b2d;
+  --assistant-layer-hover: #1b263d;
+  --assistant-layer-strong: #22304d;
+  --assistant-input: #0e1523;
+  --assistant-border: #1a2538;
+  --assistant-border-strong: #2b3b57;
   --assistant-text: #ffffff;
-  --assistant-text-strong: rgba(255, 255, 255, 0.9);
-  --assistant-text-body: rgba(255, 255, 255, 0.72);
-  --assistant-text-muted: rgba(255, 255, 255, 0.5);
-  --assistant-text-faint: rgba(255, 255, 255, 0.3);
-  --assistant-rail-text: rgba(255, 255, 255, 0.9);
-  --assistant-rail-body: rgba(255, 255, 255, 0.72);
-  --assistant-rail-muted: rgba(255, 255, 255, 0.5);
-  --assistant-rail-faint: rgba(255, 255, 255, 0.3);
-  --assistant-rail-section: rgba(255, 255, 255, 0.42);
+  --assistant-text-strong: #f8fafc;
+  --assistant-text-body: #cbd5e1;
+  --assistant-text-muted: #94a3b8;
+  --assistant-text-faint: #64748b;
+  --assistant-rail-text: #f8fafc;
+  --assistant-rail-body: #cbd5e1;
+  --assistant-rail-muted: #94a3b8;
+  --assistant-rail-faint: #64748b;
+  --assistant-rail-section: #64748b;
   --assistant-accent: #ffffff;
-  --assistant-on-accent: #101720;
-  --assistant-shadow: rgba(5, 8, 12, 0.3);
-  --assistant-rail-shadow: rgba(5, 8, 12, 0.26);
+  --assistant-on-accent: #080c14;
+  --assistant-shadow: rgba(0, 0, 0, 0.4);
+  --assistant-rail-shadow: rgba(0, 0, 0, 0.3);
 }
 
 .assistant-theme-light,
 .app-shell:not([data-app-theme="dark"]) .assistant-theme {
-  --assistant-overlay: rgba(237, 242, 249, 0.9);
-  --assistant-rail: rgba(239, 244, 251, 0.96);
-  --assistant-panel: rgba(255, 255, 255, 0.97);
-  --assistant-layer: rgba(246, 247, 249, 0.94);
-  --assistant-layer-hover: rgba(224, 229, 236, 0.72);
-  --assistant-layer-strong: rgba(218, 224, 232, 0.78);
-  --assistant-input: rgba(255, 255, 255, 0.96);
-  --assistant-border: rgba(16, 23, 32, 0.09);
-  --assistant-border-strong: rgba(16, 23, 32, 0.15);
-  --assistant-text: #101720;
-  --assistant-text-strong: rgba(16, 23, 32, 0.94);
-  --assistant-text-body: rgba(45, 49, 55, 0.8);
-  --assistant-text-muted: rgba(69, 75, 84, 0.66);
-  --assistant-text-faint: rgba(85, 93, 104, 0.48);
-  --assistant-rail-text: #1c2733;
-  --assistant-rail-body: #41474f;
-  --assistant-rail-muted: #555d67;
-  --assistant-rail-faint: #a0a8b3;
-  --assistant-rail-section: #9ba3ad;
-  --assistant-accent: #101720;
+  --assistant-overlay: #f8fafc;
+  --assistant-rail: #f1f5f9;
+  --assistant-panel: #ffffff;
+  --assistant-layer: #f8fafc;
+  --assistant-layer-hover: #e2e8f0;
+  --assistant-layer-strong: #cbd5e1;
+  --assistant-input: #ffffff;
+  --assistant-border: #e2e8f0;
+  --assistant-border-strong: #cbd5e1;
+  --assistant-text: #0f172a;
+  --assistant-text-strong: #0f172a;
+  --assistant-text-body: #334155;
+  --assistant-text-muted: #64748b;
+  --assistant-text-faint: #94a3b8;
+  --assistant-rail-text: #0f172a;
+  --assistant-rail-body: #334155;
+  --assistant-rail-muted: #64748b;
+  --assistant-rail-faint: #94a3b8;
+  --assistant-rail-section: #64748b;
+  --assistant-accent: #0f172a;
   --assistant-on-accent: #ffffff;
-  --assistant-shadow: rgba(38, 45, 56, 0.1);
-  --assistant-rail-shadow: rgba(38, 45, 56, 0.08);
+  --assistant-shadow: rgba(0, 0, 0, 0.08);
+  --assistant-rail-shadow: rgba(0, 0, 0, 0.06);
 }
 
 .assistant-markdown {
@@ -337,6 +337,21 @@ textarea:focus-visible {
 
 .app-main {
   min-height: calc(100vh - 64px);
+}
+
+body.is-agent-page,
+html:has(body.is-agent-page) {
+  overflow: hidden !important;
+  height: 100dvh !important;
+  background: var(--assistant-overlay) !important;
+}
+
+body.is-agent-page .app-main {
+  min-height: 100dvh !important;
+  height: 100dvh !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
 }
 
 body.has-project-rail .app-main {

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowUpRight, Check, Circle } from "lucide-react";
 import {
   buildProjectSetupSteps,
@@ -39,15 +40,14 @@ export function ProjectSetupChecklist({
   projectId: string;
   signals: ProjectSetupSignals;
 }) {
+  const router = useRouter();
   const steps = buildProjectSetupSteps(projectId, signals);
   const completed = completedProjectSetupSteps(steps);
 
   if (completed === steps.length) return null;
 
   function openAgent() {
-    window.dispatchEvent(
-      new CustomEvent("agira:toggle-assistant", { detail: { open: true } })
-    );
+    router.push(`/agent/${projectId}`);
   }
 
   return (
