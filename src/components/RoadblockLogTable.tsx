@@ -41,29 +41,38 @@ export function RoadblockLogTable({
   currentUserId: string;
 }) {
   if (roadblocks.length === 0) {
-    return <p className="text-sm text-muted py-8 text-center">No roadblocks match this filter.</p>;
+    return (
+      <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft/40 px-6 py-12 text-center">
+        <p className="text-sm font-semibold tracking-tight text-ink">No roadblocks match this filter</p>
+        <p className="mt-1 text-xs text-muted">Active and resolved roadblocks will appear here.</p>
+      </div>
+    );
   }
 
   return (
-    <table className="w-full text-sm">
-      <thead>
-        <tr className="border-b border-hairline text-left text-muted">
-          <th className="py-2 pr-3 font-medium">Task</th>
-          <th className="py-2 pr-3 font-medium">Type</th>
-          <th className="py-2 pr-3 font-medium">Note</th>
-          <th className="py-2 pr-3 font-medium">Owner</th>
-          <th className="py-2 pr-3 font-medium">Due</th>
-          <th className="py-2 pr-3 font-medium">Raised by</th>
-          <th className="py-2 pr-3 font-medium">Status</th>
-          <th className="py-2 font-medium text-right">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {roadblocks.map((r) => (
-          <RoadblockRowView key={r.id} roadblock={r} members={members} canManage={canManage} currentUserId={currentUserId} />
-        ))}
-      </tbody>
-    </table>
+    <div className="rounded-2xl border border-hairline bg-canvas shadow-card overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[760px] text-sm text-left">
+          <thead>
+            <tr className="border-b border-hairline bg-surface-soft/80 text-[11px] font-bold uppercase tracking-wider text-muted">
+              <th className="px-4 py-3">Task</th>
+              <th className="px-4 py-3">Type</th>
+              <th className="px-4 py-3">Note</th>
+              <th className="px-4 py-3">Owner</th>
+              <th className="px-4 py-3">Due</th>
+              <th className="px-4 py-3">Raised by</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-hairline">
+            {roadblocks.map((r) => (
+              <RoadblockRowView key={r.id} roadblock={r} members={members} canManage={canManage} currentUserId={currentUserId} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 
@@ -113,9 +122,9 @@ function RoadblockRowView({
   }
 
   return (
-    <tr className="border-b border-hairline-soft align-top">
-      <td className="py-3 pr-3 font-medium text-ink">{roadblock.name}</td>
-      <td className="py-3 pr-3">
+    <tr className="hover:bg-surface-soft/40 transition-colors align-top">
+      <td className="px-4 py-3.5 font-semibold tracking-tight text-ink">{roadblock.name}</td>
+      <td className="px-4 py-3.5">
         {canManage ? (
           <select
             value={type}
@@ -125,7 +134,7 @@ function RoadblockRowView({
               setType(v);
               saveDetails({ type: v });
             }}
-            className="h-8 rounded-md border border-hairline bg-canvas px-2 text-xs focus:outline-none focus:border-ink"
+            className="h-8 rounded-lg border border-hairline bg-surface-soft px-2 text-xs font-medium text-ink focus:bg-canvas focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all shadow-2xs"
           >
             {ROADBLOCK_TYPES.map((t) => (
               <option key={t} value={t}>
@@ -134,11 +143,11 @@ function RoadblockRowView({
             ))}
           </select>
         ) : (
-          <span className="text-xs">{ROADBLOCK_TYPE_LABELS[type]}</span>
+          <span className="text-xs font-medium text-ink/80">{ROADBLOCK_TYPE_LABELS[type]}</span>
         )}
       </td>
-      <td className="max-w-[260px] py-3 pr-3 text-body">
-        <p>{roadblock.roadblockNote}</p>
+      <td className="max-w-[280px] px-4 py-3.5 text-ink leading-relaxed">
+        <p className="text-xs">{roadblock.roadblockNote}</p>
         {roadblock.roadblockAttachment && (
           <button
             type="button"
@@ -151,20 +160,20 @@ function RoadblockRowView({
                 highlight: roadblock.roadblockCitationExcerpt,
               }
             )}
-            className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-ink"
+            className="btn-interactive mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-surface-soft border border-hairline text-[11px] font-semibold text-ink hover:bg-canvas transition-colors shadow-2xs"
           >
             {roadblock.roadblockAttachment.fileName}
-            {roadblock.roadblockPageNumber ? `, page ${roadblock.roadblockPageNumber}` : ""}
-            <ExternalLink size={11} aria-hidden />
+            {roadblock.roadblockPageNumber ? `, p. ${roadblock.roadblockPageNumber}` : ""}
+            <ExternalLink size={10} aria-hidden />
           </button>
         )}
         {roadblock.roadblockCitationExcerpt && (
-          <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">
-            {roadblock.roadblockCitationExcerpt}
+          <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-muted italic">
+            &ldquo;{roadblock.roadblockCitationExcerpt}&rdquo;
           </p>
         )}
       </td>
-      <td className="py-3 pr-3">
+      <td className="px-4 py-3.5">
         {canManage ? (
           <select
             value={ownerId}
@@ -173,7 +182,7 @@ function RoadblockRowView({
               setOwnerId(e.target.value);
               saveDetails({ ownerId: e.target.value });
             }}
-            className="h-8 rounded-md border border-hairline bg-canvas px-2 text-xs focus:outline-none focus:border-ink"
+            className="h-8 rounded-lg border border-hairline bg-surface-soft px-2 text-xs font-medium text-ink focus:bg-canvas focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all shadow-2xs"
           >
             <option value="">Unassigned</option>
             {members.map((m) => (
@@ -183,10 +192,10 @@ function RoadblockRowView({
             ))}
           </select>
         ) : (
-          <span className="text-xs">{members.find((m) => m.id === ownerId)?.name ?? "Unassigned"}</span>
+          <span className="text-xs text-muted font-medium">{members.find((m) => m.id === ownerId)?.name ?? "Unassigned"}</span>
         )}
       </td>
-      <td className="py-3 pr-3 whitespace-nowrap">
+      <td className="px-4 py-3.5 whitespace-nowrap">
         {canManage ? (
           <input
             type="date"
@@ -196,19 +205,19 @@ function RoadblockRowView({
               setDueDate(e.target.value);
               saveDetails({ dueDate: e.target.value });
             }}
-            className="h-8 rounded-md border border-hairline bg-canvas px-2 text-xs focus:outline-none focus:border-ink"
+            className="h-8 rounded-lg border border-hairline bg-canvas px-2 text-xs font-mono text-ink focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
           />
         ) : (
-          <span className="text-xs text-muted">{dueDate ? formatDate(new Date(dueDate)) : "—"}</span>
+          <span className="text-xs text-muted font-mono">{dueDate ? formatDate(new Date(dueDate)) : "—"}</span>
         )}
       </td>
-      <td className="py-3 pr-3 text-muted whitespace-nowrap">{roadblock.raisedByName}</td>
-      <td className="py-3 pr-3">
+      <td className="px-4 py-3.5 text-xs text-muted whitespace-nowrap font-medium">{roadblock.raisedByName}</td>
+      <td className="px-4 py-3.5">
         {roadblock.roadblockStatus && <RoadblockBadge status={roadblock.roadblockStatus} />}
       </td>
-      <td className="py-3 text-right whitespace-nowrap">
+      <td className="px-4 py-3.5 text-right whitespace-nowrap">
         {roadblock.roadblockStatus === "OPEN" && canResolve && (
-          <Button variant="text" className="text-xs" onClick={handleResolve} disabled={pending}>
+          <Button variant="secondary" className="h-7 px-2.5 text-xs font-semibold shadow-2xs" onClick={handleResolve} disabled={pending}>
             {pending ? "…" : "Resolve"}
           </Button>
         )}

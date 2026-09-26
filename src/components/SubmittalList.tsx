@@ -28,11 +28,11 @@ export type TaskOption = { id: string; name: string };
 
 const STATUS_OPTIONS: SubmittalStatus[] = ["PENDING", "APPROVED", "REJECTED", "REVISE_RESUBMIT"];
 
-const STATUS_COLORS: Record<SubmittalStatus, string> = {
-  PENDING: "text-muted",
-  APPROVED: "text-success",
-  REJECTED: "text-error",
-  REVISE_RESUBMIT: "text-amber-600",
+const STATUS_BADGES: Record<SubmittalStatus, string> = {
+  PENDING: "bg-surface-soft border-hairline text-ink",
+  APPROVED: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20",
+  REJECTED: "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20",
+  REVISE_RESUBMIT: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20",
 };
 
 export function SubmittalList({
@@ -51,9 +51,12 @@ export function SubmittalList({
       <NewSubmittalForm projectId={projectId} tasks={tasks} />
 
       {submittals.length === 0 ? (
-        <p className="app-empty-title py-6 text-center">No submittals match this filter</p>
+        <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft/40 px-6 py-12 text-center">
+          <p className="text-sm font-semibold tracking-tight text-ink">No submittals match this filter</p>
+          <p className="mt-1 text-xs text-muted">Shop drawings, product data, and physical samples will appear here.</p>
+        </div>
       ) : (
-        <ul className="space-y-3">
+        <ul className="space-y-3.5">
           {submittals.map((s) => (
             <SubmittalCard key={s.id} submittal={s} canDecide={canDecide} />
           ))}
@@ -94,28 +97,31 @@ function NewSubmittalForm({ projectId, tasks }: { projectId: string; tasks: Task
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border border-hairline rounded-lg p-4 bg-surface-soft">
-      <h3 className="app-card-title mb-3">New Submittal</h3>
+    <form onSubmit={handleSubmit} className="rounded-2xl border border-hairline bg-surface-soft/80 p-5 shadow-card">
+      <div className="mb-3">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Material & Spec approval</p>
+        <h3 className="text-sm font-semibold tracking-tight text-ink mt-0.5">New Submittal</h3>
+      </div>
       <div className="flex flex-wrap items-center gap-3">
         <input
           aria-label="Submittal title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Title (e.g. Structural Steel Shop Drawings)"
-          className="h-10 flex-1 min-w-[220px] rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink"
+          className="h-9 flex-1 min-w-[220px] rounded-xl border border-hairline bg-canvas px-3 text-xs sm:text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
         />
         <input
           aria-label="Specification section"
           value={specSection}
           onChange={(e) => setSpecSection(e.target.value)}
           placeholder="Spec section"
-          className="h-10 w-32 rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink"
+          className="h-9 w-32 rounded-xl border border-hairline bg-canvas px-3 text-xs sm:text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
         />
         <select
           aria-label="Linked task"
           value={taskId}
           onChange={(e) => setTaskId(e.target.value)}
-          className="h-10 rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink"
+          className="h-9 rounded-xl border border-hairline bg-canvas px-3 text-xs sm:text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all shadow-2xs"
         >
           <option value="">No linked task</option>
           {tasks.map((t) => (
@@ -129,9 +135,9 @@ function NewSubmittalForm({ projectId, tasks }: { projectId: string; tasks: Task
           type="date"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
-          className="h-10 rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink"
+          className="h-9 rounded-xl border border-hairline bg-canvas px-3 text-xs sm:text-sm text-ink font-mono focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
         />
-        <Button type="submit" variant="secondary" disabled={loading || !title.trim()}>
+        <Button type="submit" variant="primary" disabled={loading || !title.trim()} className="h-9 text-xs font-semibold shadow-2xs">
           {loading ? "Submitting…" : "Submit"}
         </Button>
       </div>
@@ -154,17 +160,21 @@ function SubmittalCard({ submittal, canDecide }: { submittal: SubmittalRow; canD
   }
 
   return (
-    <li className="border border-hairline rounded-lg p-4">
-      <div className="flex items-center justify-between mb-1">
-        <span className="app-card-title">{submittal.title}</span>
-        <span className={`text-xs font-medium ${STATUS_COLORS[submittal.status]}`}>
+    <li className="rounded-2xl border border-hairline bg-canvas p-5 shadow-card hover:shadow-card-hover transition-all">
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <span className="text-sm font-semibold tracking-tight text-ink">{submittal.title}</span>
+        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border tracking-tight ${STATUS_BADGES[submittal.status]}`}>
           {SUBMITTAL_STATUS_LABELS[submittal.status]}
         </span>
       </div>
-      <div className="flex flex-wrap gap-3 text-xs text-muted mb-2">
-        {submittal.source === "PROCORE" && <span className="text-muted-soft">From Procore</span>}
-        {submittal.specSection && <span>Spec {submittal.specSection}</span>}
-        {submittal.task && <span>Task: {submittal.task.name}</span>}
+      <div className="flex flex-wrap items-center gap-2.5 text-xs text-muted mb-2 font-mono">
+        {submittal.source === "PROCORE" && (
+          <span className="font-sans px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 text-[10px] font-bold">
+            From Procore
+          </span>
+        )}
+        {submittal.specSection && <span className="font-sans font-medium text-ink/80">Spec: {submittal.specSection}</span>}
+        {submittal.task && <span className="font-sans font-medium text-ink">Task: {submittal.task.name}</span>}
         {submittal.attachment && (
           <button
             type="button"
@@ -177,33 +187,33 @@ function SubmittalCard({ submittal, canDecide }: { submittal: SubmittalRow; canD
                 highlight: submittal.citationExcerpt,
               }
             )}
-            className="inline-flex items-center gap-1 font-medium text-body hover:text-ink"
+            className="btn-interactive inline-flex items-center gap-1 font-sans font-medium text-ink hover:underline"
           >
-            Source: {submittal.attachment.fileName}
-            {submittal.pageNumber ? `, page ${submittal.pageNumber}` : ""}
-            <ExternalLink size={11} aria-hidden />
+            Doc: {submittal.attachment.fileName}
+            {submittal.pageNumber ? ` · p.${submittal.pageNumber}` : ""}
+            <ExternalLink size={10} aria-hidden />
           </button>
         )}
         {submittal.dueDate && (
-          <span className={isOverdue ? "text-error font-medium" : undefined}>
+          <span className={isOverdue ? "text-rose-600 dark:text-rose-400 font-bold" : undefined}>
             Due {formatDate(submittal.dueDate)}
-            {isOverdue ? " — overdue" : ""}
+            {isOverdue ? " (overdue)" : ""}
           </span>
         )}
         <span>Submitted by {submittal.submittedBy.user.name}</span>
       </div>
       {submittal.citationExcerpt && (
-        <p className="mb-2 border-l-2 border-hairline pl-3 text-xs leading-5 text-muted">
-          {submittal.citationExcerpt}
-        </p>
+        <blockquote className="mb-2 border-l-2 border-hairline pl-3 text-xs leading-5 text-muted italic">
+          &ldquo;{submittal.citationExcerpt}&rdquo;
+        </blockquote>
       )}
       {canDecide && submittal.status !== "APPROVED" && (
-        <div className="flex flex-wrap gap-2 mt-2">
+        <div className="flex flex-wrap gap-2 pt-2 border-t border-hairline">
           {STATUS_OPTIONS.filter((s) => s !== submittal.status).map((s) => (
             <Button
               key={s}
-              variant="text"
-              className="h-7 px-2 text-xs"
+              variant="secondary"
+              className="h-7 px-2.5 text-xs font-semibold shadow-2xs"
               onClick={() => handleStatusChange(s)}
               disabled={pending}
             >

@@ -32,32 +32,34 @@ export function WeeklyPlanBoard({
   committableTasks: CommittableTask[];
 }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {commitments.length === 0 ? (
-        <div className="rounded-md border border-dashed border-hairline px-6 py-10 text-center">
-          <p className="app-empty-title">No commitments for this week</p>
-          <p className="mt-2 text-sm text-muted">Commit field-ready tasks below to build the weekly plan.</p>
+        <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft/40 px-6 py-12 text-center">
+          <p className="text-sm font-semibold tracking-tight text-ink">No commitments for this week</p>
+          <p className="mt-1 text-xs text-muted">Commit field-ready tasks below to build the weekly plan.</p>
         </div>
       ) : (
-        <div className="app-table-wrap overflow-x-auto">
-          <table className="w-full min-w-[680px] text-sm">
-            <thead>
-              <tr className="border-b border-hairline bg-surface-soft text-left">
-                <th className="app-table-heading px-4 py-2.5">Task</th>
-                <th className="app-table-heading px-4 py-2.5">Committed by</th>
-                <th className="app-table-heading px-4 py-2.5">Status</th>
-                <th className="app-table-heading w-32 px-4 py-2.5">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {commitments.map((c) => (
-                <CommitmentRowView
-                  key={`${c.id}:${c.status}:${c.reasonForVariance ?? ""}:${c.canRemove}`}
-                  commitment={c}
-                />
-              ))}
-            </tbody>
-          </table>
+        <div className="rounded-2xl border border-hairline bg-canvas shadow-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[680px] text-sm text-left">
+              <thead>
+                <tr className="border-b border-hairline bg-surface-soft/80 text-[11px] font-bold uppercase tracking-wider text-muted">
+                  <th className="px-4 py-3">Task</th>
+                  <th className="px-4 py-3">Committed by</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="w-32 px-4 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-hairline">
+                {commitments.map((c) => (
+                  <CommitmentRowView
+                    key={`${c.id}:${c.status}:${c.reasonForVariance ?? ""}:${c.canRemove}`}
+                    commitment={c}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -111,16 +113,16 @@ function CommitmentRowView({ commitment }: { commitment: CommitmentRow }) {
   }
 
   return (
-    <tr className="app-table-row border-b border-hairline-soft align-top last:border-b-0">
-      <td className="px-4 py-3 font-medium text-ink">{commitment.task.name}</td>
-      <td className="px-4 py-3 text-muted">{commitment.committedBy.user.name}</td>
-      <td className="px-4 py-3">
+    <tr className="hover:bg-surface-soft/40 transition-colors align-top">
+      <td className="px-4 py-3.5 font-semibold tracking-tight text-ink">{commitment.task.name}</td>
+      <td className="px-4 py-3.5 text-xs text-muted font-medium">{commitment.committedBy.user.name}</td>
+      <td className="px-4 py-3.5">
         <select
           aria-label={`Status for ${commitment.task.name}`}
           value={status}
           disabled={pending}
           onChange={(e) => handleStatusChange(e.target.value as CommitmentStatus)}
-          className="h-8 rounded-md border border-hairline bg-canvas px-2 text-xs focus:outline-none focus:border-ink disabled:opacity-50"
+          className="h-8 rounded-lg border border-hairline bg-surface-soft px-2.5 text-xs font-semibold text-ink focus:bg-canvas focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink disabled:opacity-50 transition-all shadow-2xs"
         >
           {STATUS_OPTIONS.map((s) => (
             <option key={s} value={s}>
@@ -135,25 +137,25 @@ function CommitmentRowView({ commitment }: { commitment: CommitmentRow }) {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Reason for variance"
-              className="h-8 flex-1 min-w-[160px] rounded-md border border-hairline bg-canvas px-2 text-xs focus:outline-none focus:border-ink"
+              className="h-8 flex-1 min-w-[160px] rounded-lg border border-hairline bg-canvas px-2.5 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
             />
-            <Button variant="secondary" className="h-8 px-2 text-xs" onClick={handleSaveReason} disabled={pending}>
+            <Button variant="secondary" className="h-8 px-2.5 text-xs font-semibold shadow-2xs" onClick={handleSaveReason} disabled={pending}>
               Save
             </Button>
           </div>
         )}
         <ErrorText>{error}</ErrorText>
       </td>
-      <td className="px-4 py-3">
+      <td className="px-4 py-3.5">
         {commitment.canRemove &&
           (confirmingRemoval ? (
             <div className="flex items-center gap-1.5">
-              <Button variant="text" className="h-8 px-2 text-xs" onClick={handleRemove} disabled={pending}>
+              <Button variant="danger" className="h-7 px-2 text-[11px] font-semibold" onClick={handleRemove} disabled={pending}>
                 {pending ? "Removing..." : "Remove"}
               </Button>
               <Button
                 variant="ghost"
-                className="h-8 px-2 text-xs"
+                className="h-7 px-2 text-[11px]"
                 onClick={() => setConfirmingRemoval(false)}
                 disabled={pending}
               >
@@ -163,12 +165,12 @@ function CommitmentRowView({ commitment }: { commitment: CommitmentRow }) {
           ) : (
             <Button
               variant="ghost"
-              className="h-8 w-8 p-0 text-muted hover:text-error"
+              className="h-7 w-7 p-0 text-muted hover:text-rose-600 rounded-lg hover:bg-rose-500/10 transition-colors"
               onClick={() => setConfirmingRemoval(true)}
               aria-label={`Remove ${commitment.task.name} from this weekly plan`}
               title="Remove from weekly plan"
             >
-              <CircleMinus size={16} aria-hidden />
+              <CircleMinus size={15} aria-hidden />
             </Button>
           ))}
       </td>
@@ -195,15 +197,20 @@ function CommitForm({ weekStartDate, tasks }: { weekStartDate: string; tasks: Co
   }
 
   return (
-    <div className="rounded-md border border-hairline bg-surface-soft p-4">
-      <p className="app-kicker mb-1">Weekly commitment</p>
-      <h3 className="app-card-title mb-3">Add work to this week</h3>
+    <div className="rounded-2xl border border-hairline bg-surface-soft/80 p-5 shadow-card">
+      <div className="mb-3">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Weekly commitment</p>
+        <h3 className="text-sm font-semibold tracking-tight text-ink mt-0.5">Add work to this week</h3>
+        <p className="text-xs text-muted mt-0.5">
+          Future commitments can be removed before their week begins. Current and past commitments stay in the plan.
+        </p>
+      </div>
       <div className="flex flex-wrap items-center gap-3">
         <select
           aria-label="Task to commit"
           value={taskId}
           onChange={(e) => setTaskId(e.target.value)}
-          className="h-10 rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink"
+          className="h-9 rounded-xl border border-hairline bg-canvas px-3 text-xs sm:text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
         >
           <option value="">Select a task…</option>
           {tasks.map((t) => (
@@ -212,13 +219,10 @@ function CommitForm({ weekStartDate, tasks }: { weekStartDate: string; tasks: Co
             </option>
           ))}
         </select>
-        <Button variant="secondary" onClick={handleCommit} disabled={loading || !taskId}>
-          {loading ? "Committing…" : "Commit"}
+        <Button variant="primary" onClick={handleCommit} disabled={loading || !taskId} className="h-9 text-xs font-semibold shadow-2xs">
+          {loading ? "Committing…" : "Commit task"}
         </Button>
       </div>
-      <p className="text-xs text-muted-soft mt-2">
-        Future commitments can be removed before their week begins. Current and past commitments stay in the plan.
-      </p>
       <ErrorText>{error}</ErrorText>
     </div>
   );

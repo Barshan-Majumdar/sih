@@ -1292,10 +1292,16 @@ export function createAssistantTools(context: AssistantToolContext) {
             openRoadblocks: summary.openRoadblocks,
             href: `/projects/${project.id}/dashboard`,
           })),
-          sources: summaries.map(({ project }) => ({
-            label: `${project.name} dashboard`,
-            href: `/projects/${project.id}/dashboard`,
-          })),
+          sources: [
+            {
+              label: "Portfolio Dashboard",
+              href: "/dashboard",
+            },
+            ...summaries.map(({ project }) => ({
+              label: `${project.name} Workspace`,
+              href: `/projects/${project.id}`,
+            })),
+          ],
         };
       },
     }),

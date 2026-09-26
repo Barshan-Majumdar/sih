@@ -60,32 +60,34 @@ export default async function ExecutiveDashboardPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              <Card className="relative overflow-hidden p-5">
-                <span className="absolute inset-x-0 top-0 h-0.5 bg-ink" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="group relative overflow-hidden p-5 transition-all hover:border-hairline hover:shadow-[0_8px_20px_-4px_rgba(15,23,42,0.06)]">
+                <span className="absolute inset-x-0 top-0 h-1 bg-ink" />
                 <p className="app-metric-label">Active projects</p>
                 <p className="app-metric-value">{projects.length}</p>
                 <p className="app-metric-helper">Currently in delivery</p>
               </Card>
-              <Card className="relative overflow-hidden p-5">
-                <span className="absolute inset-x-0 top-0 h-0.5 bg-brand-accent" />
+              <Card className="group relative overflow-hidden p-5 transition-all hover:border-brand-accent/30 hover:shadow-[0_8px_20px_-4px_rgba(37,99,235,0.08)]">
+                <span className="absolute inset-x-0 top-0 h-1 bg-brand-accent" />
                 <p className="app-metric-label">Total tasks</p>
                 <p className="app-metric-value">{orgTotals.totalTasks}</p>
                 <p className="app-metric-helper">Across active schedules</p>
               </Card>
-              <Card className="relative overflow-hidden p-5">
-                <span className={`absolute inset-x-0 top-0 h-0.5 ${orgTotals.openRoadblocks > 0 ? "bg-error" : "bg-success"}`} />
+              <Card className="group relative overflow-hidden p-5 transition-all hover:border-hairline hover:shadow-[0_8px_20px_-4px_rgba(15,23,42,0.06)]">
+                <span className={`absolute inset-x-0 top-0 h-1 ${orgTotals.openRoadblocks > 0 ? "bg-error" : "bg-success"}`} />
                 <p className="app-metric-label">Open roadblocks</p>
-                <p className={`app-metric-value ${orgTotals.openRoadblocks > 0 ? "text-error" : ""}`}>
+                <p className={`app-metric-value ${orgTotals.openRoadblocks > 0 ? "text-error" : "text-success"}`}>
                   {orgTotals.openRoadblocks}
                 </p>
-                <p className="app-metric-helper">Needs owner attention</p>
+                <p className="app-metric-helper">
+                  {orgTotals.openRoadblocks > 0 ? "Needs owner attention" : "No active roadblocks"}
+                </p>
               </Card>
-              <Card className="relative overflow-hidden p-5">
-                <span className="absolute inset-x-0 top-0 h-0.5 bg-success" />
+              <Card className="group relative overflow-hidden p-5 transition-all hover:border-success/30 hover:shadow-[0_8px_20px_-4px_rgba(16,185,129,0.08)]">
+                <span className="absolute inset-x-0 top-0 h-1 bg-success" />
                 <p className="app-metric-label">Average health</p>
                 <p className={`app-metric-value ${healthColor(avgHealthScore)}`}>{avgHealthScore ?? "-"}</p>
-                <p className="app-metric-helper">Portfolio score</p>
+                <p className="app-metric-helper">Overall portfolio score</p>
               </Card>
             </div>
 
@@ -111,7 +113,7 @@ export default async function ExecutiveDashboardPage() {
                     {summaries.map(({ project, summary }) => (
                       <tr key={project.id} className="app-table-row border-b border-hairline-soft last:border-b-0">
                         <td className="px-4 py-3">
-                          <Link href={`/projects/${project.id}/dashboard`} className="font-medium text-ink hover:underline">
+                          <Link href={`/dashboard/${project.id}`} className="font-medium text-ink hover:underline">
                             {project.name}
                           </Link>
                         </td>

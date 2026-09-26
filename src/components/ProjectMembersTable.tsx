@@ -38,26 +38,30 @@ export function ProjectMembersTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[620px] text-sm">
+      <table className="w-full min-w-[620px] text-sm text-left">
         <thead>
-          <tr className="border-b border-hairline text-left">
-            <th className="app-table-heading py-2">Name</th>
-            <th className="app-table-heading py-2">Email</th>
-            <th className="app-table-heading py-2">Role</th>
-            {canManage && <th className="app-table-heading py-2 text-right">Actions</th>}
+          <tr className="border-b border-hairline bg-surface-soft/80 text-[11px] font-bold uppercase tracking-wider text-muted">
+            <th className="px-4 py-3">Name</th>
+            <th className="px-4 py-3">Email</th>
+            <th className="px-4 py-3">Role</th>
+            {canManage && <th className="px-4 py-3 text-right">Actions</th>}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-hairline">
           {members.map((member) => (
-            <tr key={member.id} className="app-table-row border-b border-hairline-soft last:border-b-0">
-              <td className="py-3">{member.user.name}</td>
-              <td className="py-3 text-muted">{member.user.email}</td>
-              <td className="py-3">{PROJECT_ROLE_LABELS[member.role]}</td>
+            <tr key={member.id} className="hover:bg-surface-soft/40 transition-colors">
+              <td className="px-4 py-3.5 font-semibold tracking-tight text-ink">{member.user.name}</td>
+              <td className="px-4 py-3.5 text-xs text-muted font-mono">{member.user.email}</td>
+              <td className="px-4 py-3.5">
+                <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-tight bg-surface-soft border border-hairline text-ink">
+                  {PROJECT_ROLE_LABELS[member.role]}
+                </span>
+              </td>
               {canManage && (
-                <td className="py-3 text-right">
+                <td className="px-4 py-3.5 text-right">
                   <Button
-                    variant="text"
-                    className="text-error"
+                    variant="danger"
+                    className="h-7 px-2.5 text-xs font-semibold"
                     disabled={pending && removingId === member.id}
                     onClick={() => handleRemove(member.id)}
                   >

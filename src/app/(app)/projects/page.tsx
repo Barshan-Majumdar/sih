@@ -86,29 +86,60 @@ export default async function ProjectsPage({
             const done = project.tasks.filter((t) => t.status === "DONE").length;
             const completion = percentComplete(total, done);
             return (
-              <Link key={project.id} href={`/projects/${project.id}`} className="group">
-                <Card className="flex h-full min-h-44 flex-col p-5 transition-all group-hover:-translate-y-0.5 group-hover:border-muted-soft group-hover:shadow-[0_8px_24px_rgba(17,17,17,0.08)]">
-                  <div className="mb-5 flex items-start justify-between gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-md bg-ink text-sm font-bold text-canvas">
-                      {project.name.charAt(0).toUpperCase()}
-                    </span>
-                    <span className="text-xs font-medium text-muted transition-colors group-hover:text-ink">Open</span>
-                  </div>
-                  <h2 className="app-card-title mb-1">{project.name}</h2>
-                  <p className="mb-5 text-xs text-muted">
-                    {formatDate(project.startDate)} – {formatDate(project.endDate)}
-                  </p>
-                  <div className="mt-auto">
-                    <div className="mb-2 flex items-center justify-between text-xs">
-                      <span className="text-muted">{total} tasks</span>
-                      <span className="font-semibold text-ink">{completion}%</span>
+              <div key={project.id} className="group relative flex h-full flex-col">
+                <Link href={`/dashboard/${project.id}`} className="block focus-visible:outline-none flex-1">
+                  <Card className="flex h-full min-h-48 flex-col p-5 transition-all duration-200 ease-out group-hover:-translate-y-1 group-hover:border-muted-soft/60 group-hover:shadow-[0_12px_28px_-6px_rgba(15,23,42,0.08)] group-focus-visible:ring-2 group-focus-visible:ring-brand-accent">
+                    <div className="mb-4 flex items-start justify-between gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink text-sm font-bold text-canvas shadow-[0_2px_8px_rgba(15,23,42,0.14)] transition-transform group-hover:scale-105">
+                        {project.name.charAt(0).toUpperCase()}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-pill border border-hairline/80 bg-surface-soft px-2.5 py-0.5 text-xs font-semibold text-muted transition-colors group-hover:border-brand-accent/30 group-hover:text-ink">
+                        <span>Dashboard</span>
+                        <span className="text-brand-accent transition-transform group-hover:translate-x-0.5" aria-hidden>&rarr;</span>
+                      </span>
                     </div>
-                    <div className="app-progress">
-                      <span style={{ width: `${completion}%` }} />
+                    <h2 className="app-card-title mb-1.5 line-clamp-1 group-hover:text-brand-accent transition-colors">{project.name}</h2>
+                    <p className="mb-5 text-xs text-muted">
+                      {formatDate(project.startDate)} &ndash; {formatDate(project.endDate)}
+                    </p>
+                    <div className="mt-auto">
+                      <div className="mb-2 flex items-center justify-between text-xs font-medium">
+                        <span className="text-muted">{total} {total === 1 ? "task" : "tasks"}</span>
+                        <span className="font-semibold text-ink tabular-nums">{completion}% complete</span>
+                      </div>
+                      <div className="app-progress">
+                        <span
+                          style={{ width: `${completion}%` }}
+                          className={`${completion === 100 ? "bg-success" : completion > 0 ? "bg-brand-accent" : "bg-muted-soft"} transition-all duration-500`}
+                        />
+                      </div>
                     </div>
-                  </div>
-                </Card>
-              </Link>
+                  </Card>
+                </Link>
+                {/* Clean Quick Access Links */}
+                <div className="mt-2 flex items-center gap-1.5 px-1 text-xs">
+                  <Link
+                    href={`/gantt/${project.id}`}
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-muted hover:bg-surface-soft hover:text-ink transition-colors"
+                  >
+                    <span>Gantt</span>
+                  </Link>
+                  <span className="text-hairline-soft" aria-hidden>&bull;</span>
+                  <Link
+                    href={`/tasks/${project.id}`}
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-muted hover:bg-surface-soft hover:text-ink transition-colors"
+                  >
+                    <span>Tasks</span>
+                  </Link>
+                  <span className="text-hairline-soft" aria-hidden>&bull;</span>
+                  <Link
+                    href={`/field-intake/${project.id}`}
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-muted hover:bg-surface-soft hover:text-ink transition-colors"
+                  >
+                    <span>Field Intake</span>
+                  </Link>
+                </div>
+              </div>
             );
           })}
         </div>

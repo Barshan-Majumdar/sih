@@ -55,70 +55,73 @@ export default async function ProjectBaselinesPage({
         {canManageSchedule(role) && <BaselineCreateForm projectId={projectId} />}
 
         {baselines.length === 0 ? (
-          <p className="app-empty-title py-6 text-center">No baselines saved yet</p>
+          <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft/40 px-6 py-12 text-center">
+            <p className="text-sm font-semibold tracking-tight text-ink">No baselines saved yet</p>
+            <p className="mt-1 text-xs text-muted">Use the form above to snapshot the current plan of record.</p>
+          </div>
         ) : (
           <div className="flex flex-wrap gap-2">
             {baselines.map((b) => (
               <Link
                 key={b.id}
                 href={`/projects/${projectId}/baselines?baselineId=${b.id}`}
-                className={`px-3.5 py-1.5 rounded-md text-sm font-medium border transition-colors ${
+                className={`btn-interactive px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-tight border transition-all ${
                   b.id === selectedId
-                    ? "bg-surface-soft border-ink text-ink"
-                    : "border-hairline text-muted hover:text-ink"
+                    ? "bg-ink border-ink text-canvas shadow-xs"
+                    : "bg-surface-soft border-hairline text-muted hover:text-ink hover:bg-canvas shadow-2xs"
                 }`}
               >
-                {b.name} · {formatDate(b.createdAt)}
+                {b.name} · <span className="font-mono">{formatDate(b.createdAt)}</span>
               </Link>
             ))}
           </div>
         )}
 
         {selected && (
-          <Card className="p-0 overflow-hidden">
-            <div className="px-4 py-3 border-b border-hairline-soft text-sm text-muted">
-              Comparing <span className="font-medium text-ink">{selected.name}</span> (saved{" "}
-              {formatDate(selected.createdAt)} by {selected.createdBy?.user.name ?? "—"}) against current schedule
+          <div className="rounded-2xl border border-hairline bg-canvas shadow-card overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-hairline bg-surface-soft/40 text-xs text-muted font-medium">
+              Comparing <span className="font-semibold text-ink">{selected.name}</span> (saved{" "}
+              <span className="font-mono">{formatDate(selected.createdAt)}</span> by {selected.createdBy?.user.name ?? "—"}) against current schedule
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm text-left">
                 <thead>
-                  <tr className="border-b border-hairline-soft text-left">
-                    <th className="app-table-heading px-4 py-2">Task</th>
-                    <th className="app-table-heading px-4 py-2">Baseline Dates</th>
-                    <th className="app-table-heading px-4 py-2">Current Dates</th>
-                    <th className="app-table-heading px-4 py-2">Variance</th>
-                    <th className="app-table-heading px-4 py-2">Status</th>
+                  <tr className="border-b border-hairline bg-surface-soft/80 text-[11px] font-bold uppercase tracking-wider text-muted">
+                    <th className="px-4 py-3">Task</th>
+                    <th className="px-4 py-3">Baseline Dates</th>
+                    <th className="px-4 py-3">Current Dates</th>
+                    <th className="px-4 py-3">Variance</th>
+                    <th className="px-4 py-3">Status</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-hairline">
                   {selected.snapshots.map((s) => {
                     const current = currentById.get(s.taskId);
                     const variance = current ? daysBetween(s.endDate, current.endDate) : null;
                     return (
-                      <tr key={s.id} className="border-b border-hairline-soft last:border-b-0">
-                        <td className="px-4 py-2">{s.taskName}</td>
-                        <td className="px-4 py-2 text-muted">
+                      <tr key={s.id} className="hover:bg-surface-soft/40 transition-colors">
+                        <td className="px-4 py-3.5 font-semibold tracking-tight text-ink">{s.taskName}</td>
+                        <td className="px-4 py-3.5 text-xs text-muted font-mono">
                           {formatDate(s.startDate)} – {formatDate(s.endDate)}
                         </td>
-                        <td className="px-4 py-2 text-muted">
+                        <td className="px-4 py-3.5 text-xs text-muted font-mono">
                           {current ? `${formatDate(current.startDate)} – ${formatDate(current.endDate)}` : "Task deleted"}
                         </td>
-                        <td className="px-4 py-2">
+                        <td className="px-4 py-3.5 text-xs font-mono">
                           {variance === null ? (
-                            "—"
+                            <span className="text-muted">—</span>
                           ) : variance === 0 ? (
-                            <span className="text-success">On schedule</span>
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">On schedule</span>
                           ) : variance > 0 ? (
-                            <span className="text-error">+{variance}d slip</span>
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20">+{variance}d slip</span>
                           ) : (
-                            <span className="text-success">{variance}d ahead</span>
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">{variance}d ahead</span>
                           )}
                         </td>
-                        <td className="px-4 py-2 text-muted">
+                        <td className="px-4 py-3.5 text-xs font-medium text-muted">
                           {TASK_STATUS_LABELS[s.status]}
                           {current && current.status !== s.status && (
-                            <span className="text-muted-soft"> → {TASK_STATUS_LABELS[current.status]}</span>
+                            <span className="text-muted/60"> &rarr; {TASK_STATUS_LABELS[current.status]}</span>
                           )}
                         </td>
                       </tr>
@@ -127,7 +130,7 @@ export default async function ProjectBaselinesPage({
                 </tbody>
               </table>
             </div>
-          </Card>
+          </div>
         )}
       </div>
     </div>

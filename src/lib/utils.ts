@@ -31,10 +31,10 @@ export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
 };
 
 export const TASK_STATUS_COLORS: Record<TaskStatus, string> = {
-  NOT_STARTED: "bg-surface-strong text-body",
-  IN_PROGRESS: "bg-brand-accent/15 text-brand-accent",
-  DONE: "bg-success/15 text-success",
-  DELAYED: "bg-error/15 text-error",
+  NOT_STARTED: "bg-surface-soft text-body border border-hairline",
+  IN_PROGRESS: "bg-brand-accent/10 text-brand-accent border border-brand-accent/20",
+  DONE: "bg-success/10 text-success border border-success/20",
+  DELAYED: "bg-error/10 text-error border border-error/20",
 };
 
 export const PROJECT_ROLE_LABELS: Record<ProjectRole, string> = {

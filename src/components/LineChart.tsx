@@ -42,8 +42,13 @@ export function LineChart({
     return paddingTop + plotHeight - (value / computedMax) * plotHeight;
   }
 
-  const yTicks = 4;
-  const yTickValues = Array.from({ length: yTicks + 1 }, (_, i) => Math.round((computedMax / yTicks) * i));
+  // De-duplicate y-tick values to avoid duplicate grid lines and non-unique React keys when computedMax is small (e.g. <= 4)
+  const yTicks = Math.min(4, Math.max(1, computedMax));
+  const yTickValues = Array.from(
+    new Set(
+      Array.from({ length: yTicks + 1 }, (_, i) => Math.round((computedMax / yTicks) * i))
+    )
+  );
 
   if (allValues.length === 0) {
     return <p className="text-sm text-muted text-center py-10">Not enough data yet.</p>;
@@ -52,17 +57,18 @@ export function LineChart({
   return (
     <div>
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" role="img">
-        {yTickValues.map((tick) => (
-          <g key={tick}>
+        {yTickValues.map((tick, idx) => (
+          <g key={`ytick-${tick}-${idx}`}>
             <line
               x1={paddingLeft}
               x2={width - paddingRight}
               y1={yFor(tick)}
               y2={yFor(tick)}
-              stroke="var(--color-hairline-soft, #eee)"
+              stroke="var(--color-hairline)"
+              strokeDasharray="4 4"
               strokeWidth={1}
             />
-            <text x={0} y={yFor(tick) + 4} fontSize={10} fill="currentColor" className="text-muted-soft">
+            <text x={0} y={yFor(tick) + 4} fontSize={10} fill="currentColor" className="text-muted-soft font-mono">
               {yFormat(tick)}
             </text>
           </g>
@@ -74,9 +80,19 @@ export function LineChart({
             .filter((p): p is string => p !== null);
           return (
             <g key={s.name}>
-              <polyline points={points.join(" ")} fill="none" stroke={s.color} strokeWidth={2} />
+              <polyline points={points.join(" ")} fill="none" stroke={s.color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
               {s.values.map((v, i) =>
-                v === null ? null : <circle key={i} cx={xFor(i)} cy={yFor(v)} r={2.5} fill={s.color} />
+                v === null ? null : (
+                  <circle
+                    key={`${s.name}-point-${i}`}
+                    cx={xFor(i)}
+                    cy={yFor(v)}
+                    r={3.5}
+                    fill={s.color}
+                    stroke="var(--color-canvas)"
+                    strokeWidth={1.5}
+                  />
+                )
               )}
             </g>
           );
@@ -86,13 +102,13 @@ export function LineChart({
           if (xLabels.length > 8 && i % Math.ceil(xLabels.length / 8) !== 0 && i !== xLabels.length - 1) return null;
           return (
             <text
-              key={i}
+              key={`xlabel-${i}-${label}`}
               x={xFor(i)}
               y={height - 8}
               fontSize={10}
               textAnchor="middle"
               fill="currentColor"
-              className="text-muted-soft"
+              className="text-muted-soft font-mono"
             >
               {label}
             </text>
@@ -100,9 +116,9 @@ export function LineChart({
         })}
       </svg>
 
-      <div className="flex flex-wrap items-center gap-4 mt-2">
+      <div className="flex flex-wrap items-center gap-4 mt-3">
         {series.map((s) => (
-          <div key={s.name} className="flex items-center gap-1.5 text-xs text-muted">
+          <div key={`series-legend-${s.name}`} className="flex items-center gap-1.5 rounded-pill border border-hairline/80 bg-surface-soft/60 px-2.5 py-1 text-xs font-medium text-muted">
             <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
             {s.name}
           </div>

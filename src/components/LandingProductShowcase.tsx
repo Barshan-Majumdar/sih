@@ -23,15 +23,15 @@ export function LandingProductShowcase() {
   const [activeView, setActiveView] = useState<ViewId>("schedule");
 
   return (
-    <div className="overflow-hidden rounded-lg border border-hairline bg-canvas shadow-[0_28px_70px_rgba(16,23,32,0.13)]">
+    <div className="overflow-hidden rounded-2xl border border-hairline/90 bg-canvas shadow-[0_28px_70px_rgba(15,23,42,0.1)] ring-1 ring-hairline-soft/80">
       <div className="flex min-h-14 items-center gap-3 bg-surface-dark px-4 text-on-dark sm:px-5">
         <AgiraMark size={28} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-semibold sm:text-sm">Riverside Apartments - Phase 1</p>
+          <p className="truncate text-xs font-semibold sm:text-sm tracking-tight">Riverside Apartments - Phase 1</p>
           <p className="hidden text-[10px] text-on-dark-soft sm:block">Live project workspace</p>
         </div>
         <div className="hidden items-center gap-2 text-[10px] text-on-dark-soft sm:flex">
-          <span className="h-2 w-2 rounded-full bg-success" />
+          <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
           Synced just now
         </div>
         <div className="flex -space-x-1.5" aria-label="Project team online">
@@ -50,7 +50,7 @@ export function LandingProductShowcase() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 border-b border-hairline bg-surface-soft md:grid-cols-4" role="tablist">
+      <div className="grid grid-cols-2 border-b border-hairline bg-surface-soft/60 md:grid-cols-4" role="tablist">
         {VIEWS.map((view) => {
           const active = activeView === view.id;
           return (
@@ -61,11 +61,11 @@ export function LandingProductShowcase() {
               aria-selected={active}
               aria-controls={`landing-view-${view.id}`}
               onClick={() => setActiveView(view.id)}
-              className={`min-h-16 border-r border-hairline px-4 py-3 text-left transition-colors last:border-r-0 ${
-                active ? "bg-canvas text-ink" : "text-muted hover:bg-canvas/70 hover:text-ink"
+              className={`btn-interactive min-h-16 border-r border-hairline px-4 py-3.5 text-left transition-all last:border-r-0 ${
+                active ? "bg-canvas text-ink shadow-[inset_0_-2px_0_var(--color-brand-accent)]" : "text-muted hover:bg-canvas/70 hover:text-ink"
               }`}
             >
-              <span className="flex items-center gap-2 text-xs font-semibold sm:text-sm">
+              <span className="flex items-center gap-2 text-xs font-semibold sm:text-sm tracking-tight">
                 <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-brand-accent" : "bg-surface-strong"}`} />
                 {view.label}
               </span>

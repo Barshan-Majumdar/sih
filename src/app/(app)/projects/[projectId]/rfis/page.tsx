@@ -55,13 +55,15 @@ export default async function ProjectRfisPage({
       />
 
       <div className="mt-6 space-y-4">
-        <div className="inline-flex flex-wrap items-center gap-1 rounded-md border border-hairline bg-canvas p-1">
+        <div className="flex flex-wrap items-center gap-1 rounded-xl border border-hairline/80 bg-surface-soft/80 p-1">
           {(["OPEN", "ANSWERED", "CLOSED", "ALL"] as const).map((s) => (
             <Link
               key={s}
               href={`/projects/${projectId}/rfis?status=${s}`}
-              className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                statusFilter === s ? "bg-ink text-canvas" : "text-muted hover:bg-surface-soft hover:text-ink"
+              className={`btn-interactive px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-all ${
+                statusFilter === s
+                  ? "bg-ink text-canvas shadow-xs"
+                  : "text-muted hover:bg-canvas hover:text-ink"
               }`}
             >
               {s.charAt(0) + s.slice(1).toLowerCase()}

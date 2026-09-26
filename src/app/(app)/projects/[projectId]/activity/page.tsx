@@ -123,77 +123,78 @@ export default async function ProjectActivityPage({
         description="A chronological record of project changes, decisions, and file access."
       />
 
-      <nav aria-label="Activity filters" className="mt-6 overflow-x-auto border-b border-hairline-soft">
-        <div className="flex min-w-max gap-6">
-          {ACTIVITY_VIEWS.map((activityView) => (
-            <Link
-              key={activityView.value}
-              href={
-                activityView.value === "all"
-                  ? `/projects/${projectId}/activity`
-                  : `/projects/${projectId}/activity?view=${activityView.value}`
-              }
-              aria-current={view === activityView.value ? "page" : undefined}
-              className={`border-b-2 px-0.5 pb-2 text-sm font-medium transition-colors ${
-                view === activityView.value
-                  ? "border-ink text-ink"
-                  : "border-transparent text-muted hover:text-ink"
-              }`}
-            >
-              {activityView.label}
-            </Link>
-          ))}
-        </div>
+      <nav aria-label="Activity filters" className="mt-6 flex flex-wrap items-center gap-1 rounded-xl border border-hairline/80 bg-surface-soft/80 p-1">
+        {ACTIVITY_VIEWS.map((activityView) => (
+          <Link
+            key={activityView.value}
+            href={
+              activityView.value === "all"
+                ? `/projects/${projectId}/activity`
+                : `/projects/${projectId}/activity?view=${activityView.value}`
+            }
+            aria-current={view === activityView.value ? "page" : undefined}
+            className={`btn-interactive px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-all ${
+              view === activityView.value
+                ? "bg-ink text-canvas shadow-xs"
+                : "text-muted hover:bg-canvas hover:text-ink"
+            }`}
+          >
+            {activityView.label}
+          </Link>
+        ))}
       </nav>
 
-      <section aria-labelledby="recent-activity" className="mt-5">
+      <section aria-labelledby="recent-activity" className="mt-6">
         <div className="mb-3 flex items-end justify-between gap-4">
           <div>
-            <h2 id="recent-activity" className="text-sm font-semibold text-ink">
+            <h2 id="recent-activity" className="text-sm font-semibold tracking-tight text-ink">
               Recent activity
             </h2>
-            <p className="mt-1 text-xs text-muted">
+            <p className="mt-0.5 text-xs text-muted">
               Project changes, file views, downloads, and denied access in one timeline.
             </p>
           </div>
-          <span className="text-xs tabular-nums text-muted-soft">
+          <span className="text-xs font-mono font-medium text-muted">
             {activityItems.length} recent {activityItems.length === 1 ? "event" : "events"}
           </span>
         </div>
-        <Card className="p-0">
+        <div className="rounded-2xl border border-hairline bg-canvas shadow-card overflow-hidden">
           {activityItems.length === 0 ? (
-            <p className="px-6 py-10 text-center text-sm text-muted">No activity recorded yet.</p>
+            <div className="py-12 text-center text-xs text-muted">No activity recorded yet.</div>
           ) : (
-            <ul className="divide-y divide-hairline-soft">
+            <ul className="divide-y divide-hairline">
               {activityItems.map((item) => {
                 if (item.kind === "PROJECT") {
                   const entry = item.entry;
                   return (
-                    <li key={`project:${entry.id}`} className="flex items-start gap-3 px-5 py-4 sm:px-6">
-                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-hairline bg-surface-soft text-muted">
+                    <li key={`project:${entry.id}`} className="flex items-start gap-3.5 px-5 py-4 hover:bg-surface-soft/40 transition-colors">
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-hairline bg-surface-soft text-muted shadow-2xs">
                         <History size={15} aria-hidden />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm text-body">
-                          <span className="font-medium text-ink">{entry.user.name}</span>{" "}
+                        <p className="text-sm text-ink leading-relaxed">
+                          <span className="font-semibold text-ink">{entry.user.name}</span>{" "}
                           {entry.detail ?? entry.action}
                         </p>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted font-mono">
                           <LocalDateTime value={entry.createdAt} />
-                          <span>{SOURCE_LABELS[entry.source]}</span>
+                          <span className="font-sans px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-soft border border-hairline text-ink">
+                            {SOURCE_LABELS[entry.source]}
+                          </span>
                           {entry.taskId && entry.taskName && (
-                            <Link href={`/projects/${projectId}/tasks/${entry.taskId}`} className="font-medium hover:text-ink">
-                              View task: {entry.taskName}
+                            <Link href={`/projects/${projectId}/tasks/${entry.taskId}`} className="font-sans font-medium text-ink hover:underline">
+                              Task: {entry.taskName}
                             </Link>
                           )}
                         </div>
                         {getChangeRows(entry.changes).length > 0 && (
-                          <dl className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted">
+                          <dl className="mt-2.5 flex flex-wrap gap-2 text-xs">
                             {getChangeRows(entry.changes).map((change) => (
-                              <div key={change.field} className="flex min-w-0 gap-1.5">
-                                <dt className="font-medium text-body">{formatFieldName(change.field)}:</dt>
+                              <div key={change.field} className="flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-soft/60 px-2.5 py-1 text-muted font-mono">
+                                <dt className="font-sans font-semibold text-ink">{formatFieldName(change.field)}:</dt>
                                 <dd className="min-w-0">
-                                  {formatChangeValue(change.before)} to {formatChangeValue(change.after)}
+                                  <span className="line-through opacity-70">{formatChangeValue(change.before)}</span> &rarr;{" "}
+                                  <span className="font-bold text-ink">{formatChangeValue(change.after)}</span>
                                 </dd>
                               </div>
                             ))}
@@ -210,26 +211,26 @@ export default async function ProjectActivityPage({
                 const downloaded = entry.action === "DOWNLOAD";
                 const Icon = denied ? ShieldAlert : downloaded ? Download : Eye;
                 return (
-                  <li key={`file:${entry.id}`} className="flex items-start gap-3 px-5 py-4 sm:px-6">
+                  <li key={`file:${entry.id}`} className="flex items-start gap-3.5 px-5 py-4 hover:bg-surface-soft/40 transition-colors">
                     <span
-                      className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border ${
+                      className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border shadow-2xs ${
                         denied
-                          ? "border-error/20 bg-error/8 text-error"
+                          ? "border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400"
                           : "border-hairline bg-surface-soft text-muted"
                       }`}
                     >
                       <Icon size={15} aria-hidden />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm text-body">
-                        <span className="font-medium text-ink">{actor}</span>{" "}
+                      <p className="text-sm text-ink leading-relaxed">
+                        <span className="font-semibold text-ink">{actor}</span>{" "}
                         {denied ? "was denied access to" : downloaded ? "downloaded" : "viewed"}{" "}
-                        <span className="font-medium text-ink">{entry.fileName}</span>
+                        <span className="font-semibold text-ink">{entry.fileName}</span>
                       </p>
-                      <p className="mt-1 text-xs text-muted">
+                      <p className="mt-1 text-xs text-muted font-mono">
                         <LocalDateTime value={entry.createdAt} />
-                        {entry.rangeRequested ? " - ranged file request" : ""}
-                        {denied && entry.denialReason ? ` - ${entry.denialReason}` : ""}
+                        {entry.rangeRequested ? " · ranged request" : ""}
+                        {denied && entry.denialReason ? ` · ${entry.denialReason}` : ""}
                       </p>
                     </div>
                   </li>
@@ -237,7 +238,7 @@ export default async function ProjectActivityPage({
               })}
             </ul>
           )}
-        </Card>
+        </div>
       </section>
     </div>
   );

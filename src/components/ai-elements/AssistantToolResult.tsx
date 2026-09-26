@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Check, Database, ExternalLink, LoaderCircle, TriangleAlert } from "lucide-react";
 import { getToolName } from "ai";
 import type { DynamicToolUIPart, ToolUIPart } from "ai";
@@ -65,6 +66,7 @@ function isPdfSource(source: SourceLink): boolean {
 }
 
 export function AssistantToolResult({ part }: { part: ToolUIPart | DynamicToolUIPart }) {
+  const router = useRouter();
   const toolName = getToolName(part);
   const label = TOOL_LABELS[toolName] ?? "Project data checked";
 
@@ -109,7 +111,7 @@ export function AssistantToolResult({ part }: { part: ToolUIPart | DynamicToolUI
       {sources.length > 0 && (
         <div className="mt-2.5 flex flex-wrap gap-2" aria-label="Sources">
           {sources.map((source) => {
-            const className = "inline-flex min-h-7 items-center gap-1.5 rounded-md border border-[var(--assistant-border)] bg-[var(--assistant-layer)] px-2.5 text-[11px] font-medium text-[var(--assistant-text-muted)] transition-colors hover:border-[var(--assistant-border-strong)] hover:text-[var(--assistant-text)]";
+            const className = "inline-flex min-h-7 items-center gap-1.5 rounded-md border border-[var(--assistant-border)] bg-[var(--assistant-layer)] px-2.5 text-[11px] font-medium text-[var(--assistant-text-muted)] transition-colors hover:border-[var(--assistant-border-strong)] hover:text-[var(--assistant-text)] cursor-pointer";
             return isPdfSource(source) ? (
               <button
                 type="button"
@@ -126,7 +128,22 @@ export function AssistantToolResult({ part }: { part: ToolUIPart | DynamicToolUI
                 <ExternalLink size={11} aria-hidden />
               </button>
             ) : (
-              <Link key={`${part.toolCallId}-${source.href}-${source.label}`} href={source.href} className={className}>
+              <Link
+                key={`${part.toolCallId}-${source.href}-${source.label}`}
+                href={source.href}
+                onClick={(event) => {
+                  window.dispatchEvent(
+                    new CustomEvent("agira:toggle-assistant", { detail: { open: false } })
+                  );
+                  const destination = new URL(source.href, window.location.href);
+                  const currentLocation = `${window.location.pathname}${window.location.search}`;
+                  if (`${destination.pathname}${destination.search}` === currentLocation) {
+                    event.preventDefault();
+                    router.refresh();
+                  }
+                }}
+                className={className}
+              >
                 <span className="max-w-48 truncate">{source.label}</span>
                 <ExternalLink size={11} aria-hidden />
               </Link>

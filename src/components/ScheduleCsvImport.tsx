@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/Button";
 import { ErrorText } from "@/components/ui/ErrorText";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatDate } from "@/lib/utils";
+import { AlertCircle, CheckCircle2, Download, FileSpreadsheet, UploadCloud, X } from "lucide-react";
 
 /** Erroring lines come first so the user sees what to fix without scrolling. */
 type PreviewEntry =
@@ -143,13 +144,9 @@ export function ScheduleCsvImport({
 
   if (!open) {
     return (
-      <Button variant="secondary" onClick={() => setOpen(true)}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M12 3v12" />
-          <path d="m7 10 5 5 5-5" />
-          <path d="M4 21h16" />
-        </svg>
-        Import CSV
+      <Button variant="secondary" onClick={() => setOpen(true)} className="gap-1.5 shadow-sm">
+        <UploadCloud className="h-4 w-4" />
+        <span>Import CSV</span>
       </Button>
     );
   }
@@ -167,32 +164,39 @@ export function ScheduleCsvImport({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`w-full min-w-0 rounded-md border bg-surface-soft p-4 transition-colors ${
-        dragging ? "border-brand-accent bg-brand-accent/5" : "border-hairline"
+      className={`w-full min-w-0 rounded-2xl border bg-surface-card p-6 shadow-card transition-all ${
+        dragging ? "border-brand-accent ring-2 ring-brand-accent/20 bg-brand-accent/5" : "border-hairline"
       }`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="app-section-title">Import schedule from CSV</p>
-          <p className="app-section-description" id={hintId}>
-            One activity per row, with the columns {SCHEDULE_CSV_COLUMNS.join(", ")}. Dates should be formatted as DD-MM-YYYY (e.g. 01-10-2026). Rows naming an
-            existing activity update it, the rest are created.
-          </p>
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-accent/10 text-brand-accent shrink-0">
+            <FileSpreadsheet className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-ink">Import Schedule from CSV</h3>
+            <p className="text-xs text-muted mt-0.5" id={hintId}>
+              One activity per row ({SCHEDULE_CSV_COLUMNS.join(", ")}). Dates formatted as DD-MM-YYYY (e.g. 01-10-2026).
+            </p>
+          </div>
         </div>
-        <Button type="button" variant="secondary" onClick={downloadTemplate}>
-          Download template
+
+        <Button type="button" variant="secondary" onClick={downloadTemplate} className="gap-1.5 text-xs">
+          <Download className="h-3.5 w-3.5" />
+          <span>Download Template</span>
         </Button>
       </div>
 
-      <p className="mt-2 text-xs leading-5 text-muted">
+      <p className="mt-3 text-xs leading-5 text-muted">
         Separate predecessors with{" "}
-        <code className="rounded-sm bg-surface-strong px-1 py-0.5 font-mono text-[11px] text-ink">
+        <code className="rounded-md bg-surface-soft border border-hairline px-1.5 py-0.5 font-mono text-[11px] text-ink font-semibold">
           {PREDECESSOR_SEPARATOR}
         </code>{" "}
         and reference other activities by their exact task name.
       </p>
 
-      <div className="mt-3">
+      {/* Dropzone */}
+      <div className="mt-4">
         <input
           ref={fileInputRef}
           id={fileInputId}
@@ -204,81 +208,88 @@ export function ScheduleCsvImport({
         />
         <label
           htmlFor={fileInputId}
-          className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed px-4 py-6 text-center transition-colors peer-focus-visible:border-ink peer-focus-visible:ring-2 peer-focus-visible:ring-ink/20 ${
-            dragging ? "border-brand-accent bg-brand-accent/10" : "border-hairline bg-canvas hover:border-muted-soft"
+          className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed px-4 py-8 text-center transition-all peer-focus-visible:ring-2 peer-focus-visible:ring-brand-accent ${
+            dragging
+              ? "border-brand-accent bg-brand-accent/10"
+              : "border-hairline bg-canvas hover:border-brand-accent/50 hover:bg-surface-soft/40"
           }`}
         >
+          <UploadCloud className="h-8 w-8 text-muted mb-1" />
           <span className="text-sm font-semibold text-ink">
-            {dragging ? "Drop the file to preview it" : "Drop a CSV here, or choose a file"}
+            {dragging ? "Release file to preview" : "Drop CSV file here, or click to browse"}
           </span>
           <span className="text-xs text-muted">
-            {fileName ?? "Nothing is written until you review the preview and confirm."}
+            {fileName ?? "Nothing is written to the schedule until you preview and confirm below."}
           </span>
         </label>
       </div>
 
       {parsed && (
-        <div className="mt-3">
+        <div className="mt-4">
           {fatalError ? (
-            <p className="rounded-md border border-hairline bg-canvas px-4 py-6 text-center text-sm text-error">
-              {fatalError}
-            </p>
+            <div className="rounded-xl border border-error/30 bg-error/10 p-4 text-center text-xs font-medium text-error flex items-center justify-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{fatalError}</span>
+            </div>
           ) : (
             <>
-              <p className="text-xs font-medium text-muted">
-                {parsed.summary.total} {parsed.summary.total === 1 ? "row" : "rows"} ·{" "}
-                {parsed.summary.toCreate} new · {parsed.summary.toUpdate}{" "}
-                {parsed.summary.toUpdate === 1 ? "update" : "updates"}
-                {errorCount > 0 && (
-                  <>
-                    {" · "}
-                    <span className="font-semibold text-error">
-                      {errorCount} {errorCount === 1 ? "error" : "errors"}
-                    </span>
-                  </>
-                )}
-              </p>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted">CSV Preview</span>
+                <span className="text-xs font-mono text-muted tabular-nums">
+                  {parsed.summary.total} rows &middot; {parsed.summary.toCreate} new &middot; {parsed.summary.toUpdate} updates
+                  {errorCount > 0 && (
+                    <span className="text-error font-semibold ml-1">({errorCount} errors)</span>
+                  )}
+                </span>
+              </div>
               <PreviewTable entries={buildPreviewEntries(parsed)} />
             </>
           )}
         </div>
       )}
 
-      <div className="mt-3 flex flex-wrap items-center gap-3">
-        <Button
-          type="button"
-          onClick={handleImport}
-          disabled={!canImport || importing}
-          aria-describedby={blockedByErrors || blockedByEmpty ? blockedId : undefined}
-        >
-          {importing ? "Importing…" : "Import"}
-        </Button>
-        <Button type="button" variant="secondary" onClick={close} disabled={importing}>
-          Cancel
-        </Button>
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-hairline-soft pt-4">
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleImport}
+            disabled={!canImport || importing}
+            aria-describedby={blockedByErrors || blockedByEmpty ? blockedId : undefined}
+            className="gap-1.5 shadow-sm"
+          >
+            <CheckCircle2 className="h-4 w-4" />
+            <span>{importing ? "Importing…" : "Apply Schedule Import"}</span>
+          </Button>
+          <Button type="button" variant="secondary" onClick={close} disabled={importing}>
+            Cancel
+          </Button>
+        </div>
+
         {blockedByErrors && (
-          <p id={blockedId} className="text-xs leading-5 text-muted">
-            Imports are all or nothing. Fix {errorCount === 1 ? "the flagged row" : `all ${errorCount} flagged rows`} and
-            upload the file again.
+          <p id={blockedId} className="text-xs text-error font-medium">
+            Imports are all-or-nothing. Fix {errorCount === 1 ? "the flagged row" : `all ${errorCount} flagged rows`} to proceed.
           </p>
         )}
         {blockedByEmpty && (
-          <p id={blockedId} className="text-xs leading-5 text-muted">
+          <p id={blockedId} className="text-xs text-muted">
             This file has no activity rows to import.
           </p>
         )}
       </div>
 
-      <div id={errorId} role="alert">
-        <ErrorText>{error}</ErrorText>
-      </div>
+      {error && (
+        <div id={errorId} role="alert" className="mt-3">
+          <ErrorText>{error}</ErrorText>
+        </div>
+      )}
     </div>
   );
 }
 
 function PreviewTable({ entries }: { entries: PreviewEntry[] }) {
   return (
-    <div className="mt-2 max-h-80 overflow-auto rounded-md border border-hairline bg-canvas shadow-[0_1px_2px_rgba(17,17,17,0.04)]">
+    <div className="max-h-80 overflow-auto rounded-xl border border-hairline bg-canvas shadow-inner">
       <table className="w-full min-w-[860px] text-sm">
         <thead className="sticky top-0 z-10">
           <tr className="border-b border-hairline bg-surface-soft text-left">
@@ -289,14 +300,14 @@ function PreviewTable({ entries }: { entries: PreviewEntry[] }) {
             <th className="app-table-heading px-3 py-2.5">Responsible</th>
             <th className="app-table-heading px-3 py-2.5">Status</th>
             <th className="app-table-heading px-3 py-2.5">Predecessors</th>
-            <th className="app-table-heading py-2.5 pl-3 pr-4 text-right">Change</th>
+            <th className="app-table-heading py-2.5 pl-3 pr-4 text-right">Action</th>
           </tr>
         </thead>
         <tbody>
           {entries.map((entry) =>
             entry.kind === "error" ? (
               <tr key={`error-${entry.lineNumber}`} className="border-b border-hairline-soft bg-error/5 last:border-b-0">
-                <td className="border-r border-hairline-soft py-2.5 pl-4 pr-3 text-center font-mono text-xs text-error">
+                <td className="border-r border-hairline-soft py-2.5 pl-4 pr-3 text-center font-mono text-xs text-error font-semibold">
                   {entry.lineNumber}
                 </td>
                 <td className="px-3 py-2.5 font-medium text-ink">
@@ -305,8 +316,9 @@ function PreviewTable({ entries }: { entries: PreviewEntry[] }) {
                 <td colSpan={PREVIEW_COLUMN_COUNT - 2} className="py-2.5 pl-3 pr-4">
                   <ul className="space-y-0.5">
                     {entry.error.messages.map((message) => (
-                      <li key={message} className="text-xs leading-5 text-error">
-                        {message}
+                      <li key={message} className="text-xs leading-5 text-error flex items-center gap-1.5">
+                        <AlertCircle className="h-3 w-3 shrink-0" />
+                        <span>{message}</span>
                       </li>
                     ))}
                   </ul>
@@ -321,19 +333,19 @@ function PreviewTable({ entries }: { entries: PreviewEntry[] }) {
                   {entry.lineNumber}
                 </td>
                 <td className="px-3 py-2.5 font-medium text-ink">{entry.row.name}</td>
-                <td className="whitespace-nowrap px-3 py-2.5 text-muted">{formatIsoDate(entry.row.startDate)}</td>
-                <td className="whitespace-nowrap px-3 py-2.5 text-muted">{formatIsoDate(entry.row.endDate)}</td>
+                <td className="whitespace-nowrap px-3 py-2.5 text-muted font-mono text-xs">{formatIsoDate(entry.row.startDate)}</td>
+                <td className="whitespace-nowrap px-3 py-2.5 text-muted font-mono text-xs">{formatIsoDate(entry.row.endDate)}</td>
                 <td className="px-3 py-2.5">
                   {entry.row.assigneeEmail ? (
-                    <span className="text-body">{entry.row.assigneeEmail}</span>
+                    <span className="text-body text-xs font-mono">{entry.row.assigneeEmail}</span>
                   ) : (
-                    <span className="text-muted-soft">Unassigned</span>
+                    <span className="text-muted-soft text-xs">Unassigned</span>
                   )}
                 </td>
                 <td className="px-3 py-2.5">
                   <StatusBadge status={entry.row.status} />
                 </td>
-                <td className="px-3 py-2.5 text-muted">
+                <td className="px-3 py-2.5 text-muted text-xs">
                   {entry.row.predecessorNames.length > 0 ? (
                     entry.row.predecessorNames.join(", ")
                   ) : (
@@ -342,8 +354,8 @@ function PreviewTable({ entries }: { entries: PreviewEntry[] }) {
                 </td>
                 <td className="py-2.5 pl-3 pr-4 text-right">
                   <span
-                    className={`inline-flex items-center rounded-pill px-2.5 py-1 text-[11px] font-semibold ${
-                      entry.row.action === "create" ? "bg-success/15 text-success" : "bg-brand-accent/15 text-brand-accent"
+                    className={`inline-flex items-center rounded-pill px-2.5 py-0.5 text-[11px] font-semibold ${
+                      entry.row.action === "create" ? "bg-success/15 text-success border border-success/30" : "bg-brand-accent/15 text-brand-accent border border-brand-accent/30"
                     }`}
                   >
                     {entry.row.action === "create" ? "New" : "Update"}

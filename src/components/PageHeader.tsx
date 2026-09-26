@@ -15,8 +15,12 @@ export function AppPageHeader({
   return (
     <div className="app-page-header">
       <div>
-        {eyebrow && <p className="app-kicker mb-2">{eyebrow}</p>}
-        <h1 className="app-page-title">{title}</h1>
+        {eyebrow && (
+          <div className="mb-2.5 inline-flex items-center gap-1.5 rounded-pill border border-hairline/80 bg-surface-soft px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-accent">
+            {eyebrow}
+          </div>
+        )}
+        <h1 className="app-page-title font-display">{title}</h1>
         {description && <div className="app-page-description">{description}</div>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
@@ -41,13 +45,13 @@ export function ProjectPageHeader({
     <div className="app-page-header">
       <div>
         <Link
-          href={`/projects/${projectId}`}
-          className="app-kicker mb-2 inline-flex items-center gap-1.5 transition-colors hover:text-ink"
+          href={`/dashboard/${projectId}`}
+          className="group mb-2.5 inline-flex items-center gap-1.5 rounded-pill border border-hairline/80 bg-surface-soft px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted transition-colors hover:border-brand-accent/30 hover:text-brand-accent"
         >
-          {projectName}
-          <span aria-hidden>/</span>
+          <span>{projectName}</span>
+          <span className="text-muted-soft group-hover:text-brand-accent" aria-hidden>/</span>
         </Link>
-        <h1 className="app-page-title">{title}</h1>
+        <h1 className="app-page-title font-display">{title}</h1>
         {description && <div className="app-page-description">{description}</div>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}

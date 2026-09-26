@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Activity,
@@ -10,9 +10,11 @@ import {
   CalendarClock,
   ChartGantt,
   DraftingCompass,
+  FolderKanban,
   FolderOpen,
   Gauge,
   GitCompareArrows,
+  LayoutDashboard,
   ListTodo,
   OctagonAlert,
   ShieldCheck,
@@ -23,132 +25,40 @@ import {
   Waypoints,
 } from "lucide-react";
 
-const TAB_GROUPS = [
-  {
-    label: "Field & AI Bridge",
-    tabs: [
-      { href: "/field-intake", label: "Field Intake", icon: Sparkles },
-      { href: "/review-queue", label: "Review Queue", icon: ShieldCheck },
-      { href: "/plan-vs-actual", label: "Plan vs Actual", icon: TrendingUp },
-    ],
-  },
-  {
-    label: "Schedule",
-    tabs: [
-      { href: "/gantt", label: "Gantt (CPM)", icon: ChartGantt },
-      { href: "", label: "Tasks", icon: ListTodo },
-      { href: "/lookahead", label: "Lookahead", icon: CalendarClock },
-      { href: "/weekly-plan", label: "Weekly Plan", icon: CalendarCheck },
-      { href: "/pull-planning", label: "Pull Planning", icon: Waypoints },
-    ],
-  },
-  {
-    label: "Control",
-    tabs: [
-      { href: "/roadblocks", label: "Roadblocks", icon: OctagonAlert },
-      { href: "/impacts", label: "Impacts", icon: TriangleAlert },
-      { href: "/files", label: "Files (OCR)", icon: FolderOpen },
-      { href: "/drawings", label: "Drawings", icon: DraftingCompass },
-    ],
-  },
-  {
-    label: "Analytics",
-    tabs: [
-      { href: "/dashboard", label: "Dashboard", icon: Gauge },
-      { href: "/baselines", label: "Baselines", icon: GitCompareArrows },
-      { href: "/activity", label: "Activity Log", icon: Activity },
-      { href: "/members", label: "Members", icon: Users },
-    ],
-  },
-];
-const PROJECT_TABS = TAB_GROUPS.flatMap((group) => group.tabs);
-
-type ProjectTab = {
-  href: string;
+type ProjectToolTab = {
+  segment: string;
   label: string;
   icon: LucideIcon;
 };
 
-export function ProjectSubNav({ projectId, active }: { projectId: string; active: string }) {
-  const router = useRouter();
-  const projectRoutes = useMemo(
-    () => PROJECT_TABS.map((tab) => `/projects/${projectId}${tab.href}`),
-    [projectId]
-  );
+// Clean page-wise tabs
+const PROJECT_TABS: ProjectToolTab[] = [
+  { segment: "dashboard", label: "Project Dashboard", icon: Gauge },
+  { segment: "gantt", label: "Gantt (CPM)", icon: ChartGantt },
+  { segment: "tasks", label: "Tasks", icon: ListTodo },
+  { segment: "field-intake", label: "Field Intake", icon: Sparkles },
+  { segment: "review-queue", label: "Review Queue", icon: ShieldCheck },
+  { segment: "plan-vs-actual", label: "Plan vs Actual", icon: TrendingUp },
+  { segment: "lookahead", label: "Lookahead", icon: CalendarClock },
+  { segment: "weekly-plan", label: "Weekly Plan", icon: CalendarCheck },
+  { segment: "pull-planning", label: "Pull Planning", icon: Waypoints },
+  { segment: "roadblocks", label: "Roadblocks", icon: OctagonAlert },
+  { segment: "impacts", label: "Impacts", icon: TriangleAlert },
+  { segment: "files", label: "Files (OCR)", icon: FolderOpen },
+  { segment: "drawings", label: "Drawings", icon: DraftingCompass },
+  { segment: "baselines", label: "Baselines", icon: GitCompareArrows },
+  { segment: "activity", label: "Activity Log", icon: Activity },
+  { segment: "members", label: "Members", icon: Users },
+];
 
-  const prefetchProjectRoute = useCallback(
-    (href: string) => {
-      if (projectRoutes.includes(href)) {
-        router.prefetch(href);
-      }
-    },
-    [projectRoutes, router]
-  );
-
-  return (
-    <nav
-      aria-label="Project workspace"
-      className="fixed bottom-3 left-[84px] right-3 z-30 rounded-xl border border-hairline bg-canvas/95 p-2 shadow-[0_16px_40px_rgba(17,17,17,0.14)] ring-1 ring-hairline-soft backdrop-blur-xl md:bottom-auto md:left-4 md:right-auto md:top-[88px] md:w-[58px] md:max-h-[calc(100vh-100px)] md:overflow-y-auto md:rounded-xl md:p-1.5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-    >
-      <div className="flex items-center gap-1 overflow-x-auto md:flex-col md:overflow-visible">
-        {PROJECT_TABS.map((tab) => (
-          <ProjectRailLink
-            key={tab.label}
-            projectId={projectId}
-            tab={tab}
-            active={tab.label === active}
-            onIntent={prefetchProjectRoute}
-          />
-        ))}
-      </div>
-    </nav>
-  );
-}
-
-function ProjectRailLink({
-  projectId,
-  tab,
-  active,
-  onIntent,
-}: {
-  projectId: string;
-  tab: ProjectTab;
-  active: boolean;
-  onIntent: (href: string) => void;
-}) {
-  const Icon = tab.icon;
-  const href = `/projects/${projectId}${tab.href}`;
-
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      aria-label={tab.label}
-      title={tab.label}
-      onFocus={() => onIntent(href)}
-      onPointerEnter={() => onIntent(href)}
-      className={`group relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-colors md:h-10 md:w-10 ${
-        active
-          ? "bg-ink text-canvas shadow-[0_4px_12px_rgba(17,17,17,0.16)]"
-          : "text-body hover:bg-surface-soft hover:text-ink"
-      }`}
-    >
-      <Icon size={19} strokeWidth={2} aria-hidden />
-      <span className="sr-only">{tab.label}</span>
-      <span className="pointer-events-none absolute left-[calc(100%+10px)] top-1/2 z-10 hidden -translate-y-1/2 whitespace-nowrap rounded-md border border-hairline bg-canvas px-2 py-1 text-xs font-semibold text-ink opacity-0 shadow-[0_8px_20px_rgba(17,17,17,0.12)] transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 md:block">
-        {tab.label}
-      </span>
-    </Link>
-  );
-}
-
-const ACTIVE_TAB_BY_SEGMENT: Record<string, string> = {
-  "": "Tasks",
+const SEGMENT_TO_LABEL: Record<string, string> = {
+  dashboard: "Project Dashboard",
+  gantt: "Gantt (CPM)",
+  gantt_chart: "Gantt (CPM)",
+  tasks: "Tasks",
   "field-intake": "Field Intake",
   "review-queue": "Review Queue",
   "plan-vs-actual": "Plan vs Actual",
-  gantt: "Gantt (CPM)",
-  tasks: "Tasks",
   lookahead: "Lookahead",
   "weekly-plan": "Weekly Plan",
   "pull-planning": "Pull Planning",
@@ -156,27 +66,216 @@ const ACTIVE_TAB_BY_SEGMENT: Record<string, string> = {
   impacts: "Impacts",
   files: "Files (OCR)",
   drawings: "Drawings",
-  dashboard: "Dashboard",
+  rfis: "Files (OCR)",
+  submittals: "Files (OCR)",
   baselines: "Baselines",
   activity: "Activity Log",
   members: "Members",
 };
 
+const LEGACY_SEGMENT_TO_LABEL: Record<string, string> = {
+  "": "Tasks",
+  dashboard: "Project Dashboard",
+  gantt: "Gantt (CPM)",
+  tasks: "Tasks",
+  "field-intake": "Field Intake",
+  "review-queue": "Review Queue",
+  "plan-vs-actual": "Plan vs Actual",
+  lookahead: "Lookahead",
+  "weekly-plan": "Weekly Plan",
+  "pull-planning": "Pull Planning",
+  roadblocks: "Roadblocks",
+  impacts: "Impacts",
+  files: "Files (OCR)",
+  drawings: "Drawings",
+  rfis: "Files (OCR)",
+  submittals: "Files (OCR)",
+  baselines: "Baselines",
+  activity: "Activity Log",
+  members: "Members",
+};
+
+function parseCurrentRoute(pathname: string): { activeLabel: string; routeProjectId: string | null } {
+  // 1. Clean page-wise routes: /toolSegment/:projectId
+  const cleanMatch = pathname.match(
+    /^\/(dashboard|gantt|gantt_chart|tasks|field-intake|review-queue|plan-vs-actual|lookahead|weekly-plan|pull-planning|roadblocks|impacts|files|drawings|rfis|submittals|baselines|activity|members)\/([^/]+)/
+  );
+  if (cleanMatch) {
+    const segment = cleanMatch[1];
+    const pid = decodeURIComponent(cleanMatch[2]);
+    return {
+      activeLabel: SEGMENT_TO_LABEL[segment] || "Project Dashboard",
+      routeProjectId: pid,
+    };
+  }
+
+  // 2. Legacy project routes: /projects/:projectId/...
+  const legacyMatch = pathname.match(/^\/projects\/([^/]+)(?:\/([^/]+))?/);
+  if (legacyMatch && legacyMatch[1] !== "new") {
+    const pid = decodeURIComponent(legacyMatch[1]);
+    const segment = legacyMatch[2] ?? "";
+    return {
+      activeLabel: LEGACY_SEGMENT_TO_LABEL[segment] ?? "Tasks",
+      routeProjectId: pid,
+    };
+  }
+
+  // 3. Top-level portfolio routes
+  if (pathname === "/dashboard") {
+    return { activeLabel: "Portfolio Dashboard", routeProjectId: null };
+  }
+  if (pathname.startsWith("/projects")) {
+    return { activeLabel: "Projects", routeProjectId: null };
+  }
+
+  return { activeLabel: "", routeProjectId: null };
+}
+
 export function ProjectRouteSubNav() {
   const pathname = usePathname();
-  const match = pathname.match(/^\/projects\/([^/]+)(?:\/([^/]+))?/);
-  const hasProjectRail = Boolean(match && decodeURIComponent(match[1]) !== "new");
+  const router = useRouter();
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
 
+  const { activeLabel, routeProjectId } = useMemo(
+    () => parseCurrentRoute(pathname),
+    [pathname]
+  );
+
+  // Synchronize active project ID
   useEffect(() => {
-    document.body.classList.toggle("has-project-rail", hasProjectRail);
-    return () => document.body.classList.remove("has-project-rail");
-  }, [hasProjectRail]);
+    if (routeProjectId && routeProjectId !== "new") {
+      setActiveProjectId(routeProjectId);
+      try {
+        localStorage.setItem("agira_active_project_id", routeProjectId);
+        fetch("/api/projects/active", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId: routeProjectId }),
+        }).catch(() => {});
+      } catch {}
+    } else {
+      // Restore from localStorage or fetch default active project
+      try {
+        const stored = localStorage.getItem("agira_active_project_id");
+        if (stored && stored !== "new") {
+          setActiveProjectId(stored);
+        } else {
+          fetch("/api/projects/active")
+            .then((res) => res.json())
+            .then((data) => {
+              if (data?.project?.id) {
+                setActiveProjectId(data.project.id);
+                localStorage.setItem("agira_active_project_id", data.project.id);
+              }
+            })
+            .catch(() => {});
+        }
+      } catch {}
+    }
+  }, [routeProjectId]);
 
-  if (!match) return null;
+  // Ensure body has the padding class across all authenticated views
+  useEffect(() => {
+    document.body.classList.add("has-project-rail");
+    return () => {
+      // Keep persistent rail active on app shell
+    };
+  }, []);
 
-  const projectId = decodeURIComponent(match[1]);
-  if (projectId === "new") return null;
-  const active = ACTIVE_TAB_BY_SEGMENT[match[2] ?? ""] ?? "Tasks";
+  const effectiveProjectId = routeProjectId || activeProjectId;
 
-  return <ProjectSubNav projectId={projectId} active={active} />;
+  const handleIntent = useCallback(
+    (href: string) => {
+      router.prefetch(href);
+    },
+    [router]
+  );
+
+  return (
+    <nav
+      aria-label="Application navigation rail"
+      className="fixed bottom-3 left-3 right-3 z-30 flex items-center justify-between rounded-2xl border border-hairline/90 bg-canvas/95 p-1.5 shadow-[0_12px_36px_rgba(15,23,42,0.12)] ring-1 ring-hairline-soft/80 backdrop-blur-xl md:bottom-auto md:left-4 md:right-auto md:top-[84px] md:w-[58px] md:max-h-[calc(100vh-100px)] md:flex-col md:overflow-y-auto md:rounded-2xl md:p-1.5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+    >
+      <div className="flex w-full items-center gap-1 overflow-x-auto md:flex-col md:overflow-visible">
+        {/* Portfolio Overview */}
+        <SidebarRailLink
+          href="/dashboard"
+          label="Portfolio Dashboard"
+          icon={LayoutDashboard}
+          active={activeLabel === "Portfolio Dashboard"}
+          onIntent={handleIntent}
+        />
+
+        {/* All Projects Directory */}
+        <SidebarRailLink
+          href="/projects"
+          label="Projects Directory"
+          icon={FolderKanban}
+          active={activeLabel === "Projects"}
+          onIntent={handleIntent}
+        />
+
+        {/* Subtle Section Divider */}
+        <div className="my-1 hidden h-px w-8 bg-hairline-soft md:block" aria-hidden />
+
+        {/* Project Specific Workspaces */}
+        {PROJECT_TABS.map((tab) => {
+          const href = effectiveProjectId
+            ? `/${tab.segment}/${effectiveProjectId}`
+            : `/projects`;
+          const active = activeLabel === tab.label;
+
+          return (
+            <SidebarRailLink
+              key={tab.segment}
+              href={href}
+              label={tab.label}
+              icon={tab.icon}
+              active={active}
+              onIntent={handleIntent}
+            />
+          );
+        })}
+      </div>
+    </nav>
+  );
 }
+
+function SidebarRailLink({
+  href,
+  label,
+  icon: Icon,
+  active,
+  onIntent,
+}: {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  active: boolean;
+  onIntent: (href: string) => void;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      aria-label={label}
+      title={label}
+      onFocus={() => onIntent(href)}
+      onPointerEnter={() => onIntent(href)}
+      className={`group relative btn-interactive inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all ${
+        active
+          ? "border border-ink bg-ink text-canvas shadow-[0_2px_8px_rgba(15,23,42,0.16)]"
+          : "border border-transparent text-muted hover:border-hairline hover:bg-surface-soft hover:text-ink"
+      }`}
+    >
+      <Icon size={18} strokeWidth={active ? 2.2 : 1.8} aria-hidden />
+      <span className="sr-only">{label}</span>
+      <span className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 hidden -translate-y-1/2 whitespace-nowrap rounded-lg border border-hairline/90 bg-canvas/95 px-2.5 py-1 text-xs font-semibold text-ink opacity-0 shadow-[0_8px_20px_rgba(15,23,42,0.1)] backdrop-blur-md transition-all duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 md:block">
+        {label}
+      </span>
+    </Link>
+  );
+}
+
+// Backward compatibility export
+export const ProjectSubNav = ProjectRouteSubNav;

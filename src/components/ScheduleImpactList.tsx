@@ -37,9 +37,12 @@ export function ScheduleImpactList({
       <SubmitSirForm projectId={projectId} tasks={tasks} />
 
       {sirs.length === 0 ? (
-        <p className="app-empty-title py-6 text-center">No schedule impact requests match this filter</p>
+        <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft/40 px-6 py-12 text-center">
+          <p className="text-sm font-semibold tracking-tight text-ink">No schedule impact requests match this filter</p>
+          <p className="mt-1 text-xs text-muted">Field condition impact requests will appear here.</p>
+        </div>
       ) : (
-        <ul className="space-y-4">
+        <ul className="space-y-3.5">
           {sirs.map((sir) => (
             <SirCard key={sir.id} sir={sir} canReview={canReview} />
           ))}
@@ -77,8 +80,11 @@ function SubmitSirForm({ projectId, tasks }: { projectId: string; tasks: TaskOpt
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border border-hairline rounded-lg p-4 bg-surface-soft">
-      <h3 className="app-card-title mb-3">Submit a Schedule Impact Request</h3>
+    <form onSubmit={handleSubmit} className="rounded-2xl border border-hairline bg-surface-soft/80 p-5 shadow-card">
+      <div className="mb-3">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Change management</p>
+        <h3 className="text-sm font-semibold tracking-tight text-ink mt-0.5">Submit a Schedule Impact Request</h3>
+      </div>
       <textarea
         aria-label="Schedule impact description"
         value={description}
@@ -86,14 +92,14 @@ function SubmitSirForm({ projectId, tasks }: { projectId: string; tasks: TaskOpt
         placeholder="What field condition is affecting the schedule?"
         rows={2}
         maxLength={1000}
-        className="w-full text-sm rounded-md border border-hairline px-3 py-2 focus:outline-none focus:border-ink resize-none mb-3"
+        className="w-full text-xs sm:text-sm rounded-xl border border-hairline bg-canvas p-3 focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink resize-none mb-3 transition-all"
       />
       <div className="flex flex-wrap items-center gap-3">
         <select
           aria-label="Affected task"
           value={taskId}
           onChange={(e) => setTaskId(e.target.value)}
-          className="h-10 rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink"
+          className="h-9 rounded-xl border border-hairline bg-canvas px-3 text-xs sm:text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
         >
           <option value="">No specific task</option>
           {tasks.map((t) => (
@@ -108,10 +114,10 @@ function SubmitSirForm({ projectId, tasks }: { projectId: string; tasks: TaskOpt
           value={proposedNewEndDate}
           onChange={(e) => setProposedNewEndDate(e.target.value)}
           title="Proposed new end date (optional)"
-          className="h-10 rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink"
+          className="h-9 rounded-xl border border-hairline bg-canvas px-3 text-xs sm:text-sm text-ink font-mono focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
         />
-        <Button type="submit" variant="secondary" disabled={loading || !description.trim()}>
-          {loading ? "Submitting…" : "Submit"}
+        <Button type="submit" variant="primary" disabled={loading || !description.trim()} className="h-9 text-xs font-semibold shadow-2xs">
+          {loading ? "Submitting…" : "Submit Request"}
         </Button>
       </div>
       <ErrorText>{error}</ErrorText>
@@ -132,39 +138,45 @@ function SirCard({ sir, canReview }: { sir: SirRow; canReview: boolean }) {
     });
   }
 
-  const statusColor =
-    sir.status === "APPROVED" ? "text-success" : sir.status === "REJECTED" ? "text-error" : "text-muted";
+  const statusBadge =
+    sir.status === "APPROVED"
+      ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+      : sir.status === "REJECTED"
+      ? "bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-300"
+      : "bg-surface-soft border-hairline text-muted";
 
   return (
-    <li className="border border-hairline rounded-lg p-4">
-      <div className="flex items-center justify-between mb-1">
-        <span className="app-card-title">{sir.submittedBy.user.name}</span>
-        <span className={`text-xs font-medium ${statusColor}`}>{SIR_STATUS_LABELS[sir.status]}</span>
+    <li className="rounded-2xl border border-hairline bg-canvas p-5 shadow-card hover:shadow-card-hover transition-all">
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <span className="text-sm font-semibold tracking-tight text-ink">{sir.submittedBy.user.name}</span>
+        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border tracking-tight ${statusBadge}`}>
+          {SIR_STATUS_LABELS[sir.status]}
+        </span>
       </div>
-      <p className="text-sm text-body mb-2">{sir.description}</p>
-      <div className="flex flex-wrap gap-3 text-xs text-muted mb-2">
-        {sir.task && <span>Task: {sir.task.name}</span>}
+      <p className="text-sm text-ink leading-relaxed mb-3">{sir.description}</p>
+      <div className="flex flex-wrap items-center gap-3 text-xs text-muted mb-3 font-mono">
+        {sir.task && <span className="font-sans font-medium text-ink/80">Task: {sir.task.name}</span>}
         {sir.proposedNewEndDate && <span>Proposed new end: {formatDate(sir.proposedNewEndDate)}</span>}
-        <span>{formatDate(sir.createdAt)}</span>
+        <span className="text-muted/60">Submitted: {formatDate(sir.createdAt)}</span>
       </div>
       {sir.reviewNote && (
-        <p className="text-xs text-muted-soft mb-2">
-          Review note ({sir.reviewedBy?.user.name}): {sir.reviewNote}
-        </p>
+        <div className="rounded-xl border border-hairline bg-surface-soft/60 p-3 text-xs text-muted mb-3">
+          <span className="font-semibold text-ink">Review note ({sir.reviewedBy?.user.name}):</span> {sir.reviewNote}
+        </div>
       )}
       {sir.status === "PENDING" && canReview && (
-        <div className="flex flex-wrap items-center gap-2 mt-2">
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-hairline">
           <input
             aria-label="Review note"
             value={reviewNote}
             onChange={(e) => setReviewNote(e.target.value)}
             placeholder="Review note (optional)"
-            className="h-8 flex-1 min-w-[160px] rounded-md border border-hairline bg-canvas px-2 text-xs focus:outline-none focus:border-ink"
+            className="h-8 flex-1 min-w-[160px] rounded-lg border border-hairline bg-surface-soft px-2.5 text-xs text-ink focus:bg-canvas focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
           />
-          <Button variant="secondary" className="h-8 px-2 text-xs" onClick={() => handleReview("APPROVED")} disabled={pending}>
+          <Button variant="secondary" className="h-8 px-3 text-xs font-semibold shadow-2xs" onClick={() => handleReview("APPROVED")} disabled={pending}>
             Approve
           </Button>
-          <Button variant="text" className="h-8 px-2 text-xs text-error" onClick={() => handleReview("REJECTED")} disabled={pending}>
+          <Button variant="danger" className="h-8 px-3 text-xs font-semibold" onClick={() => handleReview("REJECTED")} disabled={pending}>
             Reject
           </Button>
         </div>

@@ -8,6 +8,7 @@ import { ErrorText } from "@/components/ui/ErrorText";
 import { TASK_STATUS_LABELS } from "@/lib/utils";
 import type { TaskStatus } from "@prisma/client";
 import type { TaskRow, MemberOption } from "@/components/TaskTable";
+import { Check, X } from "lucide-react";
 
 const STATUS_OPTIONS: TaskStatus[] = ["NOT_STARTED", "IN_PROGRESS", "DONE", "DELAYED"];
 
@@ -82,18 +83,28 @@ export function EditTaskForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 bg-surface-soft p-4 rounded-lg">
-      <div className="flex-1 min-w-[160px]">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-wrap items-end gap-3 rounded-2xl border border-brand-accent/30 bg-surface-card p-4 shadow-card transition-all"
+    >
+      <div className="flex-1 min-w-[180px]">
         <label className="block text-xs font-medium text-muted mb-1">Task Name</label>
-        <Input aria-label="Task name" value={name} onChange={(e) => setName(e.target.value)} required />
+        <Input
+          aria-label="Task name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="h-9 text-sm"
+        />
       </div>
-      <div>
+
+      <div className="min-w-[140px]">
         <label className="block text-xs font-medium text-muted mb-1">Assignee</label>
         <select
           aria-label="Assignee"
           value={assignedToId}
           onChange={(e) => setAssignedToId(e.target.value)}
-          className="h-10 rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink"
+          className="h-9 w-full rounded-xl border border-hairline bg-canvas px-3 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent"
         >
           <option value="">Unassigned</option>
           {members.map((m) => (
@@ -103,21 +114,38 @@ export function EditTaskForm({
           ))}
         </select>
       </div>
-      <div>
+
+      <div className="w-32">
         <label className="block text-xs font-medium text-muted mb-1">Start Date</label>
-        <Input aria-label="Task start date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required className="w-36" />
+        <Input
+          aria-label="Task start date"
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          required
+          className="h-9 text-xs font-mono"
+        />
       </div>
-      <div>
+
+      <div className="w-32">
         <label className="block text-xs font-medium text-muted mb-1">End Date</label>
-        <Input aria-label="Task end date" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required className="w-36" />
+        <Input
+          aria-label="Task end date"
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          required
+          className="h-9 text-xs font-mono"
+        />
       </div>
-      <div>
+
+      <div className="w-28">
         <label className="block text-xs font-medium text-muted mb-1">Status</label>
         <select
           aria-label="Task status"
           value={status}
           onChange={(e) => handleStatusChange(e.target.value as TaskStatus)}
-          className="h-10 rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink"
+          className="h-9 w-full rounded-xl border border-hairline bg-canvas px-2.5 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent"
         >
           {STATUS_OPTIONS.map((s) => (
             <option key={s} value={s}>
@@ -126,8 +154,9 @@ export function EditTaskForm({
           ))}
         </select>
       </div>
-      <div>
-        <label className="block text-xs font-medium text-muted mb-1">Progress %</label>
+
+      <div className="w-24">
+        <label className="block text-xs font-medium text-muted mb-1">Progress</label>
         <div className="flex items-center gap-1">
           <Input
             aria-label="Progress percentage"
@@ -136,18 +165,28 @@ export function EditTaskForm({
             max={100}
             value={progress}
             onChange={(e) => handleProgressChange(e.target.value)}
-            className="w-20 font-mono text-right"
+            className="h-9 w-16 font-mono text-right text-xs"
           />
           <span className="text-xs text-muted font-mono">%</span>
         </div>
       </div>
-      <Button type="submit" disabled={loading} className="h-10">
-        {loading ? "Saving…" : "Save"}
-      </Button>
-      <Button type="button" variant="secondary" className="h-10" onClick={onDone}>
-        Cancel
-      </Button>
-      <ErrorText>{error}</ErrorText>
+
+      <div className="flex items-center gap-2">
+        <Button type="submit" variant="primary" disabled={loading} className="h-9 gap-1 px-3 text-xs shadow-sm">
+          <Check className="h-3.5 w-3.5" />
+          <span>{loading ? "Saving…" : "Save"}</span>
+        </Button>
+        <Button type="button" variant="secondary" className="h-9 gap-1 px-3 text-xs" onClick={onDone}>
+          <X className="h-3.5 w-3.5" />
+          <span>Cancel</span>
+        </Button>
+      </div>
+
+      {error && (
+        <div className="w-full mt-2">
+          <ErrorText>{error}</ErrorText>
+        </div>
+      )}
     </form>
   );
 }

@@ -112,30 +112,30 @@ export function ReviewQueueWorkspace({
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-hairline pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <CheckCircle2 className="w-6 h-6 text-primary" />
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-ink flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               Human-in-the-Loop Review Queue
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs sm:text-sm text-muted mt-1">
               Verify AI-matched field observations before progress updates the master engineering schedule.
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Link
-              href={`/projects/${projectId}/plan-vs-actual`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent transition-colors"
+              href={`/plan-vs-actual/${projectId}`}
+              className="btn-interactive inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-soft px-3 py-1.5 text-xs font-semibold text-ink hover:bg-canvas transition-colors shadow-2xs"
             >
-              <TrendingUp className="w-4 h-4 text-primary" />
+              <TrendingUp className="w-3.5 h-3.5 text-ink" />
               Plan vs Actual
             </Link>
             <Link
-              href={`/projects/${projectId}/field-intake`}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow hover:bg-primary/90 transition-colors"
+              href={`/field-intake/${projectId}`}
+              className="btn-interactive inline-flex items-center gap-1.5 rounded-lg bg-ink px-3.5 py-1.5 text-xs font-semibold text-canvas shadow-xs hover:bg-ink/90 transition-colors"
             >
-              <Layers className="w-4 h-4" />
+              <Layers className="w-3.5 h-3.5" />
               Submit New DPR
             </Link>
           </div>
@@ -144,26 +144,32 @@ export function ReviewQueueWorkspace({
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 rounded-lg text-sm flex items-center gap-2 animate-in fade-in duration-200">
-          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+        <div className="p-3 bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-200 rounded-xl text-xs sm:text-sm flex items-center gap-2 animate-in fade-in duration-200 shadow-2xs">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* 3-Tier Routing Tabs */}
-      <div className="flex border-b border-border gap-2">
+      {/* 3-Tier Routing Tabs as Segmented Control */}
+      <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-hairline/80 bg-surface-soft/80 p-1">
         <button
           type="button"
           onClick={() => setActiveTab("pending")}
-          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+          className={`btn-interactive flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold tracking-tight transition-all ${
             activeTab === "pending"
-              ? "border-amber-500 text-amber-600 dark:text-amber-400"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border border-ink bg-ink text-canvas shadow-[0_2px_6px_rgba(15,23,42,0.14)]"
+              : "border border-transparent text-muted hover:border-hairline hover:bg-surface-soft hover:text-ink"
           }`}
         >
-          <AlertTriangle className="w-4 h-4" />
+          <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
           Pending Review (70% - 89%)
-          <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold">
+          <span
+            className={`ml-1 px-1.5 py-0.5 rounded-md text-[11px] font-bold font-mono ${
+              activeTab === "pending"
+                ? "bg-canvas/20 text-canvas"
+                : "bg-surface-soft border border-hairline text-ink"
+            }`}
+          >
             {pendingReview.length}
           </span>
         </button>
@@ -171,15 +177,21 @@ export function ReviewQueueWorkspace({
         <button
           type="button"
           onClick={() => setActiveTab("auto")}
-          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+          className={`btn-interactive flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold tracking-tight transition-all ${
             activeTab === "auto"
-              ? "border-emerald-500 text-emerald-600 dark:text-emerald-400"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border border-ink bg-ink text-canvas shadow-[0_2px_6px_rgba(15,23,42,0.14)]"
+              : "border border-transparent text-muted hover:border-hairline hover:bg-surface-soft hover:text-ink"
           }`}
         >
-          <CheckCircle2 className="w-4 h-4" />
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
           Auto-Linked (&ge; 90%)
-          <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold">
+          <span
+            className={`ml-1 px-1.5 py-0.5 rounded-md text-[11px] font-bold font-mono ${
+              activeTab === "auto"
+                ? "bg-canvas/20 text-canvas"
+                : "bg-surface-soft border border-hairline text-ink"
+            }`}
+          >
             {autoLinked.length}
           </span>
         </button>
@@ -187,15 +199,21 @@ export function ReviewQueueWorkspace({
         <button
           type="button"
           onClick={() => setActiveTab("unmatched")}
-          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+          className={`btn-interactive flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold tracking-tight transition-all ${
             activeTab === "unmatched"
-              ? "border-slate-500 text-slate-600 dark:text-slate-400"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border border-ink bg-ink text-canvas shadow-[0_2px_6px_rgba(15,23,42,0.14)]"
+              : "border border-transparent text-muted hover:border-hairline hover:bg-surface-soft hover:text-ink"
           }`}
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-3.5 h-3.5 text-muted" />
           Unmatched (&lt; 70%)
-          <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs bg-slate-500/10 text-slate-600 dark:text-slate-400 font-semibold">
+          <span
+            className={`ml-1 px-1.5 py-0.5 rounded-md text-[11px] font-bold font-mono ${
+              activeTab === "unmatched"
+                ? "bg-canvas/20 text-canvas"
+                : "bg-surface-soft border border-hairline text-ink"
+            }`}
+          >
             {unmatched.length}
           </span>
         </button>
@@ -203,10 +221,10 @@ export function ReviewQueueWorkspace({
 
       {/* Queue Items */}
       {currentList.length === 0 ? (
-        <div className="p-12 text-center rounded-xl border border-dashed border-border bg-card/50">
-          <CheckCircle2 className="w-10 h-10 text-emerald-500/50 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-foreground">All Clean!</h3>
-          <p className="text-xs text-muted-foreground mt-1">
+        <div className="p-12 text-center rounded-2xl border border-dashed border-hairline bg-surface-soft/40">
+          <CheckCircle2 className="w-10 h-10 text-emerald-500/60 mx-auto mb-3" />
+          <h3 className="text-sm font-semibold tracking-tight text-ink">All Clean!</h3>
+          <p className="text-xs text-muted mt-1">
             There are no observations waiting in this queue tier.
           </p>
         </div>
@@ -228,37 +246,37 @@ export function ReviewQueueWorkspace({
             return (
               <div
                 key={obs.id}
-                className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4 transition-all hover:border-primary/40"
+                className="rounded-2xl border border-hairline bg-canvas p-5 shadow-card hover:shadow-card-hover space-y-4 transition-all"
               >
                 {/* Top Bar: Observation Meta */}
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 pb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hairline pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 rounded text-xs font-semibold bg-primary/10 text-primary uppercase tracking-wide">
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-tight bg-surface-soft border border-hairline text-ink uppercase">
                       {obs.eventType}
                     </span>
                     {obs.progressPercent !== null && obs.progressPercent !== undefined && (
-                      <span className="px-2.5 py-1 rounded text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono bg-sky-500/10 border border-sky-500/20 text-sky-700 dark:text-sky-300">
                         {Math.round(obs.progressPercent)}% Progress
                       </span>
                     )}
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
+                    <span className="text-xs text-muted flex items-center gap-1 font-mono">
+                      <Calendar className="w-3.5 h-3.5 text-muted" />
                       {formatDate(obs.extractedDate)}
                     </span>
                   </div>
 
                   {topCandidate && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-muted-foreground">Confidence:</span>
-                      <div className="flex items-center gap-1.5 bg-muted px-2.5 py-1 rounded-full">
-                        <Sparkles className="w-3.5 h-3.5 text-primary" />
+                      <span className="text-xs font-medium text-muted">Confidence:</span>
+                      <div className="flex items-center gap-1.5 bg-surface-soft border border-hairline px-2.5 py-1 rounded-full shadow-2xs">
+                        <Sparkles className="w-3 h-3 text-ink" />
                         <span
-                          className={`text-xs font-bold ${
+                          className={`text-xs font-bold font-mono ${
                             confidencePct >= 90
                               ? "text-emerald-600 dark:text-emerald-400"
                               : confidencePct >= 70
                               ? "text-amber-600 dark:text-amber-400"
-                              : "text-red-500"
+                              : "text-rose-600 dark:text-rose-400"
                           }`}
                         >
                           {confidencePct}%
@@ -270,8 +288,8 @@ export function ReviewQueueWorkspace({
 
                 {/* Candidate Selector if Multiple Matches Exist */}
                 {candidateMatches.length > 1 && (
-                  <div className="flex items-center gap-2 bg-muted/40 p-2 rounded-lg border border-border/50">
-                    <span className="text-xs font-semibold text-muted-foreground">
+                  <div className="flex items-center gap-2 bg-surface-soft/80 p-2.5 rounded-xl border border-hairline">
+                    <span className="text-xs font-semibold tracking-tight text-ink">
                       Multiple Ranked Candidates ({candidateMatches.length}):
                     </span>
                     <div className="flex flex-wrap gap-1.5">
@@ -284,14 +302,14 @@ export function ReviewQueueWorkspace({
                             onClick={() =>
                               setSelectedCandidateId((prev) => ({ ...prev, [obs.id]: cm.id }))
                             }
-                            className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors ${
+                            className={`btn-interactive text-xs px-2.5 py-1 rounded-lg font-medium transition-colors ${
                               isSelected
-                                ? "bg-primary text-primary-foreground shadow-xs font-semibold"
-                                : "bg-card border border-border text-foreground hover:bg-accent"
+                                ? "bg-ink text-canvas font-semibold shadow-2xs"
+                                : "bg-canvas border border-hairline text-ink hover:bg-surface-soft"
                             }`}
                           >
                             #{idx + 1}: {cm.task?.name ? cm.task.name.slice(0, 24) : "Task"} (
-                            {Math.round(cm.confidenceScore * 100)}%)
+                            <span className="font-mono">{Math.round(cm.confidenceScore * 100)}%</span>)
                           </button>
                         );
                       })}
@@ -302,37 +320,39 @@ export function ReviewQueueWorkspace({
                 {/* Content Split: Field Evidence vs Matched Schedule Task */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Left: Field Evidence */}
-                  <div className="bg-muted/30 p-4 rounded-lg border border-border/60 space-y-2">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <div className="bg-surface-soft/60 p-4 rounded-xl border border-hairline space-y-2">
+                    <p className="text-[11px] font-semibold text-muted uppercase tracking-wider flex items-center gap-1.5">
                       <Layers className="w-3.5 h-3.5" />
                       Field DPR Note
                     </p>
-                    <p className="text-sm text-foreground leading-relaxed">
+                    <p className="text-sm text-ink leading-relaxed">
                       &ldquo;{obs.rawText}&rdquo;
                     </p>
                   </div>
 
                   {/* Right: Matched Schedule Activity */}
-                  <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-2">
-                    <p className="text-xs font-semibold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                  <div className="bg-emerald-500/[0.04] dark:bg-emerald-500/[0.06] p-4 rounded-xl border border-emerald-500/20 space-y-2">
+                    <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
                       <ArrowRight className="w-3.5 h-3.5" />
                       Matched Schedule Activity
                     </p>
                     {topCandidate && topCandidate.task ? (
                       <div>
-                        <p className="text-base font-bold text-foreground">
+                        <p className="text-sm sm:text-base font-bold tracking-tight text-ink">
                           {topCandidate.task.name}
                         </p>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-muted font-mono">
                           <span>
                             Dates: {formatDate(topCandidate.task.startDate)} -{" "}
                             {formatDate(topCandidate.task.endDate)}
                           </span>
-                          <span>Current: {topCandidate.task.progress}%</span>
+                          <span className="font-semibold text-ink">
+                            Progress: {topCandidate.task.progress}%
+                          </span>
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground italic">
+                      <p className="text-xs text-muted italic">
                         No candidate activity exceeded confidence threshold.
                       </p>
                     )}
@@ -342,7 +362,7 @@ export function ReviewQueueWorkspace({
                 {/* Explainability Signals Breakdown */}
                 {topCandidate && (
                   <div className="space-y-1.5 pt-1">
-                    <p className="text-xs font-semibold text-muted-foreground">
+                    <p className="text-xs font-semibold tracking-tight text-muted">
                       Explainable AI Matching Signals:
                     </p>
                     <div className="flex flex-wrap gap-1.5">
@@ -350,19 +370,19 @@ export function ReviewQueueWorkspace({
                         reasons.map((reason: string, rIdx: number) => (
                           <span
                             key={rIdx}
-                            className="text-xs px-2.5 py-1 rounded bg-secondary text-secondary-foreground font-medium"
+                            className="text-xs px-2.5 py-1 rounded-lg bg-surface-soft border border-hairline text-ink font-medium shadow-2xs"
                           >
                             ✓ {reason}
                           </span>
                         ))
                       ) : (
-                        <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                        <span className="text-xs px-2 py-0.5 rounded-lg bg-surface-soft border border-hairline text-muted">
                           Hybrid Vector + BM25 RRF Rank Score
                         </span>
                       )}
 
                       {isConflict && (
-                        <span className="text-xs px-2.5 py-1 rounded bg-red-500/10 text-red-600 dark:text-red-400 font-semibold border border-red-500/30">
+                        <span className="text-xs px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-300 font-semibold border border-rose-500/25">
                           ⚠️ Asset Conflict Detected (-40% Penalty Applied)
                         </span>
                       )}
@@ -372,14 +392,14 @@ export function ReviewQueueWorkspace({
 
                 {/* Reviewer Action Buttons */}
                 {topCandidate ? (
-                  <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-hairline">
                     {obs.matchStatus === "AUTO_LINKED" ? (
                       <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                         Verified & linked directly to master schedule
                       </span>
                     ) : (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted">
                         Requires supervisor signoff before updating CPM schedule
                       </span>
                     )}
@@ -395,7 +415,7 @@ export function ReviewQueueWorkspace({
                             topCandidate.task?.name ?? "Activity"
                           )
                         }
-                        className="px-3 py-1.5 text-xs font-medium text-destructive border border-destructive/30 rounded hover:bg-destructive/10 disabled:opacity-50 flex items-center gap-1 transition-colors"
+                        className="btn-interactive px-3 py-1.5 text-xs font-semibold text-rose-700 dark:text-rose-300 border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 rounded-lg disabled:opacity-50 flex items-center gap-1.5 transition-colors shadow-2xs"
                       >
                         {isSubmitting ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -416,7 +436,7 @@ export function ReviewQueueWorkspace({
                               topCandidate.task?.name ?? "Activity"
                             )
                           }
-                          className="px-4 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5 transition-colors shadow-sm"
+                          className="btn-interactive px-4 py-1.5 text-xs font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5 transition-colors shadow-xs"
                         >
                           {isSubmitting ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -429,13 +449,13 @@ export function ReviewQueueWorkspace({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-border/50 text-xs text-muted-foreground">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-3 border-t border-hairline text-xs text-muted">
                     <span>
                       Observation recorded. You can link this activity once scheduled in the CPM plan.
                     </span>
                     <Link
-                      href={`/projects/${projectId}/gantt`}
-                      className="text-primary font-medium hover:underline inline-flex items-center gap-1"
+                      href={`/gantt/${projectId}`}
+                      className="text-ink font-semibold hover:underline inline-flex items-center gap-1"
                     >
                       View Schedule Gantt &rarr;
                     </Link>

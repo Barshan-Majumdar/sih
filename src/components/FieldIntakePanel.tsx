@@ -158,41 +158,41 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
       </div>
 
       {/* Input Mode Selector */}
-      <div className="flex border-b border-border">
+      <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-hairline/80 bg-surface-soft/80 p-1">
         <button
           type="button"
           onClick={() => setActiveTab("text")}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`btn-interactive flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold tracking-tight transition-all ${
             activeTab === "text"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border border-ink bg-ink text-canvas shadow-[0_2px_6px_rgba(15,23,42,0.14)]"
+              : "border border-transparent text-muted hover:border-hairline hover:bg-surface-soft hover:text-ink"
           }`}
         >
-          <FileText className="w-4 h-4" />
+          <FileText className="w-3.5 h-3.5" />
           Text Report
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("voice")}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`btn-interactive flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold tracking-tight transition-all ${
             activeTab === "voice"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border border-ink bg-ink text-canvas shadow-[0_2px_6px_rgba(15,23,42,0.14)]"
+              : "border border-transparent text-muted hover:border-hairline hover:bg-surface-soft hover:text-ink"
           }`}
         >
-          <Mic className="w-4 h-4" />
+          <Mic className="w-3.5 h-3.5" />
           Voice Dictation
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("upload")}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`btn-interactive flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold tracking-tight transition-all ${
             activeTab === "upload"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border border-ink bg-ink text-canvas shadow-[0_2px_6px_rgba(15,23,42,0.14)]"
+              : "border border-transparent text-muted hover:border-hairline hover:bg-surface-soft hover:text-ink"
           }`}
         >
-          <Upload className="w-4 h-4" />
+          <Upload className="w-3.5 h-3.5" />
           Upload Document / PDF
         </button>
       </div>
@@ -202,10 +202,10 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
         {activeTab === "text" && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="dpr-notes" className="text-sm font-medium text-foreground">
+              <label htmlFor="dpr-notes" className="text-xs font-semibold tracking-tight text-ink uppercase">
                 Daily Site Progress Notes
               </label>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted">
                 Colloquial site terms & acronyms (RCC, rebar, pier, chainage) are automatically expanded.
               </span>
             </div>
@@ -215,56 +215,56 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
               value={dprText}
               onChange={(e) => setDprText(e.target.value)}
               placeholder="e.g. Completed 40% rebar fixing at Pier P2. Poured 35m3 concrete after inspection signoff. Excavation paused at Pier P1 due to rain."
-              className="w-full p-3 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary leading-relaxed"
+              className="w-full p-3.5 rounded-xl border border-hairline bg-surface-soft text-sm text-ink placeholder:text-muted/60 focus:bg-canvas focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all leading-relaxed"
               required
             />
           </div>
         )}
 
         {activeTab === "voice" && (
-          <div className="p-8 border-2 border-dashed border-border rounded-xl text-center space-y-4">
+          <div className="p-8 border border-dashed border-hairline rounded-2xl bg-surface-soft/40 text-center space-y-4">
             <button
               type="button"
               onClick={toggleRecording}
-              className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto transition-all ${
+              className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto transition-all shadow-md ${
                 isRecording
-                  ? "bg-red-500 text-white animate-pulse"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  ? "bg-rose-500 text-white animate-pulse shadow-rose-500/30"
+                  : "bg-ink text-canvas hover:scale-105 active:scale-95 shadow-sm"
               }`}
             >
-              <Mic className="w-8 h-8" />
+              <Mic className="w-7 h-7" />
             </button>
             <div>
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-sm font-semibold tracking-tight text-ink">
                 {isRecording ? "Listening to site audio..." : "Click microphone to dictate daily report"}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted mt-1">
                 Audio is transcribed directly into the DPR intake form for extraction.
               </p>
             </div>
             {voiceError && (
-              <div className="p-3 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 rounded-lg text-xs flex items-center justify-center gap-2">
+              <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 rounded-xl text-xs flex items-center justify-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{voiceError}</span>
               </div>
             )}
             {dprText && (
-              <div className="text-left bg-muted/40 p-4 rounded-lg border border-border">
-                <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Transcribed Text:</p>
-                <p className="text-sm text-foreground">{dprText}</p>
+              <div className="text-left bg-canvas p-4 rounded-xl border border-hairline shadow-sm">
+                <p className="text-[10px] font-bold text-muted uppercase tracking-wider mb-1">Transcribed Text:</p>
+                <p className="text-sm text-ink leading-relaxed">{dprText}</p>
               </div>
             )}
           </div>
         )}
 
         {activeTab === "upload" && (
-          <div className="p-8 border-2 border-dashed border-border rounded-xl text-center space-y-3">
-            <Upload className="w-10 h-10 text-muted-foreground mx-auto" />
+          <div className="p-8 border border-dashed border-hairline rounded-2xl bg-surface-soft/40 text-center space-y-3">
+            <Upload className="w-9 h-9 text-muted mx-auto" />
             <div>
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-sm font-semibold tracking-tight text-ink">
                 Drag & drop site logs, daily notes (.txt, .csv, .md), or scanned documents
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted mt-1">
                 Text and log files are parsed immediately into the form. Scanned documents link with OCR.
               </p>
             </div>
@@ -301,7 +301,7 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
             />
             <label
               htmlFor="file-upload"
-              className="inline-block px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-medium cursor-pointer hover:bg-secondary/80"
+              className="btn-interactive inline-block px-4 py-2 bg-surface-soft border border-hairline text-ink rounded-lg text-xs font-semibold tracking-tight cursor-pointer hover:bg-canvas transition-colors shadow-sm"
             >
               Browse Local Files
             </label>
@@ -310,14 +310,14 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
 
         {/* Quick Sample DPR Chips */}
         <div className="space-y-1.5">
-          <p className="text-xs font-medium text-muted-foreground">Quick Test Samples (Click to load):</p>
+          <p className="text-xs font-semibold tracking-tight text-muted">Quick Test Samples (Click to load):</p>
           <div className="flex flex-wrap gap-2">
             {SAMPLE_DPRS.map((sample, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => setDprText(sample.text)}
-                className="text-xs px-3 py-1.5 rounded-full border border-border bg-card hover:bg-accent text-foreground transition-colors"
+                className="btn-interactive text-xs font-medium px-3 py-1.5 rounded-full border border-hairline bg-surface-soft hover:bg-canvas hover:border-ink/20 text-ink transition-colors shadow-2xs"
               >
                 {sample.title}
               </button>
@@ -327,14 +327,14 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
 
         {/* Action Button */}
         <div className="flex items-center justify-between pt-2">
-          <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <span className="text-xs text-muted flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" />
             AI Reranker checks 8 domain constraints & conflict penalties
           </span>
           <button
             type="submit"
             disabled={isSubmitting || !dprText.trim()}
-            className="px-5 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2 text-sm transition-all"
+            className="btn-interactive px-5 py-2.5 bg-ink text-canvas font-semibold rounded-xl hover:bg-ink/90 disabled:opacity-50 flex items-center gap-2 text-xs tracking-tight transition-all shadow-sm"
           >
             {isSubmitting ? (
               <>
@@ -354,18 +354,18 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
       {/* Result Notification */}
       {result && (
         <div
-          className={`p-4 rounded-lg border ${
+          className={`p-4 rounded-xl border ${
             result.success
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
-              : "bg-destructive/10 border-destructive/30 text-destructive"
+              ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-800 dark:text-emerald-200"
+              : "bg-rose-500/10 border-rose-500/25 text-rose-800 dark:text-rose-200"
           }`}
         >
           {result.success ? (
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <div>
-                  <p className="font-semibold text-sm">
+                  <p className="font-semibold text-sm tracking-tight">
                     Report Processed Successfully!
                   </p>
                   <p className="text-xs mt-0.5 opacity-90">
@@ -377,14 +377,14 @@ export function FieldIntakePanel({ projectId }: FieldIntakePanelProps) {
                 <button
                   type="button"
                   onClick={() => router.push(`/projects/${projectId}/review-queue`)}
-                  className="text-xs font-semibold px-3 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-colors shadow-sm"
+                  className="btn-interactive text-xs font-semibold px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-2xs"
                 >
                   Review Queue &rarr;
                 </button>
                 <button
                   type="button"
                   onClick={() => router.push(`/projects/${projectId}/plan-vs-actual`)}
-                  className="text-xs font-semibold px-3 py-1.5 bg-card border border-border text-foreground rounded hover:bg-accent transition-colors"
+                  className="btn-interactive text-xs font-semibold px-3 py-1.5 bg-canvas border border-hairline text-ink rounded-lg hover:bg-surface-soft transition-colors"
                 >
                   Plan vs. Actual &rarr;
                 </button>

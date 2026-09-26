@@ -52,11 +52,11 @@ export function ThemeToggle() {
         window.localStorage.setItem(APP_THEME_STORAGE_KEY, nextTheme);
         window.dispatchEvent(new Event(APP_THEME_CHANGE_EVENT));
       }}
-      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill border border-hairline-soft bg-canvas text-body transition-colors hover:border-hairline hover:bg-surface-soft hover:text-ink"
+      className="group btn-interactive inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill border border-hairline bg-surface-soft/80 text-body shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-muted-soft/40 hover:bg-surface-soft hover:text-ink"
       aria-label={`Switch to ${nextTheme} mode`}
       title={`Switch to ${nextTheme} mode`}
     >
-      <Icon size={15} aria-hidden />
+      <Icon size={14} className="transition-transform duration-300 group-hover:rotate-45" aria-hidden />
     </button>
   );
 }

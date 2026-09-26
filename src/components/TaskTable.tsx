@@ -282,7 +282,7 @@ function TaskRowView({
                 value={task.status}
                 disabled={pending}
                 onChange={(e) => handleStatusChange(e.target.value as TaskStatus)}
-                className="h-7 rounded-md border border-hairline bg-canvas px-1.5 text-xs focus:outline-none focus:border-ink disabled:opacity-50"
+                className="h-7 rounded-lg border border-hairline bg-canvas px-2 text-xs font-medium text-ink shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-colors focus:border-brand-accent focus:outline-none focus:ring-2 focus:ring-brand-accent/20 disabled:opacity-50"
               >
                 {STATUS_OPTIONS.map((s) => (
                   <option key={s} value={s}>

@@ -292,6 +292,7 @@ function ChatWorkspace({
 
 export function GlobalAssistant() {
   const pathname = usePathname();
+  const prevPathnameRef = useRef(pathname);
   const focusProjectId = focusProjectIdFromPath(pathname);
   const [open, setOpen] = useState(false);
   const [bootstrap, setBootstrap] = useState<AssistantBootstrap | null>(null);
@@ -445,6 +446,14 @@ export function GlobalAssistant() {
       new CustomEvent("agira:assistant-state", { detail: { open } })
     );
   }, [open]);
+
+  useEffect(() => {
+    if (prevPathnameRef.current !== pathname) {
+      prevPathnameRef.current = pathname;
+      setOpen(false);
+      setPdfDocument(null);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     const toggleAssistant = (event: Event) => {

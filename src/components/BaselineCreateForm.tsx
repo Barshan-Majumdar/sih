@@ -24,21 +24,24 @@ export function BaselineCreateForm({ projectId }: { projectId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border border-hairline rounded-lg p-4 bg-surface-soft">
-      <h3 className="app-card-title mb-3">Save a new baseline</h3>
+    <form onSubmit={handleSubmit} className="rounded-2xl border border-hairline bg-surface-soft/80 p-5 shadow-card">
+      <div className="mb-3">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Plan of Record</p>
+        <h3 className="text-sm font-semibold tracking-tight text-ink mt-0.5">Save a new baseline</h3>
+      </div>
       <div className="flex flex-wrap items-center gap-3">
         <input
           aria-label="Baseline name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Name (e.g. Original Schedule, Rev 1)"
-          className="h-10 flex-1 min-w-[220px] rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink"
+          className="h-9 flex-1 min-w-[220px] rounded-xl border border-hairline bg-canvas px-3 text-xs sm:text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
         />
-        <Button type="submit" variant="secondary" disabled={loading || !name.trim()}>
+        <Button type="submit" variant="primary" disabled={loading || !name.trim()} className="h-9 text-xs font-semibold shadow-2xs">
           {loading ? "Saving…" : "Save baseline"}
         </Button>
       </div>
-      <p className="text-xs text-muted-soft mt-2">
+      <p className="text-xs text-muted mt-2">
         Captures every task&apos;s current start/end dates and status so you can compare against it later.
       </p>
       <ErrorText>{error}</ErrorText>

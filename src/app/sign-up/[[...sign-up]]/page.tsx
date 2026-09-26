@@ -1,18 +1,40 @@
 import { SignUp } from "@clerk/nextjs";
 import Link from "next/link";
 import { AgiraMark } from "@/components/landing/AgiraMark";
+import { ShieldCheck, Sparkles } from "lucide-react";
 
 export default function SignUpPage() {
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-950 px-4 py-12">
-      <div className="mb-6 flex flex-col items-center gap-3">
-        <Link href="/" className="inline-flex items-center gap-2.5">
+    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-surface-dark px-4 py-12 text-on-dark">
+      {/* Background ambient aurora lighting */}
+      <div
+        className="pointer-events-none absolute -top-40 left-1/2 h-[450px] w-[600px] -translate-x-1/2 rounded-full bg-brand-accent/15 blur-[120px]"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -bottom-40 right-1/4 h-[350px] w-[500px] rounded-full bg-success/10 blur-[100px]"
+        aria-hidden
+      />
+
+      <div className="relative z-10 mb-8 flex flex-col items-center gap-3 text-center">
+        <Link href="/" className="inline-flex items-center gap-2.5 transition-transform hover:scale-105">
           <AgiraMark size={36} />
-          <span className="text-xl font-bold tracking-tight text-white">InfraTrack AI</span>
+          <span className="text-2xl font-bold tracking-tight text-white font-display">InfraTrack AI</span>
         </Link>
-        <p className="text-sm text-slate-400">SIH 26122 Intelligent Schedule-Linking Engine</p>
+        <div className="inline-flex items-center gap-1.5 rounded-pill border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70 backdrop-blur-md">
+          <Sparkles className="h-3 w-3 text-brand-accent" />
+          <span>SIH 26122 Intelligent Schedule-Linking Engine</span>
+        </div>
       </div>
-      <SignUp />
+
+      <div className="relative z-10 w-full max-w-md shadow-2xl">
+        <SignUp fallbackRedirectUrl="/dashboard" forceRedirectUrl="/dashboard" />
+      </div>
+
+      <div className="relative z-10 mt-8 flex items-center gap-2 text-xs text-on-dark-soft">
+        <ShieldCheck className="h-3.5 w-3.5 text-success" />
+        <span>Self-hosted open-source core with enterprise security</span>
+      </div>
     </div>
   );
 }

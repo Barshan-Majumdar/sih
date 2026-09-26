@@ -61,17 +61,19 @@ export default async function ProjectLookaheadPage({
       />
 
       <div className="mt-6 space-y-4">
-        <div className="app-toolbar flex-row items-center">
-          <p className="text-sm text-muted">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 rounded-2xl border border-hairline bg-surface-soft/60">
+          <p className="text-xs sm:text-sm font-semibold tracking-tight text-ink font-mono">
             {formatDate(today)} – {formatDate(windowEnd)}
           </p>
-          <div className="inline-flex items-center gap-1 rounded-md bg-surface-soft p-1">
+          <div className="inline-flex items-center gap-1 rounded-xl border border-hairline/80 bg-surface-soft/80 p-1">
             {WINDOW_OPTIONS.map((w) => (
               <Link
                 key={w}
                 href={`/projects/${projectId}/lookahead?weeks=${w}`}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                  w === windowWeeks ? "bg-ink text-canvas" : "text-muted hover:bg-canvas hover:text-ink"
+                className={`btn-interactive px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-all ${
+                  w === windowWeeks
+                    ? "bg-ink text-canvas shadow-xs"
+                    : "text-muted hover:bg-canvas hover:text-ink"
                 }`}
               >
                 {w}-week

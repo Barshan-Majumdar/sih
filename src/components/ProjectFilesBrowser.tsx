@@ -204,7 +204,7 @@ function OpenInAgentAction({ file, projectId }: { file: ProjectFileRecord; proje
           })
         )
       }
-      className="inline-flex h-8 items-center justify-center whitespace-nowrap rounded-md border border-hairline bg-canvas px-3 text-xs font-semibold text-ink transition-colors hover:border-muted-soft hover:bg-surface-soft"
+      className="btn-interactive inline-flex h-8 items-center justify-center whitespace-nowrap rounded-lg border border-hairline bg-surface-soft px-3 text-xs font-semibold text-ink transition-colors hover:bg-canvas shadow-2xs"
     >
       Open in Agent
     </button>
@@ -373,31 +373,31 @@ export function ProjectFilesBrowser({
   }
 
   return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-2 border-y border-hairline md:grid-cols-4">
-        {summary.map(({ label, value }, index) => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {summary.map(({ label, value }) => (
           <div
             key={label}
-            className={`px-4 py-3 ${index % 2 === 1 ? "border-l border-hairline" : ""} ${index > 1 ? "border-t border-hairline md:border-t-0" : ""} ${index > 0 ? "md:border-l md:border-hairline" : ""}`}
+            className="rounded-2xl border border-hairline bg-surface-soft/60 p-4 shadow-2xs"
           >
-            <p className="app-metric-label text-xs">{label}</p>
-            <p className="app-metric-value text-xl">{value}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">{label}</p>
+            <p className="text-2xl font-extrabold tracking-tight font-mono text-ink mt-0.5">{value}</p>
           </div>
         ))}
       </div>
 
-      <div className="flex flex-col gap-3 border-b border-hairline pb-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex max-w-full overflow-x-auto" aria-label="File type filters">
+      <div className="flex flex-col gap-3 pb-2 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-1 rounded-xl border border-hairline/80 bg-surface-soft/80 p-1" aria-label="File type filters">
           {FILTERS.map((item) => (
             <button
               key={item.value}
               type="button"
               onClick={() => setFilter(item.value)}
               aria-pressed={filter === item.value}
-              className={`h-9 shrink-0 border px-3 text-xs font-semibold transition-colors first:rounded-l-md last:rounded-r-md ${
+              className={`btn-interactive px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-all ${
                 filter === item.value
-                  ? "border-ink bg-ink text-canvas"
-                  : "-ml-px border-hairline bg-canvas text-muted hover:bg-surface-soft hover:text-ink first:ml-0"
+                  ? "bg-ink text-canvas shadow-xs"
+                  : "text-muted hover:bg-canvas hover:text-ink"
               }`}
             >
               {item.label}
@@ -406,14 +406,14 @@ export function ProjectFilesBrowser({
         </div>
         <div className="flex w-full gap-2 lg:w-auto">
           <label className="relative block min-w-0 flex-1 lg:w-72">
-            <Search size={15} className="pointer-events-none absolute left-3 top-2.5 text-muted" aria-hidden />
+            <Search size={14} className="pointer-events-none absolute left-3 top-2.5 text-muted" aria-hidden />
             <span className="sr-only">Search project files</span>
             <input
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search files, people, or sources"
-              className="h-9 w-full rounded-md border border-hairline bg-canvas pl-9 pr-3 text-sm text-ink outline-none placeholder:text-muted-soft focus:border-muted-soft"
+              placeholder="Search files, people, or sources..."
+              className="h-9 w-full rounded-xl border border-hairline bg-canvas pl-9 pr-3 text-xs sm:text-sm text-ink outline-none placeholder:text-muted/60 focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
             />
           </label>
           <input
@@ -429,10 +429,10 @@ export function ProjectFilesBrowser({
             type="button"
             onClick={() => uploadInputRef.current?.click()}
             disabled={uploading}
-            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md bg-ink px-3.5 text-xs font-semibold text-canvas transition-colors hover:bg-ink/90 disabled:cursor-wait disabled:opacity-60"
+            className="btn-interactive inline-flex h-9 shrink-0 items-center gap-2 rounded-xl bg-ink px-4 text-xs font-semibold text-canvas transition-colors hover:bg-ink/90 disabled:cursor-wait disabled:opacity-60 shadow-xs"
           >
             {uploading ? <LoaderCircle size={14} className="animate-spin" aria-hidden /> : <Upload size={14} aria-hidden />}
-            {uploading ? "Indexing" : "Upload"}
+            {uploading ? "Indexing" : "Upload Files"}
           </button>
         </div>
       </div>
@@ -462,28 +462,28 @@ export function ProjectFilesBrowser({
         </div>
       ) : (
         <>
-          <div className="hidden overflow-hidden rounded-md border border-hairline md:block">
+          <div className="hidden overflow-hidden rounded-2xl border border-hairline bg-canvas shadow-card md:block">
             <table className="w-full table-fixed text-left text-sm">
-              <thead className="border-b border-hairline bg-surface-soft">
-                <tr>
-                  <th className="app-table-heading w-[34%] px-4 py-2.5">File</th>
-                  <th className="app-table-heading w-[18%] px-4 py-2.5">Source</th>
-                  <th className="app-table-heading w-[15%] px-4 py-2.5">Uploaded by</th>
-                  <th className="app-table-heading w-[17%] px-4 py-2.5">Added</th>
-                  <th className="app-table-heading w-[16%] px-4 py-2.5 text-right">Action</th>
+              <thead>
+                <tr className="border-b border-hairline bg-surface-soft/80 text-[11px] font-bold uppercase tracking-wider text-muted">
+                  <th className="w-[34%] px-4 py-3">File</th>
+                  <th className="w-[18%] px-4 py-3">Source</th>
+                  <th className="w-[15%] px-4 py-3">Uploaded by</th>
+                  <th className="w-[17%] px-4 py-3">Added</th>
+                  <th className="w-[16%] px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-hairline">
                 {filteredFiles.map((file) => (
-                  <tr key={`${file.kind}:${file.id}`} className="border-b border-hairline-soft last:border-b-0 hover:bg-surface-soft/60">
-                    <td className="px-4 py-3">
+                  <tr key={`${file.kind}:${file.id}`} className="hover:bg-surface-soft/40 transition-colors">
+                    <td className="px-4 py-3.5">
                       <div className="flex min-w-0 items-center gap-3">
                         <FileThumb file={file} />
                         <div className="min-w-0">
                           <FileNameAction file={file} />
-                          <p className="mt-0.5 truncate text-xs text-muted">
-                            {KIND_LABELS[file.kind]} - {formatBytes(file.sizeBytes)}
-                            {file.detail ? ` - ${file.detail}` : ""}
+                          <p className="mt-0.5 truncate text-xs text-muted font-mono">
+                            <span className="font-sans font-medium">{KIND_LABELS[file.kind]}</span> · {formatBytes(file.sizeBytes)}
+                            {file.detail ? ` · ${file.detail}` : ""}
                           </p>
                           <div className="mt-1">
                             <ProcessingStatus
@@ -495,13 +495,13 @@ export function ProjectFilesBrowser({
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3.5">
                       <p className="truncate text-xs text-muted" title={file.sourceLabel}>{file.sourceLabel}</p>
                       <div className="mt-1"><SourceAction file={file} /></div>
                     </td>
-                    <td className="truncate px-4 py-3 text-xs text-body">{file.uploadedBy}</td>
-                    <td className="px-4 py-3 text-xs text-muted">{file.uploadedAtLabel}</td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="truncate px-4 py-3.5 text-xs text-ink/80 font-medium">{file.uploadedBy}</td>
+                    <td className="px-4 py-3.5 text-xs text-muted font-mono">{file.uploadedAtLabel}</td>
+                    <td className="px-4 py-3.5 text-right">
                       <div className="inline-flex items-center justify-end gap-1.5">
                         <OpenInAgentAction file={file} projectId={projectId} />
                         <DownloadFileAction file={file} />

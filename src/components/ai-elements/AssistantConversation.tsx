@@ -41,15 +41,29 @@ type AssistantConversationProps = {
 
 function AssistantRichText({ text, isAnimating }: { text: string; isAnimating: boolean }) {
   return (
-    <Streamdown
-      className="assistant-markdown"
-      controls={false}
-      isAnimating={isAnimating}
-      lineNumbers={false}
-      mode="streaming"
+    <div
+      onClick={(e) => {
+        const anchor = (e.target as HTMLElement).closest("a");
+        if (anchor) {
+          const href = anchor.getAttribute("href");
+          if (href?.startsWith("/")) {
+            window.dispatchEvent(
+              new CustomEvent("agira:toggle-assistant", { detail: { open: false } })
+            );
+          }
+        }
+      }}
     >
-      {text}
-    </Streamdown>
+      <Streamdown
+        className="assistant-markdown"
+        controls={false}
+        isAnimating={isAnimating}
+        lineNumbers={false}
+        mode="streaming"
+      >
+        {text}
+      </Streamdown>
+    </div>
   );
 }
 

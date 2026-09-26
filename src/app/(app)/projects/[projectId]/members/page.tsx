@@ -34,9 +34,9 @@ export default async function ProjectMembersPage({
       <div className="mt-6 space-y-6">
         {canManage && <InviteLinkGenerator projectId={projectId} firstInvite={members.length === 1} />}
 
-        <Card className="p-6">
+        <div className="rounded-2xl border border-hairline bg-canvas shadow-card overflow-hidden">
           <ProjectMembersTable projectId={projectId} members={members} canManage={canManage} />
-        </Card>
+        </div>
       </div>
     </div>
   );

@@ -4,11 +4,16 @@ import { AgiraMark } from "@/components/landing/AgiraMark";
 import { LandingMegaNav } from "@/components/LandingMegaNav";
 import { MarketingFooter } from "@/components/MarketingFooter";
 import { LandingProductShowcase } from "@/components/LandingProductShowcase";
+import { redirect } from "next/navigation";
 import { getCurrentSession } from "@/lib/session";
 
 export default async function LandingPage() {
   const session = await getCurrentSession();
-  const isSignedIn = !!session?.user;
+  if (session?.user) {
+    redirect("/dashboard");
+  }
+
+  const isSignedIn = false;
 
   return (
     <div className="bg-canvas text-ink">

@@ -26,10 +26,10 @@ export type RfiRow = {
 export type TaskOption = { id: string; name: string };
 export type FileOption = { id: string; fileName: string };
 
-const STATUS_COLORS: Record<RfiStatus, string> = {
-  OPEN: "text-muted",
-  ANSWERED: "text-success",
-  CLOSED: "text-muted-soft",
+const STATUS_BADGES: Record<RfiStatus, string> = {
+  OPEN: "bg-surface-soft border-hairline text-ink",
+  ANSWERED: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20",
+  CLOSED: "bg-surface-soft/60 border-hairline/60 text-muted",
 };
 
 export function RfiList({
@@ -50,9 +50,12 @@ export function RfiList({
       <NewRfiForm projectId={projectId} tasks={tasks} files={files} />
 
       {rfis.length === 0 ? (
-        <p className="app-empty-title py-6 text-center">No RFIs match this filter</p>
+        <div className="rounded-2xl border border-dashed border-hairline bg-surface-soft/40 px-6 py-12 text-center">
+          <p className="text-sm font-semibold tracking-tight text-ink">No RFIs match this filter</p>
+          <p className="mt-1 text-xs text-muted">Field queries and clarifications will appear here.</p>
+        </div>
       ) : (
-        <ul className="space-y-3">
+        <ul className="space-y-3.5">
           {rfis.map((r) => (
             <RfiCard key={r.id} rfi={r} canAnswer={canAnswer} />
           ))}
@@ -104,8 +107,11 @@ function NewRfiForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border border-hairline rounded-lg p-4 bg-surface-soft">
-      <h3 className="app-card-title mb-3">Raise an RFI</h3>
+    <form onSubmit={handleSubmit} className="rounded-2xl border border-hairline bg-surface-soft/80 p-5 shadow-card">
+      <div className="mb-3">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Clarification</p>
+        <h3 className="text-sm font-semibold tracking-tight text-ink mt-0.5">Raise an RFI</h3>
+      </div>
       <textarea
         aria-label="RFI question"
         value={question}
@@ -113,14 +119,14 @@ function NewRfiForm({
         placeholder="What needs clarification?"
         rows={2}
         maxLength={1000}
-        className="w-full text-sm rounded-md border border-hairline px-3 py-2 focus:outline-none focus:border-ink resize-none mb-3"
+        className="w-full text-xs sm:text-sm rounded-xl border border-hairline bg-canvas p-3 focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink resize-none mb-3 transition-all"
       />
       <div className="flex flex-wrap items-center gap-3">
         <select
           aria-label="Linked task"
           value={taskId}
           onChange={(e) => setTaskId(e.target.value)}
-          className="h-10 rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink"
+          className="h-9 rounded-xl border border-hairline bg-canvas px-3 text-xs sm:text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all shadow-2xs"
         >
           <option value="">No linked task</option>
           {tasks.map((t) => (
@@ -133,7 +139,7 @@ function NewRfiForm({
           aria-label="Source document"
           value={attachmentId}
           onChange={(e) => setAttachmentId(e.target.value)}
-          className="h-10 max-w-[220px] rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink"
+          className="h-9 max-w-[220px] rounded-xl border border-hairline bg-canvas px-3 text-xs sm:text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all shadow-2xs"
         >
           <option value="">No source document</option>
           {files.map((file) => (
@@ -151,7 +157,7 @@ function NewRfiForm({
           placeholder="Page"
           disabled={!attachmentId}
           title="Cited page (optional)"
-          className="h-10 w-20 rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink disabled:opacity-50"
+          className="h-9 w-20 rounded-xl border border-hairline bg-canvas px-3 text-xs sm:text-sm text-ink font-mono focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink disabled:opacity-50 transition-all"
         />
         <input
           aria-label="Response needed by"
@@ -159,10 +165,10 @@ function NewRfiForm({
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
           title="Response needed by (optional)"
-          className="h-10 rounded-md border border-hairline bg-canvas px-3 text-sm focus:outline-none focus:border-ink"
+          className="h-9 rounded-xl border border-hairline bg-canvas px-3 text-xs sm:text-sm text-ink font-mono focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
         />
-        <Button type="submit" variant="secondary" disabled={loading || !question.trim()}>
-          {loading ? "Submitting…" : "Submit"}
+        <Button type="submit" variant="primary" disabled={loading || !question.trim()} className="h-9 text-xs font-semibold shadow-2xs">
+          {loading ? "Submitting…" : "Submit RFI"}
         </Button>
       </div>
       <ErrorText>{error}</ErrorText>
@@ -197,60 +203,70 @@ function RfiCard({ rfi, canAnswer }: { rfi: RfiRow; canAnswer: boolean }) {
   }
 
   return (
-    <li className="border border-hairline rounded-lg p-4">
-      <div className="flex items-center justify-between mb-1">
-        <span className="app-card-title">{rfi.question}</span>
-        <span className={`text-xs font-medium ${STATUS_COLORS[rfi.status]}`}>{RFI_STATUS_LABELS[rfi.status]}</span>
+    <li className="rounded-2xl border border-hairline bg-canvas p-5 shadow-card hover:shadow-card-hover transition-all">
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <span className="text-sm font-semibold tracking-tight text-ink">{rfi.question}</span>
+        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border tracking-tight ${STATUS_BADGES[rfi.status]}`}>
+          {RFI_STATUS_LABELS[rfi.status]}
+        </span>
       </div>
-      <div className="flex flex-wrap gap-3 text-xs text-muted mb-2">
-        {rfi.source === "PROCORE" && <span className="text-muted-soft">From Procore</span>}
-        {rfi.task && <span>Task: {rfi.task.name}</span>}
+      <div className="flex flex-wrap items-center gap-2.5 text-xs text-muted mb-2 font-mono">
+        {rfi.source === "PROCORE" && (
+          <span className="font-sans px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 text-[10px] font-bold">
+            From Procore
+          </span>
+        )}
+        {rfi.task && <span className="font-sans font-medium text-ink">Task: {rfi.task.name}</span>}
         {rfi.attachment && sourceHref && (
           <button
             type="button"
             onClick={() => openPdfViewer(sourceHref, rfi.attachment!.fileName, "dashboard", {
               highlight: rfi.citationExcerpt,
             })}
-            className="hover:text-ink hover:underline"
+            className="btn-interactive font-sans font-medium text-ink hover:underline"
           >
-            From {rfi.attachment.fileName}
+            Doc: {rfi.attachment.fileName}
             {rfi.pageNumber ? ` · p.${rfi.pageNumber}` : ""}
           </button>
         )}
         {rfi.dueDate && (
-          <span className={isOverdue ? "text-error font-medium" : undefined}>
+          <span className={isOverdue ? "text-rose-600 dark:text-rose-400 font-bold" : undefined}>
             Due {formatDate(rfi.dueDate)}
-            {isOverdue ? " — overdue" : ""}
+            {isOverdue ? " (overdue)" : ""}
           </span>
         )}
         <span>Raised by {rfi.raisedBy.user.name}</span>
       </div>
       {rfi.citationExcerpt && (
-        <blockquote className="mb-2 border-l-2 border-hairline pl-3 text-xs leading-5 text-muted-soft">
-          {rfi.citationExcerpt}
+        <blockquote className="mb-2 border-l-2 border-hairline pl-3 text-xs leading-5 text-muted italic">
+          &ldquo;{rfi.citationExcerpt}&rdquo;
         </blockquote>
       )}
-      {rfi.answer && <p className="text-sm text-body mb-2">Answer: {rfi.answer}</p>}
+      {rfi.answer && (
+        <div className="rounded-xl border border-hairline bg-surface-soft/60 p-3 text-xs text-ink mb-2">
+          <span className="font-semibold text-ink">Answer:</span> {rfi.answer}
+        </div>
+      )}
       {canAnswer && rfi.status === "OPEN" && (
-        <div className="flex flex-wrap items-center gap-2 mt-2">
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-hairline">
           <input
             aria-label={`Answer RFI: ${rfi.question}`}
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
             placeholder="Type an answer…"
-            className="h-8 flex-1 min-w-[180px] rounded-md border border-hairline bg-canvas px-2 text-xs focus:outline-none focus:border-ink"
+            className="h-8 flex-1 min-w-[180px] rounded-lg border border-hairline bg-surface-soft px-2.5 text-xs text-ink focus:bg-canvas focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition-all"
           />
-          <Button variant="secondary" className="h-8 px-2 text-xs" onClick={handleAnswer} disabled={pending || !answer.trim()}>
+          <Button variant="secondary" className="h-8 px-3 text-xs font-semibold shadow-2xs" onClick={handleAnswer} disabled={pending || !answer.trim()}>
             Answer
           </Button>
-          <Button variant="text" className="h-8 px-2 text-xs text-muted" onClick={handleClose} disabled={pending}>
+          <Button variant="ghost" className="h-8 px-2 text-xs text-muted hover:text-ink" onClick={handleClose} disabled={pending}>
             Close
           </Button>
         </div>
       )}
       {canAnswer && rfi.status === "ANSWERED" && (
-        <Button variant="text" className="h-7 px-2 text-xs text-muted mt-2" onClick={handleClose} disabled={pending}>
-          Close
+        <Button variant="ghost" className="h-7 px-2 text-xs text-muted hover:text-ink mt-2" onClick={handleClose} disabled={pending}>
+          Close RFI
         </Button>
       )}
       <ErrorText>{error}</ErrorText>
