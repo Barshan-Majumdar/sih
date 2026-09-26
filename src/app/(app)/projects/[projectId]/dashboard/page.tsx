@@ -7,7 +7,7 @@ import { PrrTable } from "@/components/PrrTable";
 import { SCurveChart } from "@/components/SCurveChart";
 import { Card } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/StatusBadge";
-import { formatDate, percentComplete } from "@/lib/utils";
+import { formatDate, percentComplete, calculateMeanProgress } from "@/lib/utils";
 import { computePpcTrend, computePrrByMember, computeSCurve } from "@/lib/analytics";
 import { ProjectPageHeader } from "@/components/PageHeader";
 import {
@@ -49,7 +49,7 @@ export default async function ProjectDashboardPage({
     }),
     prisma.task.findMany({
       where: { projectId },
-      select: { endDate: true, status: true, updatedAt: true },
+      select: { endDate: true, status: true, progress: true, updatedAt: true },
     }),
     prisma.task.findMany({
       where: { projectId },
@@ -58,7 +58,7 @@ export default async function ProjectDashboardPage({
     }),
     prisma.project.findMany({
       where: { organizationId: project.organizationId, isArchived: false },
-      include: { tasks: { select: { status: true } } },
+      include: { tasks: { select: { progress: true, status: true } } },
       orderBy: { name: "asc" },
     }),
   ]);
@@ -149,9 +149,7 @@ export default async function ProjectDashboardPage({
         <div className="flex flex-wrap items-center gap-2">
           {orgProjects.map((p) => {
             const isCurrent = p.id === projectId;
-            const pTotal = p.tasks.length;
-            const pDone = p.tasks.filter((t) => t.status === "DONE").length;
-            const pCompletion = percentComplete(pTotal, pDone);
+            const pCompletion = calculateMeanProgress(p.tasks);
 
             return (
               <Link
@@ -180,7 +178,7 @@ export default async function ProjectDashboardPage({
       {/* KPI Stats */}
       <DashboardStats
         totalTasks={totalTasks}
-        percentComplete={percentComplete(totalTasks, doneTasks)}
+        percentComplete={calculateMeanProgress(allTasks)}
         openRoadblocks={openRoadblocks}
       />
 

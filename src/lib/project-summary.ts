@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { percentComplete } from "@/lib/utils";
+import { calculateMeanProgress } from "@/lib/utils";
 import { computePpcTrend } from "@/lib/analytics";
 import { computeProjectVariance, computeHealthScore } from "@/lib/portfolio-analytics";
 
@@ -9,9 +9,11 @@ import { computeProjectVariance, computeHealthScore } from "@/lib/portfolio-anal
  * composite health score. Shared by the Executive Dashboard and Timeline.
  */
 export async function loadProjectSummary(projectId: string) {
-  const [totalTasks, doneTasks, commitments, latestBaseline, openRoadblocks] = await Promise.all([
-    prisma.task.count({ where: { projectId } }),
-    prisma.task.count({ where: { projectId, status: "DONE" } }),
+  const [tasks, commitments, latestBaseline, openRoadblocks] = await Promise.all([
+    prisma.task.findMany({
+      where: { projectId },
+      select: { progress: true, status: true },
+    }),
     prisma.weeklyCommitment.findMany({
       where: { removedAt: null, task: { projectId } },
       select: { weekStartDate: true, status: true },
@@ -44,9 +46,12 @@ export async function loadProjectSummary(projectId: string) {
 
   const healthScore = computeHealthScore({ ppc: latestPpc, prr, varianceDays: variance, openRoadblocks });
 
+  const totalTasks = tasks.length;
+  const completion = calculateMeanProgress(tasks);
+
   return {
     totalTasks,
-    percentComplete: percentComplete(totalTasks, doneTasks),
+    percentComplete: completion,
     openRoadblocks,
     ppc: latestPpc,
     prr,

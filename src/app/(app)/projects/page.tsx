@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireActiveOrganization } from "@/lib/session";
 import { Card } from "@/components/ui/Card";
 import { AppPageHeader } from "@/components/PageHeader";
-import { formatDate, percentComplete } from "@/lib/utils";
+import { formatDate, calculateMeanProgress } from "@/lib/utils";
 
 export default async function ProjectsPage({
   searchParams,
@@ -20,7 +20,7 @@ export default async function ProjectsPage({
       isArchived: showArchived,
       members: { some: { userId: user.id } },
     },
-    include: { tasks: { select: { status: true } } },
+    include: { tasks: { select: { progress: true, status: true } } },
     orderBy: { createdAt: "desc" },
   });
 
@@ -83,8 +83,7 @@ export default async function ProjectsPage({
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {projects.map((project) => {
             const total = project.tasks.length;
-            const done = project.tasks.filter((t) => t.status === "DONE").length;
-            const completion = percentComplete(total, done);
+            const completion = calculateMeanProgress(project.tasks);
             return (
               <div key={project.id} className="group relative flex h-full flex-col">
                 <Link href={`/dashboard/${project.id}`} className="block focus-visible:outline-none flex-1">

@@ -23,6 +23,21 @@ export function percentComplete(total: number, done: number): number {
   return Math.round((done / total) * 100);
 }
 
+/**
+ * Calculates project completion percentage based on the mean of all task percentages.
+ * If a task is marked DONE, its progress is treated as 100%.
+ */
+export function calculateMeanProgress(
+  tasks: Array<{ progress?: number | null; status?: string }>
+): number {
+  if (!tasks || tasks.length === 0) return 0;
+  const sum = tasks.reduce((acc, t) => {
+    const val = t.status === "DONE" ? 100 : Math.max(0, Math.min(100, t.progress ?? 0));
+    return acc + val;
+  }, 0);
+  return Math.round(sum / tasks.length);
+}
+
 export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
   NOT_STARTED: "Not Started",
   IN_PROGRESS: "In Progress",
