@@ -87,7 +87,7 @@ export default async function ProjectsPage({
             return (
               <div key={project.id} className="group relative flex h-full flex-col">
                 <Link href={`/dashboard/${project.id}`} className="block focus-visible:outline-none flex-1">
-                  <Card className="flex h-full min-h-48 flex-col p-5 transition-all duration-200 ease-out group-hover:-translate-y-1 group-hover:border-muted-soft/60 group-hover:shadow-[0_12px_28px_-6px_rgba(15,23,42,0.08)] group-focus-visible:ring-2 group-focus-visible:ring-brand-accent">
+                  <Card className="flex h-full min-h-48 flex-col p-5 transition-all duration-200 ease-out group-hover:-translate-y-1 group-hover:border-hairline-strong group-hover:shadow-card-hover group-focus-visible:ring-2 group-focus-visible:ring-brand-accent">
                     <div className="mb-4 flex items-start justify-between gap-3">
                       <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink text-sm font-bold text-canvas shadow-[0_2px_8px_rgba(15,23,42,0.14)] transition-transform group-hover:scale-105">
                         {project.name.charAt(0).toUpperCase()}

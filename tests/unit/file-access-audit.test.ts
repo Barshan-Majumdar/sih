@@ -6,9 +6,9 @@ import {
 
 describe("file access auditing", () => {
   it("classifies inline views and explicit downloads", () => {
-    expect(fileAccessAction("https://agira.test/api/files/report.pdf")).toBe("VIEW");
+    expect(fileAccessAction("https://infratrack.test/api/files/report.pdf")).toBe("VIEW");
     expect(
-      fileAccessAction("https://agira.test/api/files/report.pdf?download=1")
+      fileAccessAction("https://infratrack.test/api/files/report.pdf?download=1")
     ).toBe("DOWNLOAD");
   });
 

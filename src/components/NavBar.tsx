@@ -1,31 +1,23 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { AppNavLinks } from "@/components/AppNavLinks";
 import { OrgSwitcher } from "@/components/OrgSwitcher";
 import { UserMenu } from "@/components/UserMenu";
-import { AgiraMark } from "@/components/landing/AgiraMark";
-import { PanelLeft, Sparkles } from "lucide-react";
+import { InfraTrackMark } from "@/components/landing/InfraTrackMark";
+import { PanelLeft } from "lucide-react";
 
 export function NavBar() {
   const pathname = usePathname();
-  const router = useRouter();
 
   if (pathname === "/agent" || pathname.startsWith("/agent/")) {
     return null;
   }
 
   const handleToggleSidebar = () => {
+    window.dispatchEvent(new CustomEvent("infratrack:toggle-sidebar"));
     window.dispatchEvent(new CustomEvent("agira:toggle-sidebar"));
-  };
-
-  const handleToggleAssistant = () => {
-    const projectMatch = pathname.match(
-      /^\/(?:dashboard|gantt|gantt_chart|tasks|field-intake|review-queue|plan-vs-actual|lookahead|weekly-plan|pull-planning|roadblocks|impacts|files|drawings|rfis|submittals|baselines|activity|members)\/([^/]+)/
-    );
-    const pid = projectMatch?.[1];
-    router.push(pid ? `/agent/${pid}` : "/agent");
   };
 
   return (
@@ -46,11 +38,11 @@ export function NavBar() {
         <Link
           href="/dashboard"
           className="group inline-flex min-w-0 shrink-0 items-center gap-2.5 transition-opacity hover:opacity-85"
-          aria-label="Agira home"
+          aria-label="InfraTrack home"
         >
-          <AgiraMark size={22} />
+          <InfraTrackMark size={22} />
           <span className="font-display text-sm font-bold tracking-tight text-ink sm:inline-block">
-            Agira
+            InfraTrack
           </span>
         </Link>
 
@@ -62,20 +54,6 @@ export function NavBar() {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Ask AI Copilot Button */}
-        <button
-          type="button"
-          onClick={handleToggleAssistant}
-          className="btn-interactive hidden items-center gap-1.5 rounded-xl border border-hairline bg-surface-soft/90 px-3 py-1.5 text-xs font-semibold text-ink shadow-2xs transition-all hover:border-brand-accent/40 hover:bg-surface-soft sm:inline-flex"
-          title="Open AI Schedule Copilot (Cmd+K)"
-        >
-          <Sparkles className="h-3.5 w-3.5 text-brand-accent" />
-          <span>Ask Agira AI</span>
-          <kbd className="ml-1 rounded border border-hairline bg-canvas px-1.5 py-0.2 text-[10px] font-mono text-muted">
-            ⌘K
-          </kbd>
-        </button>
-
         <OrgSwitcher />
         <span className="hidden h-6 w-px bg-hairline-soft sm:block" aria-hidden />
         <UserMenu />

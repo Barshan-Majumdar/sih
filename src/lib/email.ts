@@ -35,7 +35,7 @@ function getTransporter(): Transporter {
 
 /** Falls back to the authenticated mailbox, which Gmail requires anyway. */
 function senderAddress(): string {
-  return env.EMAIL_FROM?.trim() ? env.EMAIL_FROM : `Agira <${env.GOOGLE_USER}>`;
+  return env.EMAIL_FROM?.trim() ? env.EMAIL_FROM : `InfraTrack <${env.GOOGLE_USER}>`;
 }
 
 /** Shared shell so every notification renders with consistent branding. */
@@ -44,11 +44,11 @@ export function renderEmailHtml(heading: string, bodyLines: string[], ctaUrl?: s
     .map((line) => `<p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:#384654;">${line}</p>`)
     .join("");
   const cta = ctaUrl
-    ? `<a href="${ctaUrl}" style="display:inline-block;margin-top:8px;padding:10px 20px;background:#101720;color:#ffffff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;">${ctaLabel ?? "Open Agira"}</a>`
+    ? `<a href="${ctaUrl}" style="display:inline-block;margin-top:8px;padding:10px 20px;background:#101720;color:#ffffff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:600;">${ctaLabel ?? "Open InfraTrack"}</a>`
     : "";
   return `<!doctype html><html><body style="margin:0;padding:24px;background:#f8f9fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #dde3ea;border-radius:12px;padding:32px;">
-    <p style="margin:0 0 20px;font-size:16px;font-weight:600;color:#101720;">Agira</p>
+    <p style="margin:0 0 20px;font-size:16px;font-weight:600;color:#101720;">InfraTrack</p>
     <h1 style="margin:0 0 16px;font-size:20px;font-weight:600;color:#101720;letter-spacing:-0.02em;">${heading}</h1>
     ${paragraphs}
     ${cta}

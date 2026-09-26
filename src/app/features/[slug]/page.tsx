@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return {};
 
   return {
-    title: `${data.title} | Agira`,
+    title: `${data.title} | InfraTrack`,
     description: data.description,
   };
 }

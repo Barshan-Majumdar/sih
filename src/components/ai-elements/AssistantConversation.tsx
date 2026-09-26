@@ -49,6 +49,9 @@ function AssistantRichText({ text, isAnimating }: { text: string; isAnimating: b
           const href = anchor.getAttribute("href");
           if (href?.startsWith("/")) {
             window.dispatchEvent(
+              new CustomEvent("infratrack:toggle-assistant", { detail: { open: false } })
+            );
+            window.dispatchEvent(
               new CustomEvent("agira:toggle-assistant", { detail: { open: false } })
             );
           }

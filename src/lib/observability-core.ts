@@ -30,7 +30,7 @@ function emit(level: LogLevel, event: string, metadata: LogMetadata = {}) {
   const payload = {
     timestamp: new Date().toISOString(),
     severity: level.toUpperCase(),
-    service: "agira-web",
+    service: "infratrack-web",
     environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "unknown",
     release: process.env.VERCEL_GIT_COMMIT_SHA,
     event,

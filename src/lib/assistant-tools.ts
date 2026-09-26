@@ -70,7 +70,7 @@ const projectInput = {
   projectId: z
     .string()
     .optional()
-    .describe("The exact Agira project ref from the portfolio context, such as project-1. Omit inside a project conversation."),
+    .describe("The exact InfraTrack project ref from the portfolio context, such as project-1. Omit inside a project conversation."),
 };
 
 async function resolveProject(context: AssistantToolContext, requestedProjectId?: string) {
@@ -174,7 +174,7 @@ export function createAssistantTools(context: AssistantToolContext) {
 
     searchProjectTasks: tool({
       description:
-        "Find Agira tasks by natural-language name and return close suggestions when there is no direct match. Task IDs are internal and must never be mentioned to the user.",
+        "Find InfraTrack tasks by natural-language name and return close suggestions when there is no direct match. Task IDs are internal and must never be mentioned to the user.",
       inputSchema: z.object({
         ...projectInput,
         query: z.string().trim().max(100).optional().describe("A task name or partial task name."),

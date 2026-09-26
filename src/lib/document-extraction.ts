@@ -264,7 +264,7 @@ export async function extractDocumentText(
       status: "FAILED",
       text: null,
       pageCount: null,
-      error: "Agira could not extract text from this PDF.",
+      error: "InfraTrack could not extract text from this PDF.",
       chunks: [],
     };
   }
@@ -410,7 +410,7 @@ export async function processProjectDocument(
         data: {
           extractionStatus: "FAILED",
           extractedText: null,
-          extractionError: "Agira could not access, extract, or OCR this file.",
+          extractionError: "InfraTrack could not access, extract, or OCR this file.",
           pageCount: null,
           processedAt: new Date(),
         },

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { AgiraHero } from "@/components/landing/AgiraHero";
-import { AgiraMark } from "@/components/landing/AgiraMark";
+import { InfraTrackHero } from "@/components/landing/InfraTrackHero";
+import { InfraTrackMark } from "@/components/landing/InfraTrackMark";
 import { LandingMegaNav } from "@/components/LandingMegaNav";
 import { MarketingFooter } from "@/components/MarketingFooter";
 import { LandingProductShowcase } from "@/components/LandingProductShowcase";
@@ -18,7 +18,7 @@ export default async function LandingPage() {
   return (
     <div className="bg-canvas text-ink">
       <LandingMegaNav isSignedIn={isSignedIn} />
-      <AgiraHero isSignedIn={isSignedIn} />
+      <InfraTrackHero isSignedIn={isSignedIn} />
       <ProofStrip />
       <OperatingLoopBand />
       <CitedReversibleBand />
@@ -112,7 +112,7 @@ function OperatingLoopBand() {
             </h2>
           </div>
           <p className="max-w-2xl text-base leading-7 text-on-dark-soft lg:justify-self-end">
-            The master schedule does not stop at the update meeting. Agira keeps it live between the office, the
+            The master schedule does not stop at the update meeting. InfraTrack keeps it live between the office, the
             field, and the next decision.
           </p>
         </div>
@@ -229,9 +229,9 @@ function ProposalPreview() {
     <div className="overflow-hidden rounded-lg border border-hairline bg-canvas shadow-[0_24px_60px_rgba(16,23,32,0.12)]">
       <div className="flex min-h-14 items-center justify-between bg-surface-dark px-5 text-on-dark">
         <div className="flex items-center gap-3">
-          <AgiraMark size={28} />
+          <InfraTrackMark size={28} />
           <div>
-            <p className="text-xs font-semibold">Agira Agent</p>
+            <p className="text-xs font-semibold">InfraTrack Agent</p>
             <p className="text-[9px] text-on-dark-soft">Harborview Residences - Building A</p>
           </div>
         </div>
@@ -309,7 +309,7 @@ function ShowcaseBand() {
           </div>
           <div className="border-l-2 border-brand-accent pl-5">
             <p className="text-base leading-7 text-body">
-              Agira links schedule logic, short-interval planning, weekly commitments, project controls, and
+              InfraTrack links schedule logic, short-interval planning, weekly commitments, project controls, and
               portfolio visibility. Every team works from the same live project truth.
             </p>
           </div>
@@ -386,7 +386,7 @@ function RolesBand() {
             </h2>
           </div>
           <p className="max-w-2xl text-base leading-7 text-body lg:justify-self-end">
-            Agira keeps one connected data model underneath purpose-built workflows. Everyone sees what they need,
+            InfraTrack keeps one connected data model underneath purpose-built workflows. Everyone sees what they need,
             and the project keeps one version of the truth.
           </p>
         </div>
@@ -445,7 +445,7 @@ function IntegrationsBand() {
             </h2>
           </div>
           <p className="max-w-2xl text-base leading-7 text-body lg:justify-self-end">
-            Agira connects to the document and project systems teams already use, so drawings and field records stay
+            InfraTrack connects to the document and project systems teams already use, so drawings and field records stay
             linked to the plan they affect.
           </p>
         </div>

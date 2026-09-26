@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { AgiraMark } from "@/components/landing/AgiraMark";
+import { InfraTrackMark } from "@/components/landing/InfraTrackMark";
 
 type AuthShellProps = {
   title: string;
@@ -23,9 +23,9 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
           sizes="50vw"
         />
         <div className="absolute inset-0 flex flex-col justify-between p-12 xl:p-16">
-          <Link href="/" className="inline-flex items-center gap-2.5" aria-label="Agira home">
-            <AgiraMark size={30} />
-            <span className="font-display text-lg tracking-[-0.02em] text-on-dark">Agira</span>
+          <Link href="/" className="inline-flex items-center gap-2.5" aria-label="InfraTrack home">
+            <InfraTrackMark size={30} />
+            <span className="font-display text-lg tracking-[-0.02em] text-on-dark">InfraTrack</span>
           </Link>
           <p className="max-w-sm text-[15px] leading-relaxed text-on-dark-soft">
             One place for the schedule, the field, and a project-aware Agent that proposes changes
@@ -43,8 +43,8 @@ export function AuthShell({ title, description, children, footer }: AuthShellPro
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-90">
             <Link href="/" className="mb-8 inline-flex items-center gap-2.5 lg:hidden">
-              <AgiraMark size={28} />
-              <span className="font-display text-lg tracking-[-0.02em] text-ink">Agira</span>
+              <InfraTrackMark size={28} />
+              <span className="font-display text-lg tracking-[-0.02em] text-ink">InfraTrack</span>
             </Link>
 
             <div className="mb-7">

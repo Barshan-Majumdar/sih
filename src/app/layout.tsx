@@ -3,11 +3,19 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
 import "./globals.css";
 
-/* Clear any legacy html-level theme so marketing pages never inherit app dark mode. */
+/* Restore saved theme early to prevent flash of wrong theme or scrollbar */
 const themeInitializer = `
 try {
-  delete document.documentElement.dataset.appTheme;
-  document.documentElement.style.colorScheme = "light";
+  var stored = localStorage.getItem("infratrack:theme") || localStorage.getItem("agira:theme");
+  var path = window.location.pathname;
+  var isApp = path === "/" || path.startsWith("/dashboard") || path.startsWith("/projects") || path.startsWith("/tasks") || path.startsWith("/gantt") || path.startsWith("/agent") || path.startsWith("/files") || path.startsWith("/weekly-plan") || path.startsWith("/review-queue") || path.startsWith("/plan-vs-actual") || path.startsWith("/lookahead") || path.startsWith("/pull-planning") || path.startsWith("/roadblocks") || path.startsWith("/impacts") || path.startsWith("/drawings") || path.startsWith("/rfis") || path.startsWith("/submittals") || path.startsWith("/baselines") || path.startsWith("/activity") || path.startsWith("/members") || path.startsWith("/settings") || path.startsWith("/timeline") || path.startsWith("/trade-performance") || path.startsWith("/integrations") || path.startsWith("/plan");
+  if (isApp && stored === "dark") {
+    document.documentElement.dataset.appTheme = "dark";
+    document.documentElement.style.colorScheme = "dark";
+  } else {
+    delete document.documentElement.dataset.appTheme;
+    document.documentElement.style.colorScheme = "light";
+  }
 } catch (_) {}
 `;
 
@@ -22,13 +30,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://agira.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://infratrack.app"),
   title: {
-    default: "Agira - Autonomous Construction Operations OS",
-    template: "%s | Agira",
+    default: "InfraTrack - Autonomous Construction Operations OS",
+    template: "%s | InfraTrack",
   },
   description:
-    "Agira runs the schedule, the field, and the project documents as one cited, reviewed, and reversible control loop. Built for project managers, superintendents, and trade partners.",
+    "InfraTrack runs the schedule, the field, and the project documents as one cited, reviewed, and reversible control loop. Built for project managers, superintendents, and trade partners.",
   keywords: [
     "construction operations",
     "master schedule",
@@ -39,19 +47,19 @@ export const metadata: Metadata = {
     "construction AI",
     "field tracking",
   ],
-  authors: [{ name: "Agira Systems" }],
-  creator: "Agira",
+  authors: [{ name: "InfraTrack Systems" }],
+  creator: "InfraTrack",
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "Agira",
-    title: "Agira - Autonomous Construction Operations OS",
+    siteName: "InfraTrack",
+    title: "InfraTrack - Autonomous Construction Operations OS",
     description:
       "One control room for the schedule, the field, and the project documents. Every AI change is cited, reviewed, and reversible.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Agira - Construction Operations OS",
+    title: "InfraTrack - Construction Operations OS",
     description: "Every commitment, cited and reversible. Autonomous construction operations control.",
   },
   robots: {
@@ -60,7 +68,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: "Agira",
+    title: "InfraTrack",
     statusBarStyle: "default",
   },
   icons: {
@@ -77,7 +85,7 @@ export const viewport: Viewport = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "Agira",
+  name: "InfraTrack",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   description:
@@ -101,7 +109,6 @@ export default function RootLayout({
       <html
         lang="en"
         className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
-        style={{ colorScheme: "light" }}
         suppressHydrationWarning
       >
         <head suppressHydrationWarning>

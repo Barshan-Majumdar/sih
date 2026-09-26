@@ -61,19 +61,19 @@ export default async function ExecutiveDashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="group relative overflow-hidden p-5 transition-all hover:border-hairline hover:shadow-[0_8px_20px_-4px_rgba(15,23,42,0.06)]">
+              <Card className="group relative overflow-hidden p-5 transition-all hover:border-hairline hover:shadow-card-hover">
                 <span className="absolute inset-x-0 top-0 h-1 bg-ink" />
                 <p className="app-metric-label">Active projects</p>
                 <p className="app-metric-value">{projects.length}</p>
                 <p className="app-metric-helper">Currently in delivery</p>
               </Card>
-              <Card className="group relative overflow-hidden p-5 transition-all hover:border-brand-accent/30 hover:shadow-[0_8px_20px_-4px_rgba(37,99,235,0.08)]">
+              <Card className="group relative overflow-hidden p-5 transition-all hover:border-brand-accent/40 hover:shadow-card-hover">
                 <span className="absolute inset-x-0 top-0 h-1 bg-brand-accent" />
                 <p className="app-metric-label">Total tasks</p>
                 <p className="app-metric-value">{orgTotals.totalTasks}</p>
                 <p className="app-metric-helper">Across active schedules</p>
               </Card>
-              <Card className="group relative overflow-hidden p-5 transition-all hover:border-hairline hover:shadow-[0_8px_20px_-4px_rgba(15,23,42,0.06)]">
+              <Card className="group relative overflow-hidden p-5 transition-all hover:border-hairline hover:shadow-card-hover">
                 <span className={`absolute inset-x-0 top-0 h-1 ${orgTotals.openRoadblocks > 0 ? "bg-error" : "bg-success"}`} />
                 <p className="app-metric-label">Open roadblocks</p>
                 <p className={`app-metric-value ${orgTotals.openRoadblocks > 0 ? "text-error" : "text-success"}`}>
@@ -83,7 +83,7 @@ export default async function ExecutiveDashboardPage() {
                   {orgTotals.openRoadblocks > 0 ? "Needs owner attention" : "No active roadblocks"}
                 </p>
               </Card>
-              <Card className="group relative overflow-hidden p-5 transition-all hover:border-success/30 hover:shadow-[0_8px_20px_-4px_rgba(16,185,129,0.08)]">
+              <Card className="group relative overflow-hidden p-5 transition-all hover:border-success/40 hover:shadow-card-hover">
                 <span className="absolute inset-x-0 top-0 h-1 bg-success" />
                 <p className="app-metric-label">Average health</p>
                 <p className={`app-metric-value ${healthColor(avgHealthScore)}`}>{avgHealthScore ?? "-"}</p>

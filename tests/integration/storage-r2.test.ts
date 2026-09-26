@@ -12,7 +12,7 @@ import {
  * A hardcoded range silently couples the assertion to the length of the brand
  * name, which is exactly how a rename broke this test once already.
  */
-const FIRST_WORD = "Agira";
+const FIRST_WORD = "InfraTrack";
 const PAYLOAD = `${FIRST_WORD} private storage`;
 const LAST_BYTE = Buffer.byteLength(FIRST_WORD) - 1;
 

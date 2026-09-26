@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { MarketingFooter } from "@/components/MarketingFooter";
 import { LandingMegaNav } from "@/components/LandingMegaNav";
-import { AgiraMark } from "@/components/landing/AgiraMark";
+import { InfraTrackMark } from "@/components/landing/InfraTrackMark";
 import {
   featurePages,
   solutionPages,
@@ -49,7 +49,7 @@ function Hero({ data, isSignedIn }: { data: MarketingPageData; isSignedIn: boole
                 href={isSignedIn ? "/projects" : "/sign-up"}
                 className="inline-flex h-12 items-center justify-center rounded-md bg-on-dark px-6 text-sm font-bold text-ink transition-colors hover:bg-on-dark/90"
               >
-                {isSignedIn ? "Open Agira" : "Start building"}
+                {isSignedIn ? "Open InfraTrack" : "Start building"}
                 <ArrowIcon />
               </Link>
               <Link
@@ -631,7 +631,7 @@ function AiVisual() {
           Which activities put the June 30 milestone at risk?
         </div>
         <div className="mt-4 flex gap-3">
-          <AgiraMark size={28} />
+          <InfraTrackMark size={28} />
           <div>
             <p className="text-[9px] leading-4 text-body">
               Three activities currently affect the milestone. The highest exposure is <strong>Level 4 MEP rough-in</strong>,
@@ -699,8 +699,8 @@ function IntegrationVisual({ title }: { title: string }) {
       <VisualHeading label="Connected project systems" meta="Sync active" />
       <div className="flex min-h-52 items-center justify-center gap-3 rounded-md border border-hairline bg-canvas p-4 sm:gap-6">
         <div className="flex h-24 w-24 flex-col items-center justify-center rounded-lg border border-hairline bg-surface-soft">
-          <AgiraMark size={36} />
-          <span className="mt-2 text-[8px] font-semibold">Agira</span>
+          <InfraTrackMark size={36} />
+          <span className="mt-2 text-[8px] font-semibold">InfraTrack</span>
         </div>
         <div className="flex flex-1 items-center">
           <span className="h-px flex-1 bg-hairline" />

@@ -25,13 +25,19 @@ export function GlobalAssistant() {
       }
     };
 
+    window.addEventListener("infratrack:toggle-assistant", handleToggle);
     window.addEventListener("agira:toggle-assistant", handleToggle);
+    window.addEventListener("infratrack:open-project-file-agent", handleOpenProjectFile);
     window.addEventListener("agira:open-project-file-agent", handleOpenProjectFile);
+    window.addEventListener("infratrack:ask-project-file", handleOpenProjectFile);
     window.addEventListener("agira:ask-project-file", handleOpenProjectFile);
 
     return () => {
+      window.removeEventListener("infratrack:toggle-assistant", handleToggle);
       window.removeEventListener("agira:toggle-assistant", handleToggle);
+      window.removeEventListener("infratrack:open-project-file-agent", handleOpenProjectFile);
       window.removeEventListener("agira:open-project-file-agent", handleOpenProjectFile);
+      window.removeEventListener("infratrack:ask-project-file", handleOpenProjectFile);
       window.removeEventListener("agira:ask-project-file", handleOpenProjectFile);
     };
   }, [router]);

@@ -4,7 +4,7 @@ type AgiraHeroProps = {
   isSignedIn: boolean;
 };
 
-export function AgiraHero({ isSignedIn }: AgiraHeroProps) {
+export function InfraTrackHero({ isSignedIn }: AgiraHeroProps) {
   return (
     <section id="hero" className="relative overflow-hidden border-b border-hairline bg-app-bg">
       <div className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-[520px] w-[850px] -translate-x-1/2 rounded-full bg-brand-accent/5 blur-[130px]" aria-hidden />
@@ -50,6 +50,9 @@ export function AgiraHero({ isSignedIn }: AgiraHeroProps) {
     </section>
   );
 }
+
+export const AgiraHero = InfraTrackHero;
+
 
 const COMMITMENTS = [
   { task: "Rough electrical wiring - Level 2", owner: "Tom Electric", initials: "TE", status: "On track", tone: "success" },

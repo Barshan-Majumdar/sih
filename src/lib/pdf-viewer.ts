@@ -12,7 +12,8 @@ export type PdfViewerRequest = PdfViewerDocument & {
   placement: PdfViewerPlacement;
 };
 
-export const PDF_VIEWER_EVENT = "agira:open-pdf-viewer";
+export const PDF_VIEWER_EVENT = "infratrack:open-pdf-viewer";
+export const LEGACY_PDF_VIEWER_EVENT = "agira:open-pdf-viewer";
 
 const COMMON_CITATION_WORDS = new Set([
   "about", "after", "before", "could", "document", "from", "have", "into", "page",
@@ -90,9 +91,11 @@ export function openPdfViewer(
   placement: PdfViewerPlacement,
   options?: { page?: number; pageCount?: number | null; highlight?: string | null }
 ) {
+  const detail = { ...pdfViewerDocument(url, title, options), placement };
   window.dispatchEvent(
-    new CustomEvent<PdfViewerRequest>(PDF_VIEWER_EVENT, {
-      detail: { ...pdfViewerDocument(url, title, options), placement },
-    })
+    new CustomEvent<PdfViewerRequest>(PDF_VIEWER_EVENT, { detail })
+  );
+  window.dispatchEvent(
+    new CustomEvent<PdfViewerRequest>(LEGACY_PDF_VIEWER_EVENT, { detail })
   );
 }

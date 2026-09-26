@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AgiraMark } from "@/components/landing/AgiraMark";
+import { InfraTrackMark } from "@/components/landing/InfraTrackMark";
 
 type ViewId = "schedule" | "lookahead" | "weekly" | "portfolio";
 
@@ -25,7 +25,7 @@ export function LandingProductShowcase() {
   return (
     <div className="overflow-hidden rounded-2xl border border-hairline/90 bg-canvas shadow-[0_28px_70px_rgba(15,23,42,0.1)] ring-1 ring-hairline-soft/80">
       <div className="flex min-h-14 items-center gap-3 bg-surface-dark px-4 text-on-dark sm:px-5">
-        <AgiraMark size={28} />
+        <InfraTrackMark size={28} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-semibold sm:text-sm tracking-tight">Riverside Apartments - Phase 1</p>
           <p className="hidden text-[10px] text-on-dark-soft sm:block">Live project workspace</p>

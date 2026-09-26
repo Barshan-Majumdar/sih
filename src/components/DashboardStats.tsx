@@ -24,7 +24,7 @@ export function DashboardStats({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <Card className="group relative overflow-hidden p-5 transition-all hover:border-hairline hover:shadow-[0_8px_20px_-4px_rgba(15,23,42,0.06)]">
+      <Card className="group relative overflow-hidden p-5 transition-all hover:border-hairline hover:shadow-card-hover">
         <span className="absolute inset-x-0 top-0 h-1 bg-ink" />
         <div className="flex items-center justify-between">
           <p className="app-metric-label">Total tasks</p>
@@ -36,7 +36,7 @@ export function DashboardStats({
         <p className="app-metric-helper">In the master schedule</p>
       </Card>
 
-      <Card className="group relative overflow-hidden p-5 transition-all hover:border-brand-accent/30 hover:shadow-[0_8px_20px_-4px_rgba(37,99,235,0.08)]">
+      <Card className="group relative overflow-hidden p-5 transition-all hover:border-brand-accent/40 hover:shadow-card-hover">
         <span className="absolute inset-x-0 top-0 h-1 bg-brand-accent" />
         <div className="flex items-center justify-between">
           <p className="app-metric-label">Schedule complete</p>
@@ -50,7 +50,7 @@ export function DashboardStats({
         </div>
       </Card>
 
-      <Card className="group relative overflow-hidden p-5 transition-all hover:border-hairline hover:shadow-[0_8px_20px_-4px_rgba(15,23,42,0.06)]">
+      <Card className="group relative overflow-hidden p-5 transition-all hover:border-hairline hover:shadow-card-hover">
         <span className={`absolute inset-x-0 top-0 h-1 ${openRoadblocks > 0 ? "bg-error" : "bg-success"}`} />
         <div className="flex items-center justify-between">
           <p className="app-metric-label">Open roadblocks</p>

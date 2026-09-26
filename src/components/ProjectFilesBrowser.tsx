@@ -152,13 +152,15 @@ function SourceAction({ file }: { file: ProjectFileRecord }) {
     return (
       <button
         type="button"
-        onClick={() =>
+        onClick={() => {
+          const detail = { conversationId: file.conversationId };
           window.dispatchEvent(
-            new CustomEvent("agira:open-assistant-conversation", {
-              detail: { conversationId: file.conversationId },
-            })
-          )
-        }
+            new CustomEvent("infratrack:open-assistant-conversation", { detail })
+          );
+          window.dispatchEvent(
+            new CustomEvent("agira:open-assistant-conversation", { detail })
+          );
+        }}
         className="inline-flex items-center gap-1.5 text-xs font-medium text-body transition-colors hover:text-ink"
       >
         <AgentIcon size={14} />

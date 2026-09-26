@@ -5,7 +5,7 @@ import { MarketingFooter } from "@/components/MarketingFooter";
 import { getCurrentSession } from "@/lib/session";
 
 export const metadata: Metadata = {
-  title: "Pricing | Agira",
+  title: "Pricing | InfraTrack",
   description: "Simple construction planning software pricing with unlimited project collaborators.",
 };
 
@@ -29,7 +29,7 @@ const TIERS = [
     description: "For growing contractors connecting every active project.",
     features: ["Unlimited active projects", "Everything in Free", "Portfolio timeline and dashboards", "Agent", "Email notifications"],
     cta: "Contact us",
-    ctaHref: "mailto:sales@agira.dev",
+    ctaHref: "mailto:sales@infratrack.dev",
     featured: true,
   },
   {
@@ -40,7 +40,7 @@ const TIERS = [
     description: "For organizations building a repeatable planning standard.",
     features: ["Everything in Core", "Python Retrieval and OCR engines", "Advanced portfolio analytics", "Priority support", "Early feature access"],
     cta: "Contact us",
-    ctaHref: "mailto:sales@agira.dev",
+    ctaHref: "mailto:sales@infratrack.dev",
     featured: false,
   },
 ] as const;
@@ -58,7 +58,7 @@ const COMPARISON = [
 
 const FAQS = [
   ["Do trade partners need paid seats?", "No. Every plan includes unlimited project collaborators, so trade partners and field participants can contribute without increasing your bill."],
-  ["Is pricing really per organization?", "Yes. Core and Pro are priced once per Agira organization, not per user or per project."],
+  ["Is pricing really per organization?", "Yes. Core and Pro are priced once per InfraTrack organization, not per user or per project."],
   ["Can we begin with one live project?", "Yes. The Free plan is designed for exactly that. Start with real work, prove the operating rhythm, and upgrade when you need a larger portfolio."],
   ["Can we change plans later?", "Yes. You can move between plans as your project count and platform needs change."],
 ] as const;

@@ -1,4 +1,4 @@
-﻿import { chromium } from "@playwright/test";
+import { chromium } from "@playwright/test";
 import { writeFileSync, mkdirSync } from "fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
@@ -12,7 +12,7 @@ const html = `<!doctype html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agira: AI Development Report</title>
+  <title>InfraTrack: AI Development Report</title>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <style>
     body {
@@ -68,11 +68,11 @@ const html = `<!doctype html>
   </style>
 </head>
 <body>
-  <h1>Agira — How I Built the Project with Codex and GPT-5.6</h1>
+  <h1>InfraTrack — How I Built the Project with Codex and GPT-5.6</h1>
 
   <h2>Executive Summary</h2>
   <p>
-    Agira is a construction scheduling and project-control platform that combines planning views, project documents, and AI assistance in a single workspace. I used two AI partners in the build:
+    InfraTrack is a construction scheduling and project-control platform that combines planning views, project documents, and AI assistance in a single workspace. I used two AI partners in the build:
     <strong>Codex</strong> for implementation-heavy work and <strong>GPT-5.6</strong> for architecture framing, debugging strategy, and design feedback.
     The core safety model is <em>agent proposes, human approves</em>, never silent write.
   </p>
@@ -126,7 +126,7 @@ const html = `<!doctype html>
   <div class="diagram">
     <div class="mermaid">
       flowchart LR
-        U["User / Project Team"] -->|"Ask / Action Request"| UI["Agira Frontend<br/>(Next.js App Router)"]
+        U["User / Project Team"] -->|"Ask / Action Request"| UI["InfraTrack Frontend<br/>(Next.js App Router)"]
         UI -->|"Messages + context"| ASSIST["Assistant Router"]
         ASSIST --> LLM["OpenRouter-compatible LLM<br/>(OpenAI-compatible endpoint)"]
         ASSIST --> TOOL["Tooling Layer<br/>(project, schedule, tasks, files)"]
@@ -225,8 +225,8 @@ const html = `<!doctype html>
 </body>
 </html>`;
 
-const htmlPath = resolve(outDir, "agira-codex-gpt5.6-development-report.html");
-const pdfPath = resolve(outDir, "agira-codex-gpt5.6-development-report.pdf");
+const htmlPath = resolve(outDir, "infratrack-codex-gpt5.6-development-report.html");
+const pdfPath = resolve(outDir, "infratrack-codex-gpt5.6-development-report.pdf");
 
 writeFileSync(htmlPath, html, "utf8");
 

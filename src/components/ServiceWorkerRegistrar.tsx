@@ -12,7 +12,7 @@ export function ServiceWorkerRegistrar() {
     if (!("serviceWorker" in navigator)) return;
 
     if (process.env.NODE_ENV !== "production") {
-      const reloadKey = "agira-dev-sw-cleaned";
+      const reloadKey = "infratrack-dev-sw-cleaned";
 
       async function removeDevServiceWorkers() {
         const registrations = await navigator.serviceWorker.getRegistrations();
@@ -24,7 +24,7 @@ export function ServiceWorkerRegistrar() {
           const keys = await caches.keys();
           await Promise.all(
             keys
-              .filter((key) => key.startsWith("agira-"))
+              .filter((key) => key.startsWith("infratrack-") || key.startsWith("agira-"))
               .map((key) => caches.delete(key))
           );
         }

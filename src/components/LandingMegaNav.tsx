@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { LandingAnnouncementBar } from "@/components/LandingAnnouncementBar";
-import { AgiraMark } from "@/components/landing/AgiraMark";
+import { InfraTrackMark } from "@/components/landing/InfraTrackMark";
 
 type MegaItem = {
   title: string;
@@ -136,7 +136,7 @@ const SOLUTION_COLUMNS: MegaColumn[] = [
       },
       {
         title: "Superintendents",
-        description: "You run the site. Agira gives you the tools to do it right.",
+        description: "You run the site. InfraTrack gives you the tools to do it right.",
         href: "/solutions/superintendents",
         icon: <IconSuperintendent />,
       },
@@ -170,7 +170,7 @@ const SOLUTION_COLUMNS: MegaColumn[] = [
     items: [
       {
         title: "Autodesk",
-        description: "Sync drawings from ACC into your Agira schedule and document log.",
+        description: "Sync drawings from ACC into your InfraTrack schedule and document log.",
         href: "/solutions/autodesk",
         icon: <IconAutodesk />,
       },
@@ -400,8 +400,8 @@ export function LandingMegaNav({
                   useDarkGlass ? "text-white" : "text-ink"
                 }`}
               >
-                <AgiraMark size={26} />
-                Agira
+                <InfraTrackMark size={26} />
+                InfraTrack
               </Link>
 
               <nav className="ml-10 hidden items-center gap-1 lg:flex">
@@ -434,7 +434,7 @@ export function LandingMegaNav({
                 </button>
 
                 <Link href="/#why" className={navLinkClass}>
-                  Why Agira
+                  Why InfraTrack
                 </Link>
                 <Link href="/pricing" className={navLinkClass}>
                   Pricing
@@ -566,7 +566,7 @@ export function LandingMegaNav({
           ))}
           <div className="flex flex-col gap-2 pt-2 border-t border-hairline-soft">
             <Link href="/#why" className="py-2 text-sm font-medium text-muted" onClick={() => setMobileOpen(false)}>
-              Why Agira
+              Why InfraTrack
             </Link>
             <Link href="/pricing" className="py-2 text-sm font-medium text-muted" onClick={() => setMobileOpen(false)}>
               Pricing

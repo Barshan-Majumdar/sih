@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Agira - Construction Operations",
-    short_name: "Agira",
+    name: "InfraTrack - Construction Operations",
+    short_name: "InfraTrack",
     description:
-      "Agira runs the schedule, the field, and the project documents as one loop, where every AI change is cited, reviewed, and reversible.",
+      "InfraTrack runs the schedule, the field, and the project documents as one loop, where every AI change is cited, reviewed, and reversible.",
     // Installed app opens straight into the app, not the marketing landing page.
     start_url: "/projects",
     display: "standalone",

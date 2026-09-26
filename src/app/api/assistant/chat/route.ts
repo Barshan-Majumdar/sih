@@ -804,7 +804,7 @@ async function handlePost(request: Request) {
     ...attempt.requestOptions,
       system:
         ASSISTANT_TOOL_SYSTEM_PROMPT +
-        "Attached project files are already uploaded, saved securely, and linked to the conversation. Never claim Agira cannot save or attach them. Use searchProjectDocuments before describing file contents, and ground the answer only in returned extracted snippets. If extraction is unavailable or no snippet matches, say that clearly.\n\n" +
+        "Attached project files are already uploaded, saved securely, and linked to the conversation. Never claim InfraTrack cannot save or attach them. Use searchProjectDocuments before describing file contents, and ground the answer only in returned extracted snippets. If extraction is unavailable or no snippet matches, say that clearly.\n\n" +
         context,
       messages: recentMessages.map((message) => ({
         role: message.role === "USER" ? ("user" as const) : ("assistant" as const),

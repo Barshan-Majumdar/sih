@@ -63,7 +63,7 @@ describe("private file authorization", () => {
       storageKey,
       fileName: "audit-report.pdf",
       rangeHeader: "bytes=0-7",
-      userAgent: "Agira integration test",
+      userAgent: "InfraTrack integration test",
       now: new Date("2026-07-18T12:00:00.000Z"),
     };
 

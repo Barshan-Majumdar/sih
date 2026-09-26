@@ -122,7 +122,7 @@ export function AutodeskIntegrationPanel({
         <div>
           <h2 className="app-card-title mb-1">Autodesk Construction Cloud</h2>
           <p className="text-sm text-muted">
-            Connect ACC, map projects, then pull PDF drawings into Agira.
+            Connect ACC, map projects, then pull PDF drawings into InfraTrack.
           </p>
         </div>
         {isConnected ? (

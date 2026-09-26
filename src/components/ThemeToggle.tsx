@@ -6,6 +6,8 @@ import {
   APP_THEME_CHANGE_EVENT,
   APP_THEME_STORAGE_KEY,
   DEFAULT_APP_THEME,
+  LEGACY_APP_THEME_CHANGE_EVENT,
+  LEGACY_APP_THEME_STORAGE_KEY,
   applyAppShellTheme,
   isAppTheme,
   type AppTheme,
@@ -50,7 +52,9 @@ export function ThemeToggle() {
       onClick={() => {
         applyTheme(nextTheme);
         window.localStorage.setItem(APP_THEME_STORAGE_KEY, nextTheme);
+        window.localStorage.setItem(LEGACY_APP_THEME_STORAGE_KEY, nextTheme);
         window.dispatchEvent(new Event(APP_THEME_CHANGE_EVENT));
+        window.dispatchEvent(new Event(LEGACY_APP_THEME_CHANGE_EVENT));
       }}
       className="group btn-interactive inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill border border-hairline bg-surface-soft/80 text-body shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-muted-soft/40 hover:bg-surface-soft hover:text-ink"
       aria-label={`Switch to ${nextTheme} mode`}

@@ -70,60 +70,79 @@
   --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
   --shadow-card-hover: 0 10px 20px -3px rgba(15, 23, 42, 0.06), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
   --shadow-float: 0 20px 30px -6px rgba(15, 23, 42, 0.09), 0 8px 12px -4px rgba(15, 23, 42, 0.04);
+
+  /* Scrollbar tokens (Light mode) */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-thumb-hover: #94a3b8;
+  --scrollbar-thumb-active: #64748b;
 }
 
-/* Dark theme is scoped to the authenticated app shell only — marketing
-   pages (landing, pricing, features, solutions) always use :root light tokens. */
+/* Dark theme is scoped to the authenticated app shell and root when active — marketing
+   pages (landing, pricing, features, solutions) always use :root light tokens.
+   Engineered with luxury Obsidian Black & Crisp White aesthetic (Linear / Apple Tier). */
+html[data-app-theme="dark"],
+body[data-app-theme="dark"],
 .app-shell[data-app-theme="dark"] {
   color-scheme: dark;
-  --color-primary: #e6ecf4;
-  --color-primary-active: #d3dce8;
-  --color-primary-disabled: #2b3543;
-  --color-ink: #e6ecf4;
-  --color-body: #b9c4d2;
-  --color-muted: #8b98a8;
-  --color-muted-soft: #8593a3;
-  --color-hairline: #232c38;
-  --color-hairline-soft: #1a222c;
-  --color-canvas: #131920;
-  --color-surface-soft: #171e27;
-  --color-surface-card: #1c242f;
-  --color-surface-strong: #28323f;
-  --color-surface-dark: #0a0e14;
-  --color-surface-dark-elevated: #101620;
-  --color-on-primary: #101720;
+  --scrollbar-track: #09090b;
+  --scrollbar-thumb: #3f3f46;
+  --scrollbar-thumb-hover: #52525b;
+  --scrollbar-thumb-active: #71717a;
+  --color-primary: #ffffff;
+  --color-primary-active: #e4e4e7;
+  --color-primary-disabled: #27272a;
+  --color-ink: #ffffff;
+  --color-body: #e4e4e7;
+  --color-muted: #a1a1aa;
+  --color-muted-soft: #71717a;
+  --color-hairline: rgba(255, 255, 255, 0.08);
+  --color-hairline-soft: rgba(255, 255, 255, 0.04);
+  --color-canvas: #09090b;
+  --color-surface-soft: #121215;
+  --color-surface-card: #111114;
+  --color-surface-strong: #18181b;
+  --color-surface-dark: #000000;
+  --color-surface-dark-elevated: #09090b;
+  --color-on-primary: #000000;
   --color-on-dark: #ffffff;
-  --color-on-dark-soft: #a9b6c6;
-  --color-brand-accent: #6b8fb8;
-  --color-success: #4f9c81;
-  --color-warning: #cc9a4e;
-  --color-error: #c96a6a;
-  --color-badge-orange: #cc9a4e;
-  --color-badge-pink: #b8809c;
-  --color-badge-violet: #8a80b0;
-  --color-badge-emerald: #4f9c81;
-  --color-app-bg: #0d1219;
-  --color-app-panel: #151b24;
-  --color-app-sidebar: #0a0e14;
-  --color-app-accent: #6b8fb8;
-  --color-app-grid: transparent;
+  --color-on-dark-soft: #a1a1aa;
+  --color-brand-accent: #3b82f6;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #f43f5e;
+  --color-badge-orange: #f59e0b;
+  --color-badge-pink: #ec4899;
+  --color-badge-violet: #a855f7;
+  --color-badge-emerald: #10b981;
+  --color-app-bg: #000000;
+  --color-app-panel: #09090b;
+  --color-app-sidebar: #050507;
+  --color-app-accent: #3b82f6;
+  --color-app-grid: rgba(255, 255, 255, 0.02);
 
   /* Semantic compatibility aliases (dark) */
-  --color-border: #232c38;
-  --color-input: #232c38;
-  --color-ring: #6b8fb8;
-  --color-background: #131920;
-  --color-foreground: #e6ecf4;
-  --color-card: #171e27;
-  --color-card-foreground: #e6ecf4;
-  --color-muted-foreground: #8b98a8;
-  --color-destructive: #c96a6a;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-input: rgba(255, 255, 255, 0.1);
+  --color-ring: #3b82f6;
+  --color-background: #09090b;
+  --color-foreground: #ffffff;
+  --color-card: #111114;
+  --color-card-foreground: #ffffff;
+  --color-muted-foreground: #a1a1aa;
+  --color-destructive: #f43f5e;
   --color-destructive-foreground: #ffffff;
-  --color-secondary: #1c242f;
-  --color-secondary-foreground: #e6ecf4;
-  --color-accent: #1c242f;
-  --color-accent-foreground: #e6ecf4;
-  --color-primary-foreground: #101720;
+  --color-secondary: #18181b;
+  --color-secondary-foreground: #ffffff;
+  --color-accent: #18181b;
+  --color-accent-foreground: #ffffff;
+  --color-primary-foreground: #000000;
+
+  /* Luxury Obsidian Depth: Inset top highlights simulate tactile glass/beveled aluminum */
+  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+  --shadow-card-hover: 0 14px 30px -4px rgba(0, 0, 0, 0.9), inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
+  --shadow-float: 0 24px 44px -8px rgba(0, 0, 0, 0.95), inset 0 1px 0 0 rgba(255, 255, 255, 0.16);
 }
 
 @theme inline {
@@ -182,6 +201,11 @@
   --radius-xl: var(--radius-xl);
   --radius-pill: var(--radius-pill);
 
+  --shadow-subtle: var(--shadow-subtle);
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+  --shadow-float: var(--shadow-float);
+
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
 }
@@ -193,29 +217,29 @@ body {
 }
 
 .assistant-theme {
-  --assistant-overlay: #080c14;
-  --assistant-rail: #0e1523;
-  --assistant-panel: #080c14;
-  --assistant-layer: #121b2d;
-  --assistant-layer-hover: #1b263d;
-  --assistant-layer-strong: #22304d;
-  --assistant-input: #0e1523;
-  --assistant-border: #1a2538;
-  --assistant-border-strong: #2b3b57;
+  --assistant-overlay: #000000;
+  --assistant-rail: #050507;
+  --assistant-panel: #09090b;
+  --assistant-layer: #0e0e11;
+  --assistant-layer-hover: #18181c;
+  --assistant-layer-strong: #222228;
+  --assistant-input: #09090b;
+  --assistant-border: rgba(255, 255, 255, 0.08);
+  --assistant-border-strong: rgba(255, 255, 255, 0.14);
   --assistant-text: #ffffff;
-  --assistant-text-strong: #f8fafc;
-  --assistant-text-body: #cbd5e1;
-  --assistant-text-muted: #94a3b8;
-  --assistant-text-faint: #64748b;
-  --assistant-rail-text: #f8fafc;
-  --assistant-rail-body: #cbd5e1;
-  --assistant-rail-muted: #94a3b8;
-  --assistant-rail-faint: #64748b;
-  --assistant-rail-section: #64748b;
+  --assistant-text-strong: #ffffff;
+  --assistant-text-body: #e4e4e7;
+  --assistant-text-muted: #a1a1aa;
+  --assistant-text-faint: #71717a;
+  --assistant-rail-text: #ffffff;
+  --assistant-rail-body: #d4d4d8;
+  --assistant-rail-muted: #a1a1aa;
+  --assistant-rail-faint: #71717a;
+  --assistant-rail-section: #71717a;
   --assistant-accent: #ffffff;
-  --assistant-on-accent: #080c14;
-  --assistant-shadow: rgba(0, 0, 0, 0.4);
-  --assistant-rail-shadow: rgba(0, 0, 0, 0.3);
+  --assistant-on-accent: #000000;
+  --assistant-shadow: rgba(0, 0, 0, 0.7);
+  --assistant-rail-shadow: rgba(0, 0, 0, 0.6);
 }
 
 .assistant-theme-light,
@@ -354,6 +378,7 @@ body.is-agent-page .app-main {
   overflow: hidden !important;
 }
 
+body:not(.is-agent-page) .app-main,
 body.has-project-rail .app-main {
   min-height: calc(100vh - 56px);
   transition: padding-left 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -545,9 +570,103 @@ body.has-project-rail .app-main {
   transform: scale(0.98);
 }
 
+/* ==========================================================================
+   Modern Sleek Scrollbars (Light & Dark Themes)
+   ========================================================================== */
+
+/* Universal WebKit scrollbars (Chrome, Edge, Safari, Brave) */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track, transparent);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb, #cbd5e1);
+  border-radius: 9999px;
+  border: 2px solid var(--scrollbar-track, transparent);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover, #94a3b8);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--scrollbar-thumb-active, #64748b);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track, transparent);
+}
+
+/* Eliminate default Windows scrollbar arrow buttons */
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Standard CSS scrollbar for Firefox & modern engines */
 * {
-  scrollbar-color: var(--color-surface-strong) transparent;
+  scrollbar-color: var(--scrollbar-thumb, #cbd5e1) var(--scrollbar-track, transparent);
   scrollbar-width: thin;
+}
+
+/* --------------------------------------------------------------------------
+   Dark Theme Scrollbar Specification:
+   Track (bg): Rich Black (#09090b)
+   Thumb (bar): Sleek Charcoal / Slate Grey (#3f3f46, hover: #52525b)
+   -------------------------------------------------------------------------- */
+html[data-app-theme="dark"],
+body[data-app-theme="dark"],
+.app-shell[data-app-theme="dark"] {
+  scrollbar-color: #3f3f46 #09090b !important;
+}
+
+html[data-app-theme="dark"] *,
+body[data-app-theme="dark"] *,
+.app-shell[data-app-theme="dark"] * {
+  scrollbar-color: #3f3f46 #09090b !important;
+}
+
+html[data-app-theme="dark"]::-webkit-scrollbar-track,
+body[data-app-theme="dark"]::-webkit-scrollbar-track,
+.app-shell[data-app-theme="dark"]::-webkit-scrollbar-track,
+html[data-app-theme="dark"] ::-webkit-scrollbar-track,
+body[data-app-theme="dark"] ::-webkit-scrollbar-track,
+.app-shell[data-app-theme="dark"] ::-webkit-scrollbar-track {
+  background: #09090b !important;
+}
+
+html[data-app-theme="dark"]::-webkit-scrollbar-thumb,
+body[data-app-theme="dark"]::-webkit-scrollbar-thumb,
+.app-shell[data-app-theme="dark"]::-webkit-scrollbar-thumb,
+html[data-app-theme="dark"] ::-webkit-scrollbar-thumb,
+body[data-app-theme="dark"] ::-webkit-scrollbar-thumb,
+.app-shell[data-app-theme="dark"] ::-webkit-scrollbar-thumb {
+  background-color: #3f3f46 !important;
+  border: 2px solid #09090b !important;
+  border-radius: 9999px !important;
+  background-clip: padding-box !important;
+}
+
+html[data-app-theme="dark"]::-webkit-scrollbar-thumb:hover,
+body[data-app-theme="dark"]::-webkit-scrollbar-thumb:hover,
+.app-shell[data-app-theme="dark"]::-webkit-scrollbar-thumb:hover,
+html[data-app-theme="dark"] ::-webkit-scrollbar-thumb:hover,
+body[data-app-theme="dark"] ::-webkit-scrollbar-thumb:hover,
+.app-shell[data-app-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background-color: #52525b !important;
+}
+
+html[data-app-theme="dark"]::-webkit-scrollbar-corner,
+body[data-app-theme="dark"]::-webkit-scrollbar-corner,
+.app-shell[data-app-theme="dark"] ::-webkit-scrollbar-corner {
+  background: #09090b !important;
 }
 
 @media (max-width: 767px) {
@@ -575,12 +694,15 @@ body.has-project-rail .app-main {
 }
 
 @media (min-width: 768px) {
+  body:not(.is-agent-page) .app-main,
   body.has-project-rail .app-main {
     padding-left: 256px;
   }
+  body.sidebar-collapsed .app-main,
   body.sidebar-collapsed.has-project-rail .app-main {
     padding-left: 88px;
   }
+  body:not(.is-agent-page) .app-page,
   body.has-project-rail .app-page {
     padding-left: 28px;
     padding-right: 28px;

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="app-shell" data-app-theme="light" style={{ colorScheme: "light" }}>
+    <div className="app-shell" suppressHydrationWarning>
       <AppThemeProvider>
         <a
           href="#main-content"

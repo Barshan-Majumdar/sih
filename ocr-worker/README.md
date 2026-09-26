@@ -1,4 +1,4 @@
-# Agira OCR worker
+# InfraTrack OCR worker
 
 This private worker uses OCRmyPDF and Tesseract to turn scanned PDFs and images
 into searchable PDFs. It has no paid API dependency.

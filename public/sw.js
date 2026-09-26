@@ -1,11 +1,11 @@
-/* Agira service worker.
+/* InfraTrack service worker.
  *
  * Strategy:
  * - Page navigations: network-first, falling back to a cached offline page.
  * - Static assets (/_next/static, /icons): cache-first (immutable/hashed).
  * - Everything else (API, server actions): network only - never cache mutations.
  */
-const CACHE_NAME = "agira-v1";
+const CACHE_NAME = "infratrack-v1";
 const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {

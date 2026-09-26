@@ -30,17 +30,17 @@ function searchablePdf(text: string): Uint8Array {
 describe("document extraction", () => {
   it("extracts searchable text and a page count from a PDF", async () => {
     const result = await extractDocumentText(
-      searchablePdf("Agira searchable project specification"),
+      searchablePdf("InfraTrack searchable project specification"),
       "application/pdf"
     );
     expect(result.status).toBe("READY");
     expect(result.pageCount).toBe(1);
-    expect(result.text).toContain("Agira searchable project specification");
+    expect(result.text).toContain("InfraTrack searchable project specification");
     expect(result.chunks).toEqual([
       expect.objectContaining({
         pageNumber: 1,
         chunkIndex: 0,
-        text: expect.stringContaining("Agira searchable project specification"),
+        text: expect.stringContaining("InfraTrack searchable project specification"),
       }),
     ]);
   });

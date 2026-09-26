@@ -1,6 +1,6 @@
-# Agira Revamp Specification
+# InfraTrack Revamp Specification
 
-This document is the single source of truth for rebranding **BuilderBridge** into **Agira**.
+This document is the single source of truth for rebranding **BuilderBridge** into **InfraTrack**.
 Every parallel worktree branch reads this file and implements only its own section.
 Nothing outside a branch's declared file list may be touched.
 
@@ -26,17 +26,17 @@ No gradients anywhere in the UI.
 
 | Attribute | Old | New |
 | --- | --- | --- |
-| Product name | BuilderBridge | Agira |
-| npm package name | `construction-scheduler` | `agira` |
-| Wordmark | `BuilderBridge` | `Agira`, Inter 600, `letter-spacing: -0.02em` |
+| Product name | BuilderBridge | InfraTrack |
+| npm package name | `construction-scheduler` | `InfraTrack` |
+| Wordmark | `BuilderBridge` | `InfraTrack`, Inter 600, `letter-spacing: -0.02em` |
 | Logo mark | Bridge arch with `BB` initials | Three offset horizontal bars, a Gantt row abstracted |
 | Accent colour | `#f97316` construction orange | `#2c4a6b` deep steel |
-| Log service tag | `builderbridge-web` | `agira-web` |
-| Theme storage key | `builderbridge:theme` | `agira:theme` |
-| Theme change event | `builderbridge:theme-change` | `agira:theme-change` |
-| Service worker cache | `builderbridge-v1` | `agira-v1` |
-| Agent name in prompts | BuilderBridge Agent | Agira Agent |
-| Default email sender | `BuilderBridge <onboarding@resend.dev>` | `Agira <onboarding@resend.dev>` |
+| Log service tag | `builderbridge-web` | `InfraTrack-web` |
+| Theme storage key | `builderbridge:theme` | `InfraTrack:theme` |
+| Theme change event | `builderbridge:theme-change` | `InfraTrack:theme-change` |
+| Service worker cache | `builderbridge-v1` | `InfraTrack-v1` |
+| Agent name in prompts | BuilderBridge Agent | InfraTrack Agent |
+| Default email sender | `BuilderBridge <onboarding@resend.dev>` | `InfraTrack <onboarding@resend.dev>` |
 
 ### Voice
 
@@ -46,7 +46,7 @@ No hype words, no "revolutionary", no "seamless", no exclamation marks.
 
 Positioning sentence, used in metadata and the marketing footer:
 
-> Agira runs the schedule, the field, and the project documents as one loop, where every AI change is cited, reviewed, and reversible.
+> InfraTrack runs the schedule, the field, and the project documents as one loop, where every AI change is cited, reviewed, and reversible.
 
 Approved headline for the landing hero:
 
@@ -66,7 +66,7 @@ The maskable variant keeps the existing ten percent safe-zone padding.
 
 ### Naming note
 
-Agira Technologies is an existing software services firm in India.
+InfraTrack Technologies is an existing software services firm in India.
 Different sector, no product overlap, but this is worth knowing before a domain purchase.
 It does not block the rebrand.
 
@@ -222,7 +222,7 @@ Every security header, the `serverExternalPackages` entry, and the `proxyClientM
 `src/lib/observability.ts`
 Remove the `@sentry/nextjs` import and the `Sentry.withScope` block inside `reportException`.
 `reportException` keeps calling `logger.error` with the sanitised metadata, which is where the actionable signal already lived.
-Change `service: "builderbridge-web"` to `service: "agira-web"`.
+Change `service: "builderbridge-web"` to `service: "InfraTrack-web"`.
 Change `release: process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.SENTRY_RELEASE` to `release: process.env.VERCEL_GIT_COMMIT_SHA`.
 Keep the `sanitizeMetadata` import from `telemetry-privacy`; the logger still needs it.
 
@@ -393,7 +393,7 @@ Range request handling stays byte-for-byte identical; R2 honours the `Range` hea
 
 Replace the S3 block with an R2 block.
 Document where to find the account id and how to mint an R2 API token.
-State plainly that the bucket must be private, and that Agira streams authorised files through `/api/files`, so no public bucket URL and no browser-side key is required.
+State plainly that the bucket must be private, and that InfraTrack streams authorised files through `/api/files`, so no public bucket URL and no browser-side key is required.
 Remove the dangling `See DEPLOYMENT.md for setup steps.` reference, because that file does not exist and is git-ignored anyway.
 
 **Tests.**
@@ -430,8 +430,8 @@ Leave the `@theme inline` mapping, every `.app-*` utility, the radius scale, the
 
 **`src/lib/app-theme.ts`**
 
-`APP_THEME_STORAGE_KEY` becomes `agira:theme`.
-`APP_THEME_CHANGE_EVENT` becomes `agira:theme-change`.
+`APP_THEME_STORAGE_KEY` becomes `InfraTrack:theme`.
+`APP_THEME_CHANGE_EVENT` becomes `InfraTrack:theme-change`.
 
 This resets the stored theme preference for anyone who had chosen dark.
 That is acceptable for a rebrand and the default of light is correct behaviour on a miss.
@@ -445,15 +445,15 @@ The key lives only in `src/lib/app-theme.ts` and is consumed through `AppThemePr
 
 **`src/app/layout.tsx`**
 
-`metadata.title` becomes `Agira — Construction Operations`, written with a plain dash.
+`metadata.title` becomes `InfraTrack — Construction Operations`, written with a plain dash.
 `metadata.description` becomes the positioning sentence from section 2.
-`appleWebApp.title` becomes `Agira`.
+`appleWebApp.title` becomes `InfraTrack`.
 `viewport.themeColor` becomes `#101720`.
 
 **`src/app/manifest.ts`**
 
-`name` becomes `Agira — Construction Operations`, again with a plain dash.
-`short_name` becomes `Agira`.
+`name` becomes `InfraTrack — Construction Operations`, again with a plain dash.
+`short_name` becomes `InfraTrack`.
 `description` becomes the positioning sentence.
 `theme_color` becomes `#101720`.
 `start_url` stays `/projects`.
@@ -468,13 +468,13 @@ Regenerate `src/app/favicon.ico` from the same mark.
 
 **`public/sw.js`**
 
-Change `CACHE_NAME` from `builderbridge-v1` to `agira-v1`.
+Change `CACHE_NAME` from `builderbridge-v1` to `InfraTrack-v1`.
 The rename is what forces old clients to drop the stale cache, so it is required, not cosmetic.
 Update the header comment.
 
 **`public/offline.html`**
 
-Update the title, the image alt text, and the body copy to Agira.
+Update the title, the image alt text, and the body copy to InfraTrack.
 Re-tint its inline colours onto the steel palette.
 
 **`public/agent-icon.png` and `public/auth/auth-panel.png`**
@@ -507,7 +507,7 @@ The hero video and its three stacked black gradient scrims are exactly what the 
 
 **Create.**
 
-`src/components/landing/AgiraHero.tsx`
+`src/components/landing/InfraTrackHero.tsx`
 
 A flat `--color-app-bg` canvas.
 Left column: an eyebrow, the approved headline, the approved subhead, a primary and a ghost CTA.
@@ -535,7 +535,7 @@ Section order:
 10. Footer
 
 The existing bands carry good content.
-Restyle them and rewrite their copy into the Agira voice.
+Restyle them and rewrite their copy into the InfraTrack voice.
 Do not invent new product claims; every statement must describe something the application actually does.
 
 `src/components/LandingMegaNav.tsx`
@@ -546,7 +546,7 @@ Restyle onto the steel palette, replace the wordmark, and keep `LandingAnnouncem
 
 `src/components/LandingAnnouncementBar.tsx`
 
-New copy in the Agira voice.
+New copy in the InfraTrack voice.
 Restyle onto steel.
 
 `src/components/LandingProductShowcase.tsx`
@@ -557,7 +557,7 @@ Restyle the toolbar, the tab affordance, and `STATUS_COLOR` onto the steel palet
 `src/components/MarketingFooter.tsx`
 
 Keep the four-column structure and every link target.
-Replace the orange `B` tile with the new mark, the wordmark with `Agira`, and the oversized ghost wordmark at the bottom.
+Replace the orange `B` tile with the new mark, the wordmark with `InfraTrack`, and the oversized ghost wordmark at the bottom.
 Restyle the hardcoded `#f3f4f5`, `#dedfe1`, `#171717`, and `#dfe1e2` values onto steel tokens.
 
 `src/components/MarketingDetailPage.tsx`
@@ -567,7 +567,7 @@ Restyle. Structure and props unchanged.
 `src/lib/marketing-content.ts`
 
 Twenty-two page entries.
-Update copy to the Agira voice.
+Update copy to the InfraTrack voice.
 Every `slug` value must stay exactly as it is, because they are live routes referenced from the mega nav and the footer.
 
 `src/app/pricing/page.tsx`
@@ -617,7 +617,7 @@ Tests:
 `tests/e2e/project-files.spec.ts`, `tests/integration/file-access.test.ts`, `tests/unit/document-extraction.test.ts`, `email.test.ts`, `file-access-audit.test.ts`, `file-uploads.test.ts`.
 
 `package.json`
-`name` becomes `agira`.
+`name` becomes `InfraTrack`.
 
 **The DOM CustomEvent names, which are the one genuinely dangerous part of this branch.**
 
@@ -657,13 +657,13 @@ Re-tint the inline email HTML colours onto steel; `#111111` becomes `#101720`, `
 Email clients need inline hex, so these stay literal rather than tokenised.
 
 `src/lib/env.ts`
-`EMAIL_FROM` default becomes `Agira <onboarding@resend.dev>`.
+`EMAIL_FROM` default becomes `InfraTrack <onboarding@resend.dev>`.
 
 `README.md`
 Full rewrite.
 The current version is a hackathon submission document with a live demo URL, a YouTube link, a judging walkthrough, and CI badges pointing at `github.com/Akash8585/builderbridge`.
 None of that survives a rebrand.
-Rewrite as a straightforward project README: what Agira is, the stack, local setup, environment variables, the test commands, and the deployment pointer to `docs/deployment.md`.
+Rewrite as a straightforward project README: what InfraTrack is, the stack, local setup, environment variables, the test commands, and the deployment pointer to `docs/deployment.md`.
 Remove the demo and judging sections.
 Keep the seeded demo account table, because it is genuinely useful for local setup.
 
@@ -720,7 +720,7 @@ Do not regenerate it inside the parallel branches; that guarantees a conflict on
 
 The five PNGs under `docs/` are screenshots of the old interface showing the old brand.
 They will be stale the moment this work lands.
-They must be re-captured against the running Agira build before the README is considered finished.
+They must be re-captured against the running InfraTrack build before the README is considered finished.
 This is tracked as the final task after integration, not inside any branch, because it needs a running application.
 
 `prisma/seed-assets/SOURCES.md` credits the source of three public-domain reference PDFs and mentions the old brand in passing.

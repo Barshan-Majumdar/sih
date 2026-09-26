@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AgiraMark } from "@/components/landing/AgiraMark";
+import { InfraTrackMark } from "@/components/landing/InfraTrackMark";
 
 const FOOTER_COLUMNS = [
   {
@@ -38,11 +38,11 @@ export function MarketingFooter() {
         <div className="grid gap-12 lg:grid-cols-[1.35fr_0.65fr_0.65fr_0.65fr] lg:gap-14">
           <div>
             <Link href="/" className="inline-flex items-center gap-3 text-lg font-semibold tracking-[0] text-ink">
-              <AgiraMark size={32} />
-              Agira
+              <InfraTrackMark size={32} />
+              InfraTrack
             </Link>
             <p className="mt-6 max-w-md text-sm leading-7 text-body sm:text-base">
-              Agira connects the master schedule, field planning, weekly commitments, and project risk so office and field teams build from the same live plan.
+              InfraTrack connects the master schedule, field planning, weekly commitments, and project risk so office and field teams build from the same live plan.
             </p>
             <div className="mt-7 flex items-center gap-3">
               <Link href="/sign-up" className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-xs font-semibold text-on-primary transition-colors hover:bg-primary-active">
@@ -60,9 +60,9 @@ export function MarketingFooter() {
         </div>
 
         <div className="mt-14 flex flex-col gap-5 border-t border-hairline pt-7 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} Agira. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} InfraTrack. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-            <Link href="/#why" className="underline decoration-hairline underline-offset-4 transition-colors hover:text-ink">Why Agira</Link>
+            <Link href="/#why" className="underline decoration-hairline underline-offset-4 transition-colors hover:text-ink">Why InfraTrack</Link>
             <Link href="/pricing" className="underline decoration-hairline underline-offset-4 transition-colors hover:text-ink">Pricing</Link>
             <Link href="/features/ai-assistant" className="underline decoration-hairline underline-offset-4 transition-colors hover:text-ink">Agent</Link>
           </div>
@@ -71,7 +71,7 @@ export function MarketingFooter() {
 
       <div className="relative mx-auto h-[clamp(90px,13vw,240px)] max-w-[1900px] overflow-hidden" aria-hidden="true">
         <p className="absolute bottom-[-0.38em] left-1/2 -translate-x-1/2 whitespace-nowrap text-center text-[clamp(3rem,13vw,15rem)] font-semibold leading-none tracking-[0] text-surface-strong">
-          Agira
+          InfraTrack
         </p>
       </div>
     </footer>

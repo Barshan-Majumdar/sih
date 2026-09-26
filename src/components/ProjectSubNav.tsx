@@ -155,41 +155,88 @@ export function ProjectRouteSubNav() {
 
   // Synchronize active project
   useEffect(() => {
+    // 1. Instant cache retrieval to prevent UI flicker
+    try {
+      const storedId =
+        localStorage.getItem("infratrack_active_project_id") ??
+        localStorage.getItem("agira_active_project_id");
+      const storedName =
+        localStorage.getItem("infratrack_active_project_name") ??
+        localStorage.getItem("agira_active_project_name");
+      if (currentProjectId && currentProjectId !== "new") {
+        const cachedName =
+          localStorage.getItem(`infratrack_pname_${currentProjectId}`) ??
+          localStorage.getItem(`agira_pname_${currentProjectId}`);
+        if (cachedName) {
+          setActiveProjectName(cachedName);
+        } else if (storedId === currentProjectId && storedName) {
+          setActiveProjectName(storedName);
+        }
+      } else if (storedId && storedId !== "new") {
+        setActiveProjectId(storedId);
+        if (storedName) {
+          setActiveProjectName(storedName);
+        }
+      }
+    } catch {}
+
+    // 2. Server synchronization
     if (currentProjectId && currentProjectId !== "new") {
       setActiveProjectId(currentProjectId);
       try {
+        localStorage.setItem("infratrack_active_project_id", currentProjectId);
         localStorage.setItem("agira_active_project_id", currentProjectId);
-        fetch("/api/projects/active", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ projectId: currentProjectId }),
-        }).catch(() => {});
       } catch {}
+
+      fetch("/api/projects/active", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: currentProjectId }),
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data?.project?.name) {
+            setActiveProjectName(data.project.name);
+            try {
+              localStorage.setItem("infratrack_active_project_id", data.project.id);
+              localStorage.setItem("infratrack_active_project_name", data.project.name);
+              localStorage.setItem(`infratrack_pname_${data.project.id}`, data.project.name);
+              localStorage.setItem("agira_active_project_id", data.project.id);
+              localStorage.setItem("agira_active_project_name", data.project.name);
+              localStorage.setItem(`agira_pname_${data.project.id}`, data.project.name);
+            } catch {}
+          }
+        })
+        .catch(() => {});
     } else {
-      try {
-        const stored = localStorage.getItem("agira_active_project_id");
-        if (stored && stored !== "new") {
-          setActiveProjectId(stored);
-        } else {
-          fetch("/api/projects/active")
-            .then((r) => r.json())
-            .then((data) => {
-              if (data?.project?.id) {
-                setActiveProjectId(data.project.id);
-                setActiveProjectName(data.project.name);
-                localStorage.setItem("agira_active_project_id", data.project.id);
+      fetch("/api/projects/active")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data?.project?.id) {
+            setActiveProjectId(data.project.id);
+            setActiveProjectName(data.project.name);
+            try {
+              localStorage.setItem("infratrack_active_project_id", data.project.id);
+              localStorage.setItem("agira_active_project_id", data.project.id);
+              if (data.project.name) {
+                localStorage.setItem("infratrack_active_project_name", data.project.name);
+                localStorage.setItem(`infratrack_pname_${data.project.id}`, data.project.name);
+                localStorage.setItem("agira_active_project_name", data.project.name);
+                localStorage.setItem(`agira_pname_${data.project.id}`, data.project.name);
               }
-            })
-            .catch(() => {});
-        }
-      } catch {}
+            } catch {}
+          }
+        })
+        .catch(() => {});
     }
   }, [currentProjectId]);
 
   // Restore collapsed state
   useEffect(() => {
     try {
-      const isCol = localStorage.getItem("agira_sidebar_collapsed") === "true";
+      const isCol =
+        (localStorage.getItem("infratrack_sidebar_collapsed") ??
+          localStorage.getItem("agira_sidebar_collapsed")) === "true";
       setCollapsed(isCol);
       document.body.classList.toggle("sidebar-collapsed", isCol);
     } catch {}
@@ -205,6 +252,7 @@ export function ProjectRouteSubNav() {
         setCollapsed((prev) => {
           const next = !prev;
           try {
+            localStorage.setItem("infratrack_sidebar_collapsed", String(next));
             localStorage.setItem("agira_sidebar_collapsed", String(next));
           } catch {}
           document.body.classList.toggle("sidebar-collapsed", next);
@@ -213,14 +261,19 @@ export function ProjectRouteSubNav() {
       }
     };
 
+    window.addEventListener("infratrack:toggle-sidebar", handleToggle);
     window.addEventListener("agira:toggle-sidebar", handleToggle);
-    return () => window.removeEventListener("agira:toggle-sidebar", handleToggle);
+    return () => {
+      window.removeEventListener("infratrack:toggle-sidebar", handleToggle);
+      window.removeEventListener("agira:toggle-sidebar", handleToggle);
+    };
   }, []);
 
   const toggleCollapse = useCallback(() => {
     setCollapsed((prev) => {
       const next = !prev;
       try {
+        localStorage.setItem("infratrack_sidebar_collapsed", String(next));
         localStorage.setItem("agira_sidebar_collapsed", String(next));
       } catch {}
       document.body.classList.toggle("sidebar-collapsed", next);
@@ -253,6 +306,14 @@ export function ProjectRouteSubNav() {
   useEffect(() => {
     if (isAgent) {
       document.body.classList.remove("has-project-rail");
+    } else {
+      document.body.classList.add("has-project-rail");
+      try {
+        const isCol =
+          (localStorage.getItem("infratrack_sidebar_collapsed") ??
+            localStorage.getItem("agira_sidebar_collapsed")) === "true";
+        document.body.classList.toggle("sidebar-collapsed", isCol);
+      } catch {}
     }
   }, [isAgent]);
 
@@ -308,15 +369,18 @@ export function ProjectRouteSubNav() {
               href="/projects"
               onClick={closeMobile}
               className="group flex items-center justify-between rounded-xl border border-hairline/80 bg-surface-soft/60 p-2.5 transition-all hover:border-hairline hover:bg-surface-soft"
-              title="Click to switch active project"
+              title={activeProjectName ? `Active: ${activeProjectName} (Click to switch)` : "Click to switch active project"}
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted">
                   <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
                   <span>Active Workspace</span>
                 </div>
-                <div className="truncate text-xs font-semibold text-ink group-hover:text-brand-accent transition-colors">
-                  {activeProjectName || (effectiveProjectId ? "Project Workspace" : "Select Project")}
+                <div
+                  className="truncate text-xs font-semibold text-ink group-hover:text-brand-accent transition-colors"
+                  title={activeProjectName || undefined}
+                >
+                  {activeProjectName || (effectiveProjectId ? "Loading Project..." : "Select Project")}
                 </div>
               </div>
               <ChevronRight className="h-3.5 w-3.5 text-muted transition-transform group-hover:translate-x-0.5" />
@@ -325,7 +389,7 @@ export function ProjectRouteSubNav() {
         )}
 
         {/* Scrollable Navigation Groups */}
-        <div className="flex-1 overflow-y-auto px-2 py-2.5 space-y-3.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-hairline">
+        <div className="flex-1 overflow-y-auto px-2 py-2.5 space-y-3.5">
           {NAV_GROUPS.map((group) => (
             <div key={group.heading} className="space-y-0.5">
               {/* Group Heading (Visible both expanded and collapsed) */}

@@ -26,6 +26,14 @@ export function ProjectForm({ organizationId }: { organizationId: string }) {
       setError(result.error);
       return;
     }
+    try {
+      localStorage.setItem("infratrack_active_project_id", result.data.id);
+      localStorage.setItem("infratrack_active_project_name", result.data.name);
+      localStorage.setItem(`infratrack_pname_${result.data.id}`, result.data.name);
+      localStorage.setItem("agira_active_project_id", result.data.id);
+      localStorage.setItem("agira_active_project_name", result.data.name);
+      localStorage.setItem(`agira_pname_${result.data.id}`, result.data.name);
+    } catch {}
     router.push(`/projects/${result.data.id}`);
   }
 

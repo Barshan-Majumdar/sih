@@ -312,6 +312,11 @@ function AgentWorkspaceInner({ initialProjectId = null }: AgentWorkspaceProps) {
     document.body.classList.remove("has-project-rail");
     return () => {
       document.body.classList.remove("is-agent-page");
+      document.body.classList.add("has-project-rail");
+      try {
+        const isCol = localStorage.getItem("agira_sidebar_collapsed") === "true";
+        document.body.classList.toggle("sidebar-collapsed", isCol);
+      } catch {}
     };
   }, []);
 

@@ -117,7 +117,7 @@ test("project files upload, index, open, filter, and delete securely", async ({ 
     await page.evaluate(
       ({ url, title }) => {
         window.dispatchEvent(
-          new CustomEvent("agira:open-pdf-viewer", {
+          new CustomEvent("infratrack:open-pdf-viewer", {
             detail: {
               url,
               title,

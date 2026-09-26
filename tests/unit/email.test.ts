@@ -4,7 +4,7 @@ import { renderEmailHtml } from "@/lib/email";
 describe("renderEmailHtml", () => {
   it("includes heading, body lines, and branding", () => {
     const html = renderEmailHtml("You've been assigned a task", ["Line one", "Line <strong>two</strong>"]);
-    expect(html).toContain("Agira");
+    expect(html).toContain("InfraTrack");
     expect(html).toContain("You've been assigned a task");
     expect(html).toContain("Line one");
     expect(html).toContain("Line <strong>two</strong>");

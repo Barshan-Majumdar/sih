@@ -18,7 +18,7 @@ test("private R2 drawings stream only to project members", async ({ page }) => {
     await page.locator('input[name="file"]').setInputFiles({
       name: "private-test.pdf",
       mimeType: "application/pdf",
-      buffer: Buffer.from("%PDF-1.4\nAgira private test\n%%EOF"),
+      buffer: Buffer.from("%PDF-1.4\nInfraTrack private test\n%%EOF"),
     });
     await page.getByRole("button", { name: "Upload" }).click();
 

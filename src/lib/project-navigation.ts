@@ -11,7 +11,9 @@ import { prisma } from "@/lib/prisma";
 export async function redirectToActiveProjectTool(toolSegment: string, queryString?: string) {
   const { user, organizationId } = await requireActiveOrganization();
   const cookieStore = await cookies();
-  const preferredId = cookieStore.get("agira_active_project")?.value;
+  const preferredId =
+    cookieStore.get("infratrack_active_project")?.value ??
+    cookieStore.get("agira_active_project")?.value;
 
   let projectId: string | null = null;
 

@@ -8,7 +8,7 @@ const BARS = [
   { left: 0.22, top: 0.66, width: 0.32 },
 ];
 
-export function AgiraMark({ size = 32 }: AgiraMarkProps) {
+export function InfraTrackMark({ size = 32 }: AgiraMarkProps) {
   const barHeight = Math.max(2, Math.round(size * 0.09));
 
   return (
@@ -32,3 +32,5 @@ export function AgiraMark({ size = 32 }: AgiraMarkProps) {
     </span>
   );
 }
+
+export const AgiraMark = InfraTrackMark;

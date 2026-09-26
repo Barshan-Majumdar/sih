@@ -118,6 +118,9 @@ export function AssistantActionProposal({ initialProposal }: { initialProposal: 
           href={proposal.href}
           onClick={(event) => {
             window.dispatchEvent(
+              new CustomEvent("infratrack:toggle-assistant", { detail: { open: false } })
+            );
+            window.dispatchEvent(
               new CustomEvent("agira:toggle-assistant", { detail: { open: false } })
             );
             const destination = new URL(proposal.href, window.location.href);

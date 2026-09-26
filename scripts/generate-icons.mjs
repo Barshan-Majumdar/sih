@@ -1,7 +1,7 @@
 import sharp from "sharp";
 import { mkdir } from "node:fs/promises";
 
-// Agira icon: three offset horizontal bars on a #101720 rounded square,
+// InfraTrack icon: three offset horizontal bars on a #101720 rounded square,
 // abstracting a Gantt row. No text initials.
 function iconSvg({ maskable = false } = {}) {
   // Maskable icons need ~10% safe-zone padding all around.

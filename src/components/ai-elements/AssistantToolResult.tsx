@@ -133,6 +133,9 @@ export function AssistantToolResult({ part }: { part: ToolUIPart | DynamicToolUI
                 href={source.href}
                 onClick={(event) => {
                   window.dispatchEvent(
+                    new CustomEvent("infratrack:toggle-assistant", { detail: { open: false } })
+                  );
+                  window.dispatchEvent(
                     new CustomEvent("agira:toggle-assistant", { detail: { open: false } })
                   );
                   const destination = new URL(source.href, window.location.href);

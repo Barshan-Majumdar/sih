@@ -3,17 +3,20 @@ import { getCurrentSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getCurrentSession();
   if (!session?.user) {
     return NextResponse.json({ project: null }, { status: 401 });
   }
 
+  const { searchParams } = new URL(req.url);
+  const requestedId = searchParams.get("projectId");
+
   const cookieStore = await cookies();
-  const preferredId = cookieStore.get("agira_active_project")?.value;
+  const preferredId = requestedId || cookieStore.get("agira_active_project")?.value;
 
   if (preferredId && preferredId !== "new") {
-    const preferred = await prisma.project.findFirst({
+    let preferred = await prisma.project.findFirst({
       where: {
         id: preferredId,
         isArchived: false,
@@ -21,6 +24,15 @@ export async function GET() {
       },
       select: { id: true, name: true },
     });
+    if (!preferred) {
+      preferred = await prisma.project.findFirst({
+        where: {
+          id: preferredId,
+          isArchived: false,
+        },
+        select: { id: true, name: true },
+      });
+    }
     if (preferred) {
       return NextResponse.json({ project: preferred });
     }
@@ -50,10 +62,36 @@ export async function POST(req: Request) {
         maxAge: 60 * 60 * 24 * 30, // 30 days
         sameSite: "lax",
       });
+
+      const session = await getCurrentSession();
+      if (session?.user) {
+        let project = await prisma.project.findFirst({
+          where: {
+            id: projectId,
+            isArchived: false,
+            members: { some: { userId: session.user.id } },
+          },
+          select: { id: true, name: true },
+        });
+
+        if (!project) {
+          project = await prisma.project.findFirst({
+            where: {
+              id: projectId,
+              isArchived: false,
+            },
+            select: { id: true, name: true },
+          });
+        }
+
+        if (project) {
+          return NextResponse.json({ success: true, project });
+        }
+      }
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, project: null });
   } catch (error) {
-    return NextResponse.json({ success: false }, { status: 400 });
+    return NextResponse.json({ success: false, error: String(error) }, { status: 400 });
   }
 }

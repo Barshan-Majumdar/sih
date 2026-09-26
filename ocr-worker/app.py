@@ -17,8 +17,8 @@ MAX_INPUT_BYTES = 20 * 1024 * 1024
 MAX_OUTPUT_BYTES = 50 * 1024 * 1024
 SUPPORTED_TYPES = {"application/pdf", "image/png", "image/jpeg", "image/webp"}
 
-app = FastAPI(title="Agira OCR", docs_url=None, redoc_url=None)
-logger = logging.getLogger("agira-ocr")
+app = FastAPI(title="InfraTrack OCR", docs_url=None, redoc_url=None)
+logger = logging.getLogger("infratrack-ocr")
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
@@ -29,7 +29,7 @@ def log_event(severity: str, event: str, **metadata: object) -> None:
         json.dumps(
             {
                 "severity": severity,
-                "service": "agira-ocr",
+                "service": "infratrack-ocr",
                 "event": event,
                 **metadata,
             },
@@ -119,7 +119,7 @@ async def ocr(
         "image/jpeg": ".jpg",
         "image/webp": ".webp",
     }[media_type]
-    with tempfile.TemporaryDirectory(prefix="agira-ocr-") as temp_dir:
+    with tempfile.TemporaryDirectory(prefix="infratrack-ocr-") as temp_dir:
         root = Path(temp_dir)
         source = root / f"source{suffix}"
         source.write_bytes(body)

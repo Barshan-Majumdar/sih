@@ -58,7 +58,7 @@ export const featurePages: Record<string, MarketingPageData> = {
       { title: "Set the baseline", body: "Capture the approved plan and measure every meaningful shift against it." },
       { title: "Update from the field", body: "Roll actual progress and constraints back into the plan without rebuilding it." },
     ],
-    proof: { value: "1 plan", label: "from contract to crew", title: "A schedule should be an operating system, not a monthly artifact.", body: "Agira makes the master schedule useful between updates by connecting it directly to short-interval planning and project controls." },
+    proof: { value: "1 plan", label: "from contract to crew", title: "A schedule should be an operating system, not a monthly artifact.", body: "InfraTrack makes the master schedule useful between updates by connecting it directly to short-interval planning and project controls." },
   },
   "schedule-impact-requests": {
     slug: "schedule-impact-requests",
@@ -104,7 +104,7 @@ export const featurePages: Record<string, MarketingPageData> = {
       { title: "Track the review", body: "Monitor submission, response, revision, and approval milestones." },
       { title: "Escalate risk", body: "Surface approvals that threaten upcoming work before crews are waiting." },
     ],
-    proof: { value: "Need-by", label: "instead of due someday", title: "Document control becomes project control when dates are connected.", body: "Agira gives every submittal a schedule consequence, helping teams act on the approvals that protect production." },
+    proof: { value: "Need-by", label: "instead of due someday", title: "Document control becomes project control when dates are connected.", body: "InfraTrack gives every submittal a schedule consequence, helping teams act on the approvals that protect production." },
   },
   rfis: {
     slug: "rfis",
@@ -127,7 +127,7 @@ export const featurePages: Record<string, MarketingPageData> = {
       { title: "Drive the response", body: "Track assignment, status, aging, and follow-up from one queue." },
       { title: "Release the work", body: "Record the answer and clear or adjust the related constraint." },
     ],
-    proof: { value: "One view", label: "of question and consequence", title: "Not every open RFI is urgent. The schedule tells you which is.", body: "Agira helps project teams separate administrative backlog from questions that can affect production this week." },
+    proof: { value: "One view", label: "of question and consequence", title: "Not every open RFI is urgent. The schedule tells you which is.", body: "InfraTrack helps project teams separate administrative backlog from questions that can affect production this week." },
   },
   lookahead: {
     slug: "lookahead",
@@ -150,7 +150,7 @@ export const featurePages: Record<string, MarketingPageData> = {
       { title: "Screen constraints", body: "Identify what must be cleared for each activity to be executable." },
       { title: "Promote ready work", body: "Move reliable commitments into the weekly plan with context attached." },
     ],
-    proof: { value: "6 weeks", label: "of shared foresight", title: "Reliable weekly work begins with a buildable lookahead.", body: "Agira turns the gap between a high-level CPM schedule and daily coordination into a visible, repeatable planning process." },
+    proof: { value: "6 weeks", label: "of shared foresight", title: "Reliable weekly work begins with a buildable lookahead.", body: "InfraTrack turns the gap between a high-level CPM schedule and daily coordination into a visible, repeatable planning process." },
   },
   "field-tracking": {
     slug: "field-tracking",
@@ -173,7 +173,7 @@ export const featurePages: Record<string, MarketingPageData> = {
       { title: "Attach site context", body: "Add a photo, note, or blocker while standing at the work." },
       { title: "Sync the team", body: "Changes become visible across planning and project controls immediately." },
     ],
-    proof: { value: "60 sec", label: "to report real progress", title: "Field data only helps when field teams will actually enter it.", body: "Agira reduces update friction while preserving the schedule context office teams need for reliable decisions." },
+    proof: { value: "60 sec", label: "to report real progress", title: "Field data only helps when field teams will actually enter it.", body: "InfraTrack reduces update friction while preserving the schedule context office teams need for reliable decisions." },
   },
   "weekly-work-plan": {
     slug: "weekly-work-plan",
@@ -196,7 +196,7 @@ export const featurePages: Record<string, MarketingPageData> = {
       { title: "Track daily status", body: "Keep commitments current as work progresses throughout the week." },
       { title: "Review performance", body: "Calculate PPC and analyze reasons for variance in the same workflow." },
     ],
-    proof: { value: "PPC", label: "calculated automatically", title: "A promise becomes useful when the team can learn from it.", body: "Agira connects commitment planning and performance measurement so teams improve reliability week after week." },
+    proof: { value: "PPC", label: "calculated automatically", title: "A promise becomes useful when the team can learn from it.", body: "InfraTrack connects commitment planning and performance measurement so teams improve reliability week after week." },
   },
   "roadblocks-constraints": {
     slug: "roadblocks-constraints",
@@ -219,7 +219,7 @@ export const featurePages: Record<string, MarketingPageData> = {
       { title: "Drive the action", body: "Set ownership and follow the resolution through a focused queue." },
       { title: "Verify readiness", body: "Clear the constraint and return the activity to the executable plan." },
     ],
-    proof: { value: "Before", label: "the planned start date", title: "A visible constraint is a problem the team can solve.", body: "Agira gives roadblocks the schedule context and ownership needed to move from discussion to resolution." },
+    proof: { value: "Before", label: "the planned start date", title: "A visible constraint is a problem the team can solve.", body: "InfraTrack gives roadblocks the schedule context and ownership needed to move from discussion to resolution." },
   },
   "projects-timeline": {
     slug: "projects-timeline",
@@ -242,7 +242,7 @@ export const featurePages: Record<string, MarketingPageData> = {
       { title: "Review exposure", body: "Compare variance and risk across the full delivery horizon." },
       { title: "Focus intervention", body: "Open the projects that need leadership attention with context preserved." },
     ],
-    proof: { value: "All projects", label: "one delivery horizon", title: "Portfolio visibility should lead directly to project action.", body: "Agira keeps executive timelines connected to the live planning work beneath them." },
+    proof: { value: "All projects", label: "one delivery horizon", title: "Portfolio visibility should lead directly to project action.", body: "InfraTrack keeps executive timelines connected to the live planning work beneath them." },
   },
   "executive-dashboard": {
     slug: "executive-dashboard",
@@ -265,7 +265,7 @@ export const featurePages: Record<string, MarketingPageData> = {
       { title: "Review the cause", body: "Drill into milestones, constraints, and recent variance without waiting for a report." },
       { title: "Track intervention", body: "Follow action ownership and improvement through the next reporting cycle." },
     ],
-    proof: { value: "Live", label: "not last Friday's report", title: "Leadership visibility is only useful when it is operational.", body: "Agira replaces status collection with a direct view into the planning signals that drive project outcomes." },
+    proof: { value: "Live", label: "not last Friday's report", title: "Leadership visibility is only useful when it is operational.", body: "InfraTrack replaces status collection with a direct view into the planning signals that drive project outcomes." },
   },
   analytics: {
     slug: "analytics",
@@ -288,7 +288,7 @@ export const featurePages: Record<string, MarketingPageData> = {
       { title: "Explain the variance", body: "Group reasons for incomplete work by cause, project, and trade." },
       { title: "Improve the system", body: "Use trends to focus coaching, planning, and process changes." },
     ],
-    proof: { value: "+ trend", label: "behind every KPI", title: "The number matters. The direction and cause matter more.", body: "Agira keeps performance measures connected to the work and decisions that produced them." },
+    proof: { value: "+ trend", label: "behind every KPI", title: "The number matters. The direction and cause matter more.", body: "InfraTrack keeps performance measures connected to the work and decisions that produced them." },
   },
   "ai-assistant": {
     slug: "ai-assistant",
@@ -330,11 +330,11 @@ export const featurePages: Record<string, MarketingPageData> = {
     ],
     workflow: [
       { title: "Frame the question", body: "Ask about delivery exposure, constraints, trade performance, or recent change." },
-      { title: "Scan the portfolio", body: "Agira examines current project and planning signals together." },
+      { title: "Scan the portfolio", body: "InfraTrack examines current project and planning signals together." },
       { title: "Rank the findings", body: "Results prioritize the projects and records most relevant to the question." },
       { title: "Open the evidence", body: "Move from summary to source without losing context." },
     ],
-    proof: { value: "N projects", label: "one clear answer", title: "Portfolio intelligence should not require a reporting marathon.", body: "Agira makes operational project data directly accessible to the people making cross-project decisions." },
+    proof: { value: "N projects", label: "one clear answer", title: "Portfolio intelligence should not require a reporting marathon.", body: "InfraTrack makes operational project data directly accessible to the people making cross-project decisions." },
   },
 };
 
@@ -360,7 +360,7 @@ export const solutionPages: Record<string, MarketingPageData> = {
       { title: "Run the commitments", body: "Track weekly promises and resolve incomplete work quickly." },
       { title: "Communicate the truth", body: "Share current status with direct links to the underlying work." },
     ],
-    proof: { value: "One workspace", label: "for the project operating rhythm", title: "Project managers should manage the project, not assemble its data.", body: "Agira keeps planning and project controls connected so coordination work produces reporting automatically." },
+    proof: { value: "One workspace", label: "for the project operating rhythm", title: "Project managers should manage the project, not assemble its data.", body: "InfraTrack keeps planning and project controls connected so coordination work produces reporting automatically." },
   },
   schedulers: {
     slug: "schedulers",
@@ -383,7 +383,7 @@ export const solutionPages: Record<string, MarketingPageData> = {
       { title: "Record the update", body: "Advance progress while preserving baseline and variance history." },
       { title: "Publish downstream", body: "Refresh lookaheads and portfolio signals from the approved schedule." },
     ],
-    proof: { value: "Less chase", label: "more schedule analysis", title: "A better update begins with better project inputs.", body: "Agira brings field planning and project controls into the scheduler's workflow without weakening schedule discipline." },
+    proof: { value: "Less chase", label: "more schedule analysis", title: "A better update begins with better project inputs.", body: "InfraTrack brings field planning and project controls into the scheduler's workflow without weakening schedule discipline." },
   },
   superintendents: {
     slug: "superintendents",
@@ -406,7 +406,7 @@ export const solutionPages: Record<string, MarketingPageData> = {
       { title: "Confirm the week", body: "Agree on ready work and measurable trade commitments." },
       { title: "Learn every Friday", body: "Review PPC and reasons for variance to improve the next plan." },
     ],
-    proof: { value: "Field first", label: "without disconnecting the schedule", title: "The best plan is the one the field can use every day.", body: "Agira keeps field planning practical while preserving the schedule connection project teams depend on." },
+    proof: { value: "Field first", label: "without disconnecting the schedule", title: "The best plan is the one the field can use every day.", body: "InfraTrack keeps field planning practical while preserving the schedule connection project teams depend on." },
   },
   "trade-partners": {
     slug: "trade-partners",
@@ -429,7 +429,7 @@ export const solutionPages: Record<string, MarketingPageData> = {
       { title: "Update simply", body: "Report status, progress, photos, and issues from a phone." },
       { title: "Review reliability", body: "Use shared facts to improve coordination instead of assigning blame." },
     ],
-    proof: { value: "No extra seats", label: "for project collaborators", title: "Coordination improves when every partner can participate.", body: "Agira is designed to bring trades into planning without turning participation into administrative overhead." },
+    proof: { value: "No extra seats", label: "for project collaborators", title: "Coordination improves when every partner can participate.", body: "InfraTrack is designed to bring trades into planning without turning participation into administrative overhead." },
   },
   "mid-market": {
     slug: "mid-market",
@@ -452,7 +452,7 @@ export const solutionPages: Record<string, MarketingPageData> = {
       { title: "Measure adoption", body: "Track planning activity, reliability, and risk signals consistently." },
       { title: "Repeat with control", body: "Roll the proven setup into new projects without rebuilding it." },
     ],
-    proof: { value: "Days", label: "to a live project workflow", title: "Growth needs consistency, not more reporting layers.", body: "Agira gives mid-market contractors the operating structure of a larger platform without the deployment weight." },
+    proof: { value: "Days", label: "to a live project workflow", title: "Growth needs consistency, not more reporting layers.", body: "InfraTrack gives mid-market contractors the operating structure of a larger platform without the deployment weight." },
   },
   enterprise: {
     slug: "enterprise",
@@ -475,7 +475,7 @@ export const solutionPages: Record<string, MarketingPageData> = {
       { title: "Roll out by portfolio", body: "Launch with focused cohorts and measurable adoption targets." },
       { title: "Improve continuously", body: "Use operational analytics to refine standards and leadership support." },
     ],
-    proof: { value: "One standard", label: "many project realities", title: "Enterprise control works when project teams can still execute.", body: "Agira connects consistent governance to the daily planning work where delivery outcomes are shaped." },
+    proof: { value: "One standard", label: "many project realities", title: "Enterprise control works when project teams can still execute.", body: "InfraTrack connects consistent governance to the daily planning work where delivery outcomes are shaped." },
   },
   autodesk: {
     slug: "autodesk",
@@ -483,18 +483,18 @@ export const solutionPages: Record<string, MarketingPageData> = {
     group: "Integration",
     title: "Autodesk Construction Cloud",
     headline: "Bring drawings and schedule work into the same conversation.",
-    description: "Connect Autodesk Construction Cloud documents with Agira planning so teams can reach current project context from the work itself.",
+    description: "Connect Autodesk Construction Cloud documents with InfraTrack planning so teams can reach current project context from the work itself.",
     visual: "integration",
     visualLabel: "Autodesk connected workflow",
     outcomes: ["Connected drawing context", "Fewer document searches", "Consistent project records"],
     highlights: [
       { title: "Connect the project", body: "Authorize an Autodesk project and select the document context your team needs." },
       { title: "Reach drawings from work", body: "Associate current sheets and files with activities, constraints, and coordination items." },
-      { title: "Keep system ownership clear", body: "Use Autodesk for documents and Agira for connected planning context." },
+      { title: "Keep system ownership clear", body: "Use Autodesk for documents and InfraTrack for connected planning context." },
     ],
     workflow: [
       { title: "Authorize securely", body: "Connect your Autodesk account through an organization administrator." },
-      { title: "Map the project", body: "Choose the matching Agira and Autodesk project spaces." },
+      { title: "Map the project", body: "Choose the matching InfraTrack and Autodesk project spaces." },
       { title: "Sync context", body: "Make relevant document references available inside planning workflows." },
       { title: "Work from one view", body: "Open the current source document from the schedule or issue that needs it." },
     ],
@@ -506,7 +506,7 @@ export const solutionPages: Record<string, MarketingPageData> = {
     group: "Integration",
     title: "Procore",
     headline: "Connect project records to schedule consequence.",
-    description: "Bring Procore RFIs and submittals into Agira planning so project teams can see which open records threaten upcoming work.",
+    description: "Bring Procore RFIs and submittals into InfraTrack planning so project teams can see which open records threaten upcoming work.",
     visual: "integration",
     visualLabel: "Procore connected workflow",
     outcomes: ["Linked RFIs and submittals", "Schedule-aware priorities", "Less duplicate entry"],
@@ -517,7 +517,7 @@ export const solutionPages: Record<string, MarketingPageData> = {
     ],
     workflow: [
       { title: "Connect Procore", body: "Authorize the company and choose the projects to link." },
-      { title: "Sync project records", body: "Bring relevant RFI and submittal metadata into Agira." },
+      { title: "Sync project records", body: "Bring relevant RFI and submittal metadata into InfraTrack." },
       { title: "Map affected work", body: "Associate records with schedule activities and constraints." },
       { title: "Coordinate resolution", body: "Use schedule exposure to focus follow-up while status stays synchronized." },
     ],
