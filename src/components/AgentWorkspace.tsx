@@ -255,7 +255,7 @@ function ChatWorkspace({
         messages={messages}
         busy={busy}
         suggestions={suggestions}
-        onSuggestion={send}
+        onSuggestionAction={send}
         scopeName={scopeName}
       />
       {error && (
@@ -867,7 +867,7 @@ function AgentWorkspaceInner({ initialProjectId = null }: AgentWorkspaceProps) {
                   busy={false}
                   suggestions={activeSuggestions}
                   scopeName={activeScopeName}
-                  onSuggestion={(suggestion) => void createConversation(suggestion)}
+                  onSuggestionAction={(suggestion) => void createConversation(suggestion)}
                 />
               )}
             </div>

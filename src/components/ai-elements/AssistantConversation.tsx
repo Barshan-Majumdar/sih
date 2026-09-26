@@ -36,7 +36,7 @@ type AssistantConversationProps = {
   messages: AssistantUIMessage[];
   busy: boolean;
   suggestions: string[];
-  onSuggestion: (suggestion: string) => void;
+  onSuggestionAction: (suggestion: string) => void;
   scopeName?: string;
 };
 
@@ -114,7 +114,7 @@ export function AssistantConversation({
   messages,
   busy,
   suggestions,
-  onSuggestion,
+  onSuggestionAction,
   scopeName,
 }: AssistantConversationProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -162,7 +162,7 @@ export function AssistantConversation({
               <button
                 key={suggestion}
                 type="button"
-                onClick={() => onSuggestion(suggestion)}
+                onClick={() => onSuggestionAction(suggestion)}
                 className="min-h-14 rounded-md border border-[var(--assistant-border)] bg-[var(--assistant-layer)] px-3.5 py-3 text-left text-sm leading-5 text-[var(--assistant-text-muted)] transition-colors hover:border-[var(--assistant-border-strong)] hover:bg-[var(--assistant-layer-hover)] hover:text-[var(--assistant-text)]"
               >
                 {suggestion}
