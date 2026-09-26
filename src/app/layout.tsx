@@ -7,9 +7,7 @@ import "./globals.css";
 const themeInitializer = `
 try {
   var stored = localStorage.getItem("infratrack:theme") || localStorage.getItem("agira:theme");
-  var path = window.location.pathname;
-  var isApp = path === "/" || path.startsWith("/dashboard") || path.startsWith("/projects") || path.startsWith("/tasks") || path.startsWith("/gantt") || path.startsWith("/agent") || path.startsWith("/files") || path.startsWith("/weekly-plan") || path.startsWith("/review-queue") || path.startsWith("/plan-vs-actual") || path.startsWith("/lookahead") || path.startsWith("/pull-planning") || path.startsWith("/roadblocks") || path.startsWith("/impacts") || path.startsWith("/drawings") || path.startsWith("/rfis") || path.startsWith("/submittals") || path.startsWith("/baselines") || path.startsWith("/activity") || path.startsWith("/members") || path.startsWith("/settings") || path.startsWith("/timeline") || path.startsWith("/trade-performance") || path.startsWith("/integrations") || path.startsWith("/plan");
-  if (isApp && stored === "dark") {
+  if (stored === "dark") {
     document.documentElement.dataset.appTheme = "dark";
     document.documentElement.style.colorScheme = "dark";
   } else {

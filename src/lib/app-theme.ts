@@ -24,13 +24,33 @@ export function readStoredAppTheme(): AppTheme {
   }
 }
 
-export function applyAppShellTheme(shell: HTMLElement, theme: AppTheme) {
-  shell.dataset.appTheme = theme;
-  shell.style.colorScheme = theme;
+export function applyGlobalTheme(theme: AppTheme) {
   if (typeof document !== "undefined") {
-    document.documentElement.dataset.appTheme = theme;
-    document.documentElement.style.colorScheme = theme;
-    document.body.dataset.appTheme = theme;
-    document.body.style.colorScheme = theme;
+    if (theme === "dark") {
+      document.documentElement.dataset.appTheme = "dark";
+      document.documentElement.style.colorScheme = "dark";
+      document.body.dataset.appTheme = "dark";
+      document.body.style.colorScheme = "dark";
+    } else {
+      delete document.documentElement.dataset.appTheme;
+      document.documentElement.style.colorScheme = "light";
+      delete document.body.dataset.appTheme;
+      document.body.style.colorScheme = "light";
+    }
+
+    const shell = document.querySelector<HTMLElement>(".app-shell");
+    if (shell) {
+      if (theme === "dark") {
+        shell.dataset.appTheme = "dark";
+        shell.style.colorScheme = "dark";
+      } else {
+        delete shell.dataset.appTheme;
+        shell.style.colorScheme = "light";
+      }
+    }
   }
+}
+
+export function applyAppShellTheme(shell: HTMLElement, theme: AppTheme) {
+  applyGlobalTheme(theme);
 }

@@ -202,7 +202,7 @@ function OpenInAgentAction({ file, projectId }: { file: ProjectFileRecord; proje
     <button
       type="button"
       onClick={() => {
-        router.push(`/agent/${projectId}?file=${encodeURIComponent(file.name)}`);
+        router.push(`/agent?file=${encodeURIComponent(file.name)}`);
       }}
       className="btn-interactive inline-flex h-8 items-center justify-center whitespace-nowrap rounded-lg border border-hairline bg-surface-soft px-3 text-xs font-semibold text-ink transition-colors hover:bg-canvas shadow-2xs"
     >

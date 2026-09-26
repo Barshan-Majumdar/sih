@@ -16,10 +16,8 @@ export function GlobalAssistant() {
 
     const handleOpenProjectFile = (event: Event) => {
       const detail = (event as CustomEvent<{ projectId?: string; fileName?: string }>).detail;
-      if (detail?.projectId && detail?.fileName) {
-        router.push(`/agent/${detail.projectId}?file=${encodeURIComponent(detail.fileName)}`);
-      } else if (detail?.projectId) {
-        router.push(`/agent/${detail.projectId}`);
+      if (detail?.fileName) {
+        router.push(`/agent?file=${encodeURIComponent(detail.fileName)}`);
       } else {
         router.push("/agent");
       }

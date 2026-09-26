@@ -570,6 +570,53 @@ body.has-project-rail .app-main {
   transform: scale(0.98);
 }
 
+/* Landing Announcement Bar (Top Banner) */
+.landing-announcement-bar {
+  background-color: rgba(15, 23, 42, 0.9);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+
+.landing-announcement-bar:hover {
+  background-color: rgba(15, 23, 42, 0.98);
+}
+
+.landing-announcement-bar .announcement-arrow-circle {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.landing-announcement-bar:hover .announcement-arrow-circle {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* In Dark Theme: Rich black text on the silver/white top strip for ultra-crisp visibility */
+html[data-app-theme="dark"] .landing-announcement-bar,
+body[data-app-theme="dark"] .landing-announcement-bar {
+  background-color: rgba(248, 250, 252, 0.92);
+  color: #09090b !important;
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  font-weight: 600;
+}
+
+html[data-app-theme="dark"] .landing-announcement-bar:hover,
+body[data-app-theme="dark"] .landing-announcement-bar:hover {
+  background-color: #ffffff;
+}
+
+html[data-app-theme="dark"] .landing-announcement-bar .announcement-arrow-circle,
+body[data-app-theme="dark"] .landing-announcement-bar .announcement-arrow-circle {
+  border-color: rgba(9, 9, 11, 0.3);
+  color: #09090b !important;
+}
+
+html[data-app-theme="dark"] .landing-announcement-bar:hover .announcement-arrow-circle,
+body[data-app-theme="dark"] .landing-announcement-bar:hover .announcement-arrow-circle {
+  border-color: rgba(9, 9, 11, 0.7);
+}
+
 /* ==========================================================================
    Modern Sleek Scrollbars (Light & Dark Themes)
    ========================================================================== */
@@ -744,4 +791,97 @@ body[data-app-theme="dark"]::-webkit-scrollbar-corner,
   .landing-panel-enter {
     animation: none;
   }
+}
+
+/* ==========================================================================
+   InfraTrack Footer Watermark — Character-by-Character Micro-Interactions
+   ========================================================================== */
+
+.infratrack-watermark-char {
+  display: inline-block;
+  color: #cbd5e1;
+  transform: translateY(0) scale(1);
+  filter: drop-shadow(0 0 0 transparent);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.22s ease-out,
+              filter 0.25s ease-out;
+  will-change: transform, filter;
+  backface-visibility: hidden;
+}
+
+/* Light Mode: Hover / Active Character */
+.infratrack-watermark-char:hover,
+.infratrack-watermark-char[data-active="true"] {
+  color: #0f172a !important;
+  transform: translateY(-14px) scale(1.1);
+  filter: drop-shadow(0 16px 24px rgba(15, 23, 42, 0.24));
+  z-index: 10;
+  position: relative;
+}
+
+/* Light Mode: Ripple Neighbors */
+.infratrack-watermark-char[data-neighbor="1"] {
+  color: #334155 !important;
+  transform: translateY(-7px) scale(1.05);
+  filter: drop-shadow(0 8px 14px rgba(15, 23, 42, 0.14));
+  z-index: 5;
+  position: relative;
+}
+
+.infratrack-watermark-char[data-neighbor="2"] {
+  color: #64748b !important;
+  transform: translateY(-3px) scale(1.02);
+  filter: drop-shadow(0 4px 8px rgba(15, 23, 42, 0.08));
+  z-index: 2;
+  position: relative;
+}
+
+/* Tactile Click / Press */
+.infratrack-watermark-char:active {
+  transform: translateY(-8px) scale(0.98);
+}
+
+/* --------------------------------------------------------------------------
+   Dark Mode: Obsidian Stealth with Luminous Electric White & Blue Bloom
+   -------------------------------------------------------------------------- */
+
+html[data-app-theme="dark"] .infratrack-watermark-char,
+body[data-app-theme="dark"] .infratrack-watermark-char,
+[data-app-theme="dark"] .infratrack-watermark-char {
+  color: #27272a;
+}
+
+/* Dark Mode: Hover / Active Character */
+html[data-app-theme="dark"] .infratrack-watermark-char:hover,
+body[data-app-theme="dark"] .infratrack-watermark-char:hover,
+[data-app-theme="dark"] .infratrack-watermark-char:hover,
+html[data-app-theme="dark"] .infratrack-watermark-char[data-active="true"],
+body[data-app-theme="dark"] .infratrack-watermark-char[data-active="true"],
+[data-app-theme="dark"] .infratrack-watermark-char[data-active="true"] {
+  color: #ffffff !important;
+  transform: translateY(-14px) scale(1.1);
+  filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 48px rgba(59, 130, 246, 0.65));
+  z-index: 10;
+  position: relative;
+}
+
+/* Dark Mode: Ripple Neighbors */
+html[data-app-theme="dark"] .infratrack-watermark-char[data-neighbor="1"],
+body[data-app-theme="dark"] .infratrack-watermark-char[data-neighbor="1"],
+[data-app-theme="dark"] .infratrack-watermark-char[data-neighbor="1"] {
+  color: #e4e4e7 !important;
+  transform: translateY(-7px) scale(1.05);
+  filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 32px rgba(59, 130, 246, 0.35));
+  z-index: 5;
+  position: relative;
+}
+
+html[data-app-theme="dark"] .infratrack-watermark-char[data-neighbor="2"],
+body[data-app-theme="dark"] .infratrack-watermark-char[data-neighbor="2"],
+[data-app-theme="dark"] .infratrack-watermark-char[data-neighbor="2"] {
+  color: #a1a1aa !important;
+  transform: translateY(-3px) scale(1.02);
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3)) drop-shadow(0 0 20px rgba(59, 130, 246, 0.22));
+  z-index: 2;
+  position: relative;
 }

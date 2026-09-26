@@ -47,7 +47,7 @@ export function ProjectSetupChecklist({
   if (completed === steps.length) return null;
 
   function openAgent() {
-    router.push(`/agent/${projectId}`);
+    router.push("/agent");
   }
 
   return (

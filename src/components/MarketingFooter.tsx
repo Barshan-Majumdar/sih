@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { InfraTrackMark } from "@/components/landing/InfraTrackMark";
+import { InfraTrackWatermark } from "@/components/InfraTrackWatermark";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const FOOTER_COLUMNS = [
   {
@@ -33,7 +35,7 @@ const FOOTER_COLUMNS = [
 
 export function MarketingFooter() {
   return (
-    <footer className="overflow-hidden bg-surface-soft px-4 pt-5 sm:px-7 sm:pt-7 lg:px-10 lg:pt-10">
+    <footer className="relative overflow-visible bg-surface-soft px-4 pt-5 sm:px-7 sm:pt-7 lg:px-10 lg:pt-10">
       <div className="mx-auto max-w-[1800px] rounded-[28px] border border-hairline bg-canvas px-6 py-10 shadow-[0_18px_55px_rgba(16,23,32,0.06)] sm:px-10 sm:py-12 lg:px-16 lg:py-16">
         <div className="grid gap-12 lg:grid-cols-[1.35fr_0.65fr_0.65fr_0.65fr] lg:gap-14">
           <div>
@@ -65,15 +67,12 @@ export function MarketingFooter() {
             <Link href="/#why" className="underline decoration-hairline underline-offset-4 transition-colors hover:text-ink">Why InfraTrack</Link>
             <Link href="/pricing" className="underline decoration-hairline underline-offset-4 transition-colors hover:text-ink">Pricing</Link>
             <Link href="/features/ai-assistant" className="underline decoration-hairline underline-offset-4 transition-colors hover:text-ink">Agent</Link>
+            <ThemeToggle />
           </div>
         </div>
       </div>
 
-      <div className="relative mx-auto h-[clamp(90px,13vw,240px)] max-w-[1900px] overflow-hidden" aria-hidden="true">
-        <p className="absolute bottom-[-0.38em] left-1/2 -translate-x-1/2 whitespace-nowrap text-center text-[clamp(3rem,13vw,15rem)] font-semibold leading-none tracking-[0] text-surface-strong">
-          InfraTrack
-        </p>
-      </div>
+      <InfraTrackWatermark />
     </footer>
   );
 }

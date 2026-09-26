@@ -17,6 +17,7 @@ import {
 import { AssistantConversation } from "@/components/ai-elements/AssistantConversation";
 import { AssistantPromptInput } from "@/components/ai-elements/AssistantPromptInput";
 import { PdfViewerPanel } from "@/components/PdfViewer";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import type {
   AssistantAttachmentView,
   AssistantBootstrap,
@@ -336,9 +337,8 @@ function AgentWorkspaceInner({ initialProjectId = null }: AgentWorkspaceProps) {
   }, []);
 
   const updateUrlWithChat = useCallback(
-    (nextScopeId: string | null, conversationId: string | null) => {
-      const base = nextScopeId ? `/agent/${nextScopeId}` : "/agent";
-      const targetUrl = conversationId ? `${base}?chatId=${encodeURIComponent(conversationId)}` : base;
+    (_nextScopeId: string | null, conversationId: string | null) => {
+      const targetUrl = conversationId ? `/agent?chatId=${encodeURIComponent(conversationId)}` : "/agent";
       if (typeof window !== "undefined") {
         window.history.replaceState(null, "", targetUrl);
       }
@@ -670,7 +670,10 @@ function AgentWorkspaceInner({ initialProjectId = null }: AgentWorkspaceProps) {
           </div>
 
           {/* Rail Scrollable Conversation List */}
-          <div className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-3 pt-3">
+          <div
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2.5 pb-3 pt-3"
+            style={{ overscrollBehavior: "contain" }}
+          >
             <button
               type="button"
               onClick={() => void createConversation()}
@@ -807,16 +810,19 @@ function AgentWorkspaceInner({ initialProjectId = null }: AgentWorkspaceProps) {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleReturnToDashboard}
-              className="flex items-center gap-1.5 rounded-md border border-[var(--assistant-border)] bg-[var(--assistant-layer)] px-2.5 py-1.5 text-xs font-semibold text-[var(--assistant-text-body)] shadow-2xs transition-colors hover:border-[var(--assistant-border-strong)] hover:bg-[var(--assistant-layer-hover)] hover:text-[var(--assistant-text)]"
-              aria-label="Return to dashboard"
-              title="Return to dashboard"
-            >
-              <LayoutDashboard size={14} aria-hidden />
-              <span className="hidden sm:inline">Dashboard</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <button
+                type="button"
+                onClick={handleReturnToDashboard}
+                className="flex items-center gap-1.5 rounded-md border border-[var(--assistant-border)] bg-[var(--assistant-layer)] px-2.5 py-1.5 text-xs font-semibold text-[var(--assistant-text-body)] shadow-2xs transition-colors hover:border-[var(--assistant-border-strong)] hover:bg-[var(--assistant-layer-hover)] hover:text-[var(--assistant-text)]"
+                aria-label="Return to dashboard"
+                title="Return to dashboard"
+              >
+                <LayoutDashboard size={14} aria-hidden />
+                <span className="hidden sm:inline">Dashboard</span>
+              </button>
+            </div>
           </header>
 
           {/* Chat Workspace + PDF Split Screen */}

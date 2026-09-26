@@ -1,11 +1,15 @@
 import { SignUp } from "@clerk/nextjs";
 import Link from "next/link";
 import { InfraTrackMark } from "@/components/landing/InfraTrackMark";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { ShieldCheck, Sparkles } from "lucide-react";
 
 export default function SignUpPage() {
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-surface-dark px-4 py-12 text-on-dark">
+      <div className="absolute top-5 right-5 z-20 flex items-center gap-3">
+        <ThemeToggle className="group btn-interactive inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-pill border border-white/15 bg-white/10 text-white/90 shadow-sm transition-all hover:border-white/30 hover:bg-white/20 hover:text-white" />
+      </div>
       {/* Background ambient aurora lighting */}
       <div
         className="pointer-events-none absolute -top-40 left-1/2 h-[450px] w-[600px] -translate-x-1/2 rounded-full bg-brand-accent/15 blur-[120px]"

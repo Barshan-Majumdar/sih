@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { LandingAnnouncementBar } from "@/components/LandingAnnouncementBar";
 import { InfraTrackMark } from "@/components/landing/InfraTrackMark";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type MegaItem = {
   title: string;
@@ -306,15 +307,23 @@ export function LandingMegaNav({
   );
 
   useEffect(() => {
-    const initialFrame = window.requestAnimationFrame(() => {
-      setScrolled(window.scrollY > 24);
-    });
+    let lastState = typeof window !== "undefined" && window.scrollY > 32;
+    setScrolled(lastState);
+
     function onScroll() {
-      setScrolled(window.scrollY > 24);
+      const y = window.scrollY;
+      // Hysteresis: float when scrolled past 36px, un-float only when near the top (< 12px)
+      if (!lastState && y > 36) {
+        lastState = true;
+        setScrolled(true);
+      } else if (lastState && y < 12) {
+        lastState = false;
+        setScrolled(false);
+      }
     }
+
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      window.cancelAnimationFrame(initialFrame);
       window.removeEventListener("scroll", onScroll);
     };
   }, []);
@@ -383,11 +392,14 @@ export function LandingMegaNav({
           }`}
         >
           <div
-            className={`w-full overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+            className={`w-full overflow-hidden border transition-[background-color,border-color,border-radius,box-shadow,backdrop-filter] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
               isFloating
-                ? "rounded-[20px] border border-white/10 bg-black/38 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur-xl"
-                : "bg-transparent"
+                ? "rounded-[20px] border-white/10 bg-black/38 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur-xl"
+                : "rounded-none border-transparent bg-transparent shadow-none backdrop-blur-none"
             }`}
+            style={{
+              borderColor: isFloating ? "rgba(255, 255, 255, 0.1)" : "transparent",
+            }}
           >
             <div
               className={`flex items-center transition-[height,padding] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
@@ -455,13 +467,20 @@ export function LandingMegaNav({
                 </svg>
               </button>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <ThemeToggle
+                  className={
+                    useDarkGlass
+                      ? "group btn-interactive inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-pill border border-white/20 bg-white/10 text-white shadow-sm transition-all hover:border-white/40 hover:bg-white/20"
+                      : undefined
+                  }
+                />
                 {isSignedIn ? (
                   <Link
                     href="/projects"
                     className={`inline-flex h-10 items-center justify-center rounded-md px-5 text-sm font-semibold transition-colors ${
                       useDarkGlass
-                        ? "bg-white text-ink hover:bg-white/90"
+                        ? "bg-white text-[#09090b] hover:bg-white/90 shadow-sm"
                         : "bg-primary text-on-primary hover:bg-primary-active"
                     }`}
                   >
@@ -481,7 +500,7 @@ export function LandingMegaNav({
                       href="/sign-up"
                       className={`inline-flex h-10 items-center justify-center rounded-md px-5 text-sm font-semibold transition-colors ${
                         useDarkGlass
-                          ? "bg-white text-ink hover:bg-white/90"
+                          ? "bg-white text-[#09090b] hover:bg-white/90 shadow-sm"
                           : "bg-primary text-on-primary hover:bg-primary-active"
                       }`}
                     >
@@ -571,6 +590,10 @@ export function LandingMegaNav({
             <Link href="/pricing" className="py-2 text-sm font-medium text-muted" onClick={() => setMobileOpen(false)}>
               Pricing
             </Link>
+          </div>
+          <div className="flex items-center justify-between border-t border-hairline-soft pt-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted">Appearance</span>
+            <ThemeToggle />
           </div>
             </div>
           )}

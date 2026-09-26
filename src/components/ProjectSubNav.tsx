@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Activity,
@@ -120,6 +120,39 @@ export function ProjectRouteSubNav() {
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [activeProjectName, setActiveProjectName] = useState<string | null>(null);
 
+  const asideRef = useRef<HTMLElement>(null);
+  const navScrollRef = useRef<HTMLDivElement>(null);
+
+  // Contain sidebar scroll: prevent scrolling the main page when sidebar scroll reaches start/end
+  useEffect(() => {
+    const aside = asideRef.current;
+    const scrollEl = navScrollRef.current;
+    if (!aside || !scrollEl) return;
+
+    const onWheel = (e: WheelEvent) => {
+      const isScrollingDown = e.deltaY > 0;
+      const isScrollingUp = e.deltaY < 0;
+
+      // If wheeling over non-scrollable header in aside, redirect scroll to scrollEl
+      if (!scrollEl.contains(e.target as Node)) {
+        scrollEl.scrollTop += e.deltaY;
+        e.preventDefault();
+        return;
+      }
+
+      const atTop = scrollEl.scrollTop <= 0;
+      const atBottom =
+        Math.ceil(scrollEl.scrollTop + scrollEl.clientHeight) >= scrollEl.scrollHeight;
+
+      if ((isScrollingUp && atTop) || (isScrollingDown && atBottom)) {
+        e.preventDefault();
+      }
+    };
+
+    aside.addEventListener("wheel", onWheel, { passive: false });
+    return () => aside.removeEventListener("wheel", onWheel);
+  }, []);
+
   // Parse active item & project from path
   const { currentKey, currentProjectId } = useMemo(() => {
     // 1. Clean routes: /tool/:projectId
@@ -145,6 +178,9 @@ export function ProjectRouteSubNav() {
     // 3. Top-level routes
     if (pathname === "/dashboard") {
       return { currentKey: "dashboard", currentProjectId: null };
+    }
+    if (pathname === "/agent") {
+      return { currentKey: "agent", currentProjectId: null };
     }
     if (pathname === "/projects" || pathname.startsWith("/projects/")) {
       return { currentKey: "projects", currentProjectId: null };
@@ -290,7 +326,7 @@ export function ProjectRouteSubNav() {
       return effectiveProjectId ? `/dashboard/${effectiveProjectId}` : "/dashboard";
     }
     if (item.segment === "agent") {
-      return effectiveProjectId ? `/agent/${effectiveProjectId}` : "/agent";
+      return "/agent";
     }
     return effectiveProjectId ? `/${item.segment}/${effectiveProjectId}` : "/projects";
   };
@@ -334,10 +370,12 @@ export function ProjectRouteSubNav() {
 
       {/* Main Sidebar Element */}
       <aside
+        ref={asideRef}
         aria-label="Workspace navigation"
-        className={`fixed top-14 bottom-0 left-0 z-40 flex flex-col border-r border-hairline/80 bg-canvas/95 backdrop-blur-xl transition-[width,transform] duration-200 ease-out md:translate-x-0 ${
+        className={`fixed top-14 bottom-0 left-0 z-40 flex flex-col border-r border-hairline/80 bg-canvas/95 overscroll-contain backdrop-blur-xl transition-[width,transform] duration-200 ease-out md:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         } ${collapsed ? "w-[88px]" : "w-64"}`}
+        style={{ overscrollBehavior: "contain" }}
       >
         {/* Mobile Header Close */}
         <div className="flex h-12 items-center justify-between border-b border-hairline px-4 md:hidden">
@@ -389,7 +427,11 @@ export function ProjectRouteSubNav() {
         )}
 
         {/* Scrollable Navigation Groups */}
-        <div className="flex-1 overflow-y-auto px-2 py-2.5 space-y-3.5">
+        <div
+          ref={navScrollRef}
+          className="flex-1 overflow-y-auto overscroll-contain px-2 py-2.5 space-y-3.5"
+          style={{ overscrollBehavior: "contain", overscrollBehaviorY: "contain" }}
+        >
           {NAV_GROUPS.map((group) => (
             <div key={group.heading} className="space-y-0.5">
               {/* Group Heading (Visible both expanded and collapsed) */}
