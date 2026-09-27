@@ -43,9 +43,11 @@ export function AuthShell({ initialMode }: AuthShellProps) {
   }, [isLoaded, isSignedIn, router]);
 
   // Keep internal mode synced with initialMode when route changes
-  useEffect(() => {
+  const [prevInitialMode, setPrevInitialMode] = useState(initialMode);
+  if (prevInitialMode !== initialMode) {
+    setPrevInitialMode(initialMode);
     setMode(initialMode);
-  }, [initialMode]);
+  }
 
   const handleSwitchMode = (targetMode: "sign-in" | "sign-up") => {
     setMode(targetMode);
@@ -303,7 +305,7 @@ export function AuthShell({ initialMode }: AuthShellProps) {
               </Link>
 
               <div className={`text-xs ${isDark ? "text-zinc-400" : "text-slate-600"}`}>
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <button
                   type="button"
                   onClick={() => handleSwitchMode("sign-up")}

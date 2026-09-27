@@ -127,7 +127,7 @@ export async function submitDprReport(input: SubmitDprInput) {
 
     // Run Stage 1 & Stage 2 matching against project schedule
     try {
-      let matchResult = await matchFieldEvidence(
+      const matchResult = await matchFieldEvidence(
         {
           id: obs.id,
           raw_text: item.raw_text,
