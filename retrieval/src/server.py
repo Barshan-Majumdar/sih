@@ -109,7 +109,7 @@ def health_check():
     Returns server status and total indexed schedule activities.
     """
     return {
-        "status": "ok",
+        "status": "online",
         "engine": "hybrid-retrieval-and-ocr",
         "indexed_activities_count": len(service.activities),
         "normalization_enabled": service.use_normalization,
