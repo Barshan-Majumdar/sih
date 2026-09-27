@@ -94,9 +94,23 @@ export async function submitDprReport(input: SubmitDprInput) {
   // 4. Process each observation and match against master schedule
   let autoLinkedCount = 0;
   const createdObservations = [];
+  const updatedTasks: Array<{ id: string; name: string; progress: number; status: string }> = [];
 
   for (const item of extractedItems) {
     const obsDate = item.extracted_date ? new Date(item.extracted_date) : effectiveDate;
+
+    // Fallback: extract progress percent via regex if LLM omitted it
+    let extractedPercent = item.progress_percent ?? null;
+    if (extractedPercent === null || extractedPercent === undefined) {
+      const combinedText = `${item.raw_text} ${rawText}`;
+      const percentMatch = combinedText.match(/(\d{1,3})\s*(?:%|percent)/i);
+      if (percentMatch) {
+        const parsed = parseInt(percentMatch[1], 10);
+        if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+          extractedPercent = parsed;
+        }
+      }
+    }
 
     // Create the observation record
     const obs = await prisma.extractedObservation.create({
@@ -105,7 +119,7 @@ export async function submitDprReport(input: SubmitDprInput) {
         rawText: item.raw_text,
         eventType: item.event_type || "PROGRESS",
         extractedDate: obsDate,
-        progressPercent: item.progress_percent || null,
+        progressPercent: extractedPercent,
         sourceSpan: item.source_snippet ? { snippet: item.source_snippet } : undefined,
         matchStatus: "PENDING",
       },
@@ -124,17 +138,54 @@ export async function submitDprReport(input: SubmitDprInput) {
         5
       );
 
-      // Direct keyword / task name match fallback if microservice returned no matches
-      if (!matchResult.matches || matchResult.matches.length === 0) {
-        const textLower = `${item.raw_text} ${rawText}`.toLowerCase();
+      const textLower = `${item.raw_text} ${rawText}`.toLowerCase();
+      let matches = matchResult.matches ? [...matchResult.matches] : [];
+
+      // Check if any project task name is explicitly mentioned in the text
+      let exactTaskMatch: typeof projectTasks[0] | null = null;
+      for (const t of projectTasks) {
+        const nameLower = t.name.toLowerCase().trim();
+        if (nameLower.length > 2 && textLower.includes(nameLower)) {
+          exactTaskMatch = t;
+          break;
+        }
+      }
+
+      if (exactTaskMatch) {
+        // Boost existing candidate or inject as top candidate with 0.95 confidence
+        const existingIdx = matches.findIndex(
+          (m) =>
+            m.schedule_activity_id === exactTaskMatch.id ||
+            m.name.toLowerCase() === exactTaskMatch.name.toLowerCase()
+        );
+        if (existingIdx !== -1) {
+          matches[existingIdx] = {
+            ...matches[existingIdx],
+            confidence_score: Math.max(matches[existingIdx].confidence_score, 0.95),
+            matching_reasons: [
+              `Direct exact task name match for "${exactTaskMatch.name}"`,
+              ...(matches[existingIdx].matching_reasons || []),
+            ],
+          };
+          const [boosted] = matches.splice(existingIdx, 1);
+          matches.unshift(boosted);
+        } else {
+          matches.unshift({
+            schedule_activity_id: exactTaskMatch.id,
+            activity_id: exactTaskMatch.wbsCode || exactTaskMatch.id,
+            name: exactTaskMatch.name,
+            confidence_score: 0.95,
+            component_scores: { direct_task_mention: 0.95 },
+            matching_reasons: [`Direct exact task name match for "${exactTaskMatch.name}"`],
+            rank: 1,
+          });
+        }
+      } else if (matches.length === 0) {
+        // Direct keyword token fallback if microservice returned no matches
         const candidateScores: Array<{ task: typeof projectTasks[0]; score: number }> = [];
 
         for (const t of projectTasks) {
           const nameLower = t.name.toLowerCase();
-          if (textLower.includes(nameLower)) {
-            candidateScores.push({ task: t, score: 0.95 });
-            continue;
-          }
           const words = nameLower.split(/\s+/).filter((w) => w.length > 2);
           const matchedCount = words.filter((w) => textLower.includes(w)).length;
           if (words.length > 0 && matchedCount > 0) {
@@ -147,19 +198,21 @@ export async function submitDprReport(input: SubmitDprInput) {
 
         if (candidateScores.length > 0) {
           candidateScores.sort((a, b) => b.score - a.score);
-          matchResult = {
-            matches: candidateScores.slice(0, 5).map((cs, idx) => ({
-              schedule_activity_id: cs.task.id,
-              activity_id: cs.task.wbsCode || cs.task.id,
-              name: cs.task.name,
-              confidence_score: cs.score,
-              component_scores: { direct_keyword_score: cs.score },
-              matching_reasons: [`Direct keyword overlap with "${cs.task.name}"`],
-              rank: idx + 1,
-            })),
-          };
+          matches = candidateScores.slice(0, 5).map((cs, idx) => ({
+            schedule_activity_id: cs.task.id,
+            activity_id: cs.task.wbsCode || cs.task.id,
+            name: cs.task.name,
+            confidence_score: cs.score,
+            component_scores: { direct_keyword_score: cs.score },
+            matching_reasons: [`Direct keyword overlap with "${cs.task.name}"`],
+            rank: idx + 1,
+          }));
         }
       }
+
+      // Re-index ranks
+      matches = matches.map((m, idx) => ({ ...m, rank: idx + 1 }));
+      matchResult.matches = matches;
 
       // Persist CandidateMatches with component score breakdowns
       if (matchResult.matches && matchResult.matches.length > 0) {
@@ -186,12 +239,12 @@ export async function submitDprReport(input: SubmitDprInput) {
         }
 
         // Apply Routing Thresholds:
-        // >= 0.75 or single match >= 0.65 auto-links and directly updates the task on the schedule
+        // >= 0.70 or single match >= 0.60 auto-links and directly updates the task on the schedule
         const topMatch = matchResult.matches[0];
         const isAutoLink =
           topMatch &&
-          (topMatch.confidence_score >= 0.75 ||
-            (matchResult.matches.length === 1 && topMatch.confidence_score >= 0.65));
+          (topMatch.confidence_score >= 0.70 ||
+            (matchResult.matches.length === 1 && topMatch.confidence_score >= 0.60));
 
         if (isAutoLink && topMatch) {
           const matchedTask = projectTasks.find(
@@ -212,8 +265,8 @@ export async function submitDprReport(input: SubmitDprInput) {
 
             // 2. Compute updated progress & status
             const newProgress =
-              item.progress_percent !== null && item.progress_percent !== undefined
-                ? Math.round(item.progress_percent)
+              extractedPercent !== null && extractedPercent !== undefined
+                ? Math.round(extractedPercent)
                 : item.event_type === "COMPLETED"
                 ? 100
                 : matchedTask.progress;
@@ -234,6 +287,13 @@ export async function submitDprReport(input: SubmitDprInput) {
                 actualStartDate: matchedTask.actualStartDate || obsDate,
                 actualFinishDate: newProgress >= 100 ? obsDate : matchedTask.actualFinishDate,
               },
+            });
+
+            updatedTasks.push({
+              id: matchedTask.id,
+              name: matchedTask.name,
+              progress: newProgress,
+              status: newStatus,
             });
 
             // 4. Record ApprovedScheduleEvent with automated ReviewDecision
@@ -310,16 +370,25 @@ export async function submitDprReport(input: SubmitDprInput) {
     },
   });
 
-  revalidatePath(`/projects/${projectId}/review-queue`);
-  revalidatePath(`/projects/${projectId}/gantt`);
-  revalidatePath(`/projects/${projectId}/tasks`);
-  revalidatePath(`/projects/${projectId}`);
+  try {
+    revalidatePath(`/projects/${projectId}/review-queue`);
+    revalidatePath(`/projects/${projectId}/gantt`);
+    revalidatePath(`/projects/${projectId}/tasks`);
+    revalidatePath(`/projects/${projectId}/dashboard`);
+    revalidatePath(`/projects/${projectId}/field-intake`);
+    revalidatePath(`/projects/${projectId}/plan-vs-actual`);
+    revalidatePath(`/projects/${projectId}`);
+  } catch (revErr) {
+    // Outside Next.js request context during tests/scripts, safe to ignore
+    console.warn("revalidatePath skipped:", revErr instanceof Error ? revErr.message : revErr);
+  }
 
   return {
     success: true,
     dailyReportId: dailyReport.id,
     observationsCount: createdObservations.length,
     autoLinkedCount,
+    updatedTasks,
   };
 }
 
