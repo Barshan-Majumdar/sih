@@ -95,7 +95,10 @@ export const getCurrentSession = cache(async (): Promise<AppUserSession | null> 
         activeOrganizationId: firstMembership?.organizationId ?? null,
       },
     };
-  } catch (err) {
+  } catch (err: any) {
+    if (err && typeof err === "object" && err.digest === "DYNAMIC_SERVER_USAGE") {
+      throw err;
+    }
     console.error("getCurrentSession error:", err);
     return null;
   }
