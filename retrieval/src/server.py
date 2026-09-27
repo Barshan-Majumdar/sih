@@ -103,7 +103,7 @@ app.include_router(build_extraction_router())
 app.include_router(ocr_router)
 
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health_check():
     """
     Returns server status and total indexed schedule activities.
