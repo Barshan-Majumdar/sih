@@ -1,5 +1,13 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600;1,700;1,800;1,900&family=Outfit:ital,wght@0,500;0,600;0,700;0,800;0,900;1,600;1,700;1,800;1,900&display=swap');
 @source "../../node_modules/streamdown/dist/*.js";
+
+/* Distinctive luxury high-contrast serif italic brand wordmark */
+.font-brand {
+  font-family: 'Playfair Display', Georgia, Cambria, 'Times New Roman', serif !important;
+  font-style: italic !important;
+  letter-spacing: -0.02em;
+}
 
 /*
   Design tokens sourced from DESIGN.md (Cal.com-inspired visual language).
@@ -884,4 +892,183 @@ body[data-app-theme="dark"] .infratrack-watermark-char[data-neighbor="2"],
   filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3)) drop-shadow(0 0 20px rgba(59, 130, 246, 0.22));
   z-index: 2;
   position: relative;
+}
+
+/* ==========================================================================
+   Auth Shell & Clerk Polish (Eliminate nested card chrome & black footer)
+   ========================================================================== */
+/* ==========================================================================
+   Auth Shell & Clerk Polish (Eliminate nested card chrome & black footer)
+   ========================================================================== */
+.auth-clerk-shell .cl-rootBox,
+.auth-clerk-shell .cl-cardBox {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+.auth-clerk-shell .cl-card {
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 4px 0 0 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+.auth-clerk-shell .cl-main,
+.auth-clerk-shell .cl-socialButtonsRoot,
+.auth-clerk-shell .cl-socialButtons {
+  overflow: visible !important;
+  width: 100% !important;
+}
+
+/* Ensure social button has a continuous, crisp, unbroken border */
+.auth-clerk-shell .cl-socialButtonsBlockButton {
+  position: relative !important;
+  overflow: visible !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: #cbd5e1 !important;
+  box-sizing: border-box !important;
+}
+
+/* Hide Clerk Last-Used Badge or any badge cutout that breaks button borders */
+.auth-clerk-shell .cl-socialButtonsBlockButtonBadge,
+.auth-clerk-shell .cl-socialButtonsBlockButtonBadge__lastUsed,
+.auth-clerk-shell [class*="socialButtonsBlockButtonBadge"],
+.auth-clerk-shell [class*="socialButtonsIconButtonBadge"],
+.auth-clerk-shell [class*="badge__lastUsed"],
+.auth-clerk-shell [class*="Badge__lastUsed"],
+.auth-clerk-shell .cl-badge {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+}
+
+/* Dark mode social button border & colors */
+html[data-app-theme="dark"] .auth-clerk-shell .cl-socialButtonsBlockButton,
+body[data-app-theme="dark"] .auth-clerk-shell .cl-socialButtonsBlockButton,
+[data-app-theme="dark"] .auth-clerk-shell .cl-socialButtonsBlockButton {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background-color: #121215 !important;
+  color: #ffffff !important;
+}
+
+html[data-app-theme="dark"] .auth-clerk-shell .cl-socialButtonsBlockButton:hover,
+body[data-app-theme="dark"] .auth-clerk-shell .cl-socialButtonsBlockButton:hover,
+[data-app-theme="dark"] .auth-clerk-shell .cl-socialButtonsBlockButton:hover {
+  background-color: #18181e !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+/* Remove awkward black footer & redundant links */
+.auth-clerk-shell .cl-footer {
+  background: transparent !important;
+  border-top: none !important;
+  padding-top: 8px !important;
+}
+
+.auth-clerk-shell .cl-footerAction,
+.auth-clerk-shell .cl-footerActionText,
+.auth-clerk-shell .cl-footerActionLink,
+.auth-clerk-shell .cl-footerPages,
+.auth-clerk-shell .cl-footerPagesLink {
+  display: none !important;
+}
+
+/* Ensure development badge is transparent and unobtrusive */
+.auth-clerk-shell [class*="footer"] {
+  background: transparent !important;
+}
+
+.auth-clerk-shell .cl-internal-b3fm6y {
+  background: transparent !important;
+  color: #94a3b8 !important;
+}
+
+/* Form field styling refinements */
+.auth-clerk-shell .cl-formFieldInput {
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  box-sizing: border-box !important;
+}
+
+.auth-clerk-shell .cl-formFieldErrorText {
+  font-size: 12px !important;
+  margin-top: 4px !important;
+  font-weight: 500 !important;
+}
+
+.auth-clerk-shell .cl-otpCodeFieldInput {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  height: 44px !important;
+}
+
+html[data-app-theme="dark"] .auth-clerk-shell .cl-otpCodeFieldInput,
+body[data-app-theme="dark"] .auth-clerk-shell .cl-otpCodeFieldInput,
+[data-app-theme="dark"] .auth-clerk-shell .cl-otpCodeFieldInput {
+  background-color: #121215 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.auth-clerk-shell .cl-formFieldInputShowPasswordButton {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.auth-clerk-shell .cl-formButtonPrimary {
+  border-radius: 9999px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  height: 44px !important;
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18) !important;
+  transition: all 0.2s ease !important;
+}
+
+.auth-clerk-shell .cl-formButtonPrimary:hover {
+  background-color: #000000 !important;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.28) !important;
+}
+
+.auth-clerk-shell .cl-formFieldInput:focus {
+  border-color: #0f172a !important;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-app-theme="dark"] .auth-clerk-shell .cl-formButtonPrimary,
+body[data-app-theme="dark"] .auth-clerk-shell .cl-formButtonPrimary,
+[data-app-theme="dark"] .auth-clerk-shell .cl-formButtonPrimary {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.15) !important;
+}
+
+html[data-app-theme="dark"] .auth-clerk-shell .cl-formButtonPrimary:hover,
+body[data-app-theme="dark"] .auth-clerk-shell .cl-formButtonPrimary:hover,
+[data-app-theme="dark"] .auth-clerk-shell .cl-formButtonPrimary:hover {
+  background-color: #e4e4e7 !important;
+}
+
+html[data-app-theme="dark"] .auth-clerk-shell .cl-formFieldInput:focus,
+body[data-app-theme="dark"] .auth-clerk-shell .cl-formFieldInput:focus,
+[data-app-theme="dark"] .auth-clerk-shell .cl-formFieldInput:focus {
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
 }

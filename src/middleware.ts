@@ -19,6 +19,7 @@ export default clerkMiddleware(async (auth, request) => {
   // If already authenticated and landing on marketing root or sign-in/up, route straight to dashboard
   if (
     userId &&
+    !url.pathname.includes("sso-callback") &&
     (url.pathname === "/" || url.pathname.startsWith("/sign-in") || url.pathname.startsWith("/sign-up"))
   ) {
     return NextResponse.redirect(new URL("/dashboard", request.url));

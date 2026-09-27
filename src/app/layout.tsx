@@ -103,13 +103,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/dashboard"
+      signInForceRedirectUrl="/dashboard"
+      signUpForceRedirectUrl="/dashboard"
+    >
       <html
         lang="en"
         className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
         suppressHydrationWarning
       >
         <head suppressHydrationWarning>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: themeInitializer }} />
           <script
             type="application/ld+json"
