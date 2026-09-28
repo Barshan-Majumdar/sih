@@ -10,6 +10,10 @@ const createConversationSchema = z.object({
 export async function GET() {
   const user = await requireUser();
   const { organizationId } = await requireActiveOrganization();
+  const orgMembership = await prisma.member.findUnique({
+    where: { organizationId_userId: { organizationId, userId: user.id } },
+  });
+  const isOrgAdminOrOwner = orgMembership?.role === "owner" || orgMembership?.role === "admin";
 
   // Purge any empty conversations (no messages) so they are never kept in DB
   await prisma.assistantConversation.deleteMany({
@@ -25,7 +29,7 @@ export async function GET() {
       where: {
         organizationId,
         isArchived: false,
-        members: { some: { userId: user.id } },
+        ...(isOrgAdminOrOwner ? {} : { members: { some: { userId: user.id } } }),
       },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
@@ -33,9 +37,13 @@ export async function GET() {
     prisma.assistantConversation.findMany({
       where: {
         organizationId,
-        createdById: user.id,
         messages: { some: {} },
-        OR: [{ projectId: null }, { project: { members: { some: { userId: user.id } } } }],
+        ...(isOrgAdminOrOwner
+          ? {}
+          : {
+              createdById: user.id,
+              OR: [{ projectId: null }, { project: { members: { some: { userId: user.id } } } }],
+            }),
       },
       include: { _count: { select: { messages: true } } },
       orderBy: { updatedAt: "desc" },

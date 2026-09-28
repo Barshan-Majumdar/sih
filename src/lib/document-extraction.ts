@@ -76,12 +76,14 @@ function chunkPageText(text: string, pageNumber: number): ExtractedDocumentChunk
  * from an image or scanned PDF. This is the zero-install OCR fallback that
  * works when ocrmypdf/tesseract are not available on the system.
  *
- * Returns a DocumentExtractionResult with all text on pageNumber=1.
+ * Prompts Gemini to delimit pages using '--- Page X ---' markers so that
+ * multi-page scanned documents maintain correct page numbering in chunks.
  */
 async function geminiVisionOcr(
   bytes: Uint8Array,
   mediaType: string,
-  fileName: string
+  fileName: string,
+  expectedPageCount?: number | null
 ): Promise<DocumentExtractionResult> {
   const apiKey = env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -105,12 +107,19 @@ async function geminiVisionOcr(
   }
 
   const startedAt = performance.now();
-  logger.info("document.gemini_ocr.started", { mediaType, sizeBytes: bytes.byteLength, fileName });
+  logger.info("document.gemini_ocr.started", { mediaType, sizeBytes: bytes.byteLength, fileName, expectedPageCount });
 
   try {
     // Use Gemini REST API directly (no SDK dependency)
     const model = env.GEMINI_MODEL || "gemini-3.5-flash-lite";
     const base64Data = Buffer.from(bytes).toString("base64");
+
+    const pageGuidance =
+      expectedPageCount && expectedPageCount > 1
+        ? ` This document contains approximately ${expectedPageCount} pages. For each page, output the exact marker '--- Page X ---' on a separate line before that page's text (e.g. --- Page 1 ---, --- Page 2 ---).`
+        : " For multi-page documents, delimit each page with '--- Page X ---' on a separate line (e.g. --- Page 1 ---, --- Page 2 ---).";
+
+    const promptText = `You are a professional document OCR and text extraction assistant. Extract ALL text from this document exactly as it appears, preserving structure, tables, headings, and line breaks.${pageGuidance} Output ONLY the extracted text and page markers with no conversational commentary or markdown wrappers.`;
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
@@ -122,7 +131,7 @@ async function geminiVisionOcr(
             {
               parts: [
                 {
-                  text: "You are a professional document OCR and text extraction assistant. Extract ALL text from this document exactly as it appears, preserving structure, tables, headings, and line breaks. Output ONLY the extracted text with no commentary, metadata, or markdown formatting wrappers.",
+                  text: promptText,
                 },
                 {
                   inline_data: {
@@ -174,26 +183,62 @@ async function geminiVisionOcr(
       return {
         status: "UNSUPPORTED",
         text: null,
-        pageCount: 1,
+        pageCount: expectedPageCount ?? 1,
         error: "Gemini Vision OCR found no text in this file. The file may contain only graphics.",
         chunks: [],
       };
     }
 
-    const normalized = normalizeExtractedText(rawText).slice(0, MAX_EXTRACTED_TEXT_CHARS);
-    const chunks = chunkPageText(normalized, 1);
+    // Split text by page delimiters if present: e.g. "--- Page 1 ---" or "=== Page 1 ==="
+    const pageMarkerRegex = /(?:^|\n)\s*(?:---|===|\*{3})?\s*Page\s+(\d+)\s*(?:---|===|\*{3})?:?\s*(?:\n|$)/gi;
+    const matches = [...rawText.matchAll(pageMarkerRegex)];
+
+    let pageEntries: Array<{ pageNumber: number; text: string }> = [];
+
+    if (matches.length > 0) {
+      for (let i = 0; i < matches.length; i++) {
+        const m = matches[i];
+        const pageNum = parseInt(m[1], 10) || (i + 1);
+        const start = m.index! + m[0].length;
+        const end = i + 1 < matches.length ? matches[i + 1].index! : rawText.length;
+        const pageText = normalizeExtractedText(rawText.slice(start, end));
+        if (pageText) {
+          pageEntries.push({ pageNumber: pageNum, text: pageText });
+        }
+      }
+    }
+
+    if (pageEntries.length === 0) {
+      const normalized = normalizeExtractedText(rawText).slice(0, MAX_EXTRACTED_TEXT_CHARS);
+      pageEntries = [{ pageNumber: 1, text: normalized }];
+    }
+
+    let remainingCharacters = MAX_EXTRACTED_TEXT_CHARS;
+    const pages = pageEntries.map((p) => {
+      const text = p.text.slice(0, Math.max(remainingCharacters, 0));
+      remainingCharacters -= text.length;
+      return { pageNumber: p.pageNumber, text };
+    });
+
+    const fullText = pages.map((page) => page.text).filter(Boolean).join("\n\n");
+    const chunks = pages.flatMap((page) => chunkPageText(page.text, page.pageNumber));
+    const detectedMaxPage = Math.max(...pages.map((p) => p.pageNumber), 1);
+    const finalPageCount = expectedPageCount && expectedPageCount > 1
+      ? Math.max(expectedPageCount, detectedMaxPage)
+      : detectedMaxPage;
 
     logger.info("document.gemini_ocr.completed", {
       fileName,
-      charCount: normalized.length,
+      charCount: fullText.length,
       chunkCount: chunks.length,
+      pageCount: finalPageCount,
       durationMs: Math.round(performance.now() - startedAt),
     });
 
     return {
       status: "READY",
-      text: normalized,
-      pageCount: 1,
+      text: fullText,
+      pageCount: finalPageCount,
       error: null,
       chunks,
     };
@@ -336,7 +381,7 @@ export async function processProjectDocument(
               documentId: document.id,
               mediaType: document.mediaType,
             });
-            result = await geminiVisionOcr(bytes, document.mediaType, document.fileName);
+            result = await geminiVisionOcr(bytes, document.mediaType, document.fileName, result.pageCount);
             if (result.status === "READY") {
               ocrEngine = "gemini-vision";
               ocrProcessedAt = new Date();
@@ -347,7 +392,7 @@ export async function processProjectDocument(
           reportException(ocrError, "document.ocr_worker.failed_fallback_to_gemini", {
             documentId: document.id,
           });
-          result = await geminiVisionOcr(bytes, document.mediaType, document.fileName);
+          result = await geminiVisionOcr(bytes, document.mediaType, document.fileName, result.pageCount);
           if (result.status === "READY") {
             ocrEngine = "gemini-vision";
             ocrProcessedAt = new Date();
@@ -355,7 +400,7 @@ export async function processProjectDocument(
         }
       } else {
         // No OCR worker configured — try Gemini Vision directly.
-        result = await geminiVisionOcr(bytes, document.mediaType, document.fileName);
+        result = await geminiVisionOcr(bytes, document.mediaType, document.fileName, result.pageCount);
         if (result.status === "READY") {
           ocrEngine = "gemini-vision";
           ocrProcessedAt = new Date();

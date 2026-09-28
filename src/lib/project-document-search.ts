@@ -54,7 +54,7 @@ export type ProjectDocumentMatch = {
 export function isProjectDocumentQuestion(question: string): boolean {
   return (
     /\b(attachment|document|file|pdf|report|specification|spec|drawing|plan)\b/i.test(question) &&
-    /\b(analy[sz]e|compare|contain|extract|find|inside|mention|read|review|search|say|says|summari[sz]e|what)\b/i.test(
+    /\b(analy[sz]e|check|compare|contain|extract|find|inside|mention|page|read|review|search|say|says|show|summari[sz]e|tell|verify|what|where|which)\b/i.test(
       question
     )
   );

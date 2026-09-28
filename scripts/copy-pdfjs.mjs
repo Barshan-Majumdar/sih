@@ -8,9 +8,14 @@ const output = join(root, "public", "pdfjs");
 await mkdir(output, { recursive: true });
 await Promise.all([
   copyFile(join(root, "node_modules", "pdfjs-dist", "build", "pdf.mjs"), join(output, "pdf.mjs")),
+  copyFile(join(root, "node_modules", "pdfjs-dist", "build", "pdf.mjs.map"), join(output, "pdf.mjs.map")),
   copyFile(
     join(root, "node_modules", "pdfjs-dist", "build", "pdf.worker.mjs"),
     join(output, "pdf.worker.mjs")
+  ),
+  copyFile(
+    join(root, "node_modules", "pdfjs-dist", "build", "pdf.worker.mjs.map"),
+    join(output, "pdf.worker.mjs.map")
   ),
   copyFile(
     join(root, "node_modules", "pdfjs-dist", "web", "pdf_viewer.css"),

@@ -28,6 +28,7 @@ describe("project document search", () => {
   it("recognizes questions that require document retrieval", () => {
     expect(isProjectDocumentQuestion("What does the door specification say about fire ratings?"))
       .toBe(true);
+    expect(isProjectDocumentQuestion("is this in page 1 of the pdf ?")).toBe(true);
     expect(isProjectDocumentQuestion("Show the open roadblocks")).toBe(false);
   });
 

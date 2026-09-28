@@ -6,11 +6,14 @@ type AgiraHeroProps = {
 
 export function InfraTrackHero({ isSignedIn }: AgiraHeroProps) {
   return (
-    <section id="hero" className="relative overflow-hidden border-b border-hairline bg-app-bg">
+    <section
+      id="hero"
+      className="relative flex min-h-[100dvh] flex-col justify-center overflow-hidden border-b border-hairline bg-app-bg"
+    >
       <div className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-[520px] w-[850px] -translate-x-1/2 rounded-full bg-brand-accent/5 blur-[130px]" aria-hidden />
-      <div className="mx-auto grid max-w-[1400px] gap-14 px-6 pb-20 pt-36 sm:px-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-12 lg:pb-28 lg:pt-44">
+      <div className="mx-auto grid w-full max-w-[1400px] flex-1 gap-10 px-6 pt-32 pb-12 sm:px-10 sm:pt-36 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-14 lg:px-12 lg:pt-32 lg:pb-14">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-pill border border-brand-accent/20 bg-brand-accent/10 px-3 py-1 mb-5">
+          <div className="inline-flex items-center gap-2 rounded-pill border border-brand-accent/20 bg-brand-accent/10 px-3 py-1 mb-4 sm:mb-5">
             <span className="h-1.5 w-1.5 rounded-full bg-brand-accent animate-pulse" aria-hidden />
             <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-brand-accent">
               Construction Operations OS
@@ -19,10 +22,10 @@ export function InfraTrackHero({ isSignedIn }: AgiraHeroProps) {
           <h1 className="font-display max-w-[15ch] text-4xl leading-[1.08] tracking-[-0.03em] text-ink sm:text-5xl lg:text-6xl">
             Every commitment, cited and reversible.
           </h1>
-          <p className="mt-6 max-w-md text-base leading-7 text-body sm:text-lg">
+          <p className="mt-5 max-w-md text-base leading-7 text-body sm:text-lg lg:mt-6">
             One control room for the schedule, the field, and the project documents — powered by native deterministic intelligence.
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div className="mt-7 flex flex-wrap items-center gap-3 sm:mt-8">
             <Link
               href={isSignedIn ? "/projects" : "/sign-up"}
               className="btn-interactive inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-xs font-semibold text-on-primary shadow-[0_4px_14px_rgba(15,23,42,0.18)] transition-all hover:bg-primary-active active:scale-[0.98]"

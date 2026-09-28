@@ -8,12 +8,21 @@ export async function requireAssistantConversation(
   userId: string,
   organizationId: string
 ) {
-  await requireOrganizationMember(userId, organizationId);
+  const orgMembership = await requireOrganizationMember(userId, organizationId);
+  const isOrgAdminOrOwner = orgMembership.role === "owner" || orgMembership.role === "admin";
+
   const conversation = await prisma.assistantConversation.findFirst({
     where: {
       id: conversationId,
-      createdById: userId,
       organizationId,
+      ...(isOrgAdminOrOwner
+        ? {}
+        : {
+            OR: [
+              { createdById: userId },
+              { project: { members: { some: { userId } } } },
+            ],
+          }),
     },
     include: {
       project: { select: { id: true, name: true } },
@@ -25,7 +34,7 @@ export async function requireAssistantConversation(
     throw new AssistantAccessError("Conversation not found.");
   }
 
-  if (conversation.projectId) {
+  if (conversation.projectId && !isOrgAdminOrOwner) {
     await requireProjectMember(userId, conversation.projectId);
   }
 
