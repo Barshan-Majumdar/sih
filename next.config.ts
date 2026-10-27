@@ -6,7 +6,10 @@ import type { NextConfig } from "next";
 // before adding one in production.
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "X-Frame-Options", value: "DENY" },
+  {
+    key: "Content-Security-Policy",
+    value: "frame-ancestors 'self' https://barshan-majumdar.vercel.app http://localhost:3000 http://localhost:5173",
+  },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(self), geolocation=()" },
   // HSTS is a no-op over plain http (local dev) and enforced by browsers only
@@ -32,8 +35,11 @@ const nextConfig: NextConfig = {
         // Keep cross-origin framing blocked while allowing that one surface.
         source: "/api/files/:path*",
         headers: [
-          { key: "X-Frame-Options", value: "SAMEORIGIN" },
-          { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'self' https://www.barshan-majumdar.xyz/ https://barshan-majumdar.vercel.app https://portfolio-barshan.vercel.app/ http://localhost:3000 http://localhost:5173",
+          },
         ],
       },
     ];
